@@ -10,7 +10,7 @@
 
 # 文章进度
 
-- [x] HDR转SDR实践之旅(一)流程总结
+- [x] [HDR转SDR实践之旅(一)流程总结](https://juejin.cn/post/7205908717886865469)
 - [ ] HDR转SDR实践之旅(二)解码10位YUV纹理 
 - [ ] HDR转SDR实践之旅(三)YUV420转YUV超快公式
 - [ ] HDR转SDR实践之旅(四)YUV转RGB矩阵正确推导 
