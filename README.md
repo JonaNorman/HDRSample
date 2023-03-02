@@ -1,11 +1,8 @@
 # HDRSample
 这个库用OpenGL实现了HDR和SDR转换，HDR转SDR实践之旅系列更新完代码应该能写完。如果你觉得有所收获，给这个库点个赞吧，你的鼓励是我前进最大的动力。
+![image](https://user-images.githubusercontent.com/4536178/222448632-f8dbfb59-11bc-4c5e-a0eb-e34f1dc72431.png)
 
 
-# 转换流程
-![HDR转SDR转换原理](https://user-images.githubusercontent.com/4536178/222447979-54ff4f44-ef01-48d4-8307-35cba031e8f7.png)
-
-![HDR转SDR转换流程](https://user-images.githubusercontent.com/4536178/222447628-636d306a-a0b0-4333-b677-8899fcaba957.png)
 
 
 # 代码进度
