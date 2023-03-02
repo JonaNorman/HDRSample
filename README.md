@@ -18,4 +18,5 @@
 - [ ] HDR转SDR实践之旅(六)传递函数与色差矫正
 - [ ] HDR转SDR实践之旅(七)Gamma、HLG、PQ公式详解 
 - [ ] HDR转SDR实践之旅(八)色调映射 
-- [ ] HDR转SDR实践之旅(九)开发资源汇总 
+- [ ] HDR转SDR实践之旅(九)HDR开发资源汇总
+- [ ] HDR转SDR实践之旅(十)SDR转HDR逆色调映射探索
