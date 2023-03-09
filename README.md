@@ -11,10 +11,10 @@
 # 文章进度
 
 - [x] [HDR转SDR实践之旅(一)流程总结](https://juejin.cn/post/7205908717886865469)
-- [ ] HDR转SDR实践之旅(二)解码10位YUV纹理 
-- [ ] HDR转SDR实践之旅(三)YUV420转YUV超快公式
-- [ ] HDR转SDR实践之旅(四)YUV转RGB矩阵正确推导 
-- [ ] HDR转SDR实践之旅(五)色域转换BT2020转BT709 
+- [x] [HDR转SDR实践之旅(二)解码10位YUV纹理 ](https://juejin.cn/post/7206577654933520444)
+- [x] [HDR转SDR实践之旅(三)YUV420转YUV公式](https://juejin.cn/post/7207637337572606007)
+- [x] [HDR转SDR实践之旅(四)YUV转RGB矩阵推导](https://juejin.cn/post/7208015274079256635) 
+- [x] HDR转SDR实践之旅(五)色域转换BT2020转BT709 
 - [ ] HDR转SDR实践之旅(六)传递函数与色差矫正
 - [ ] HDR转SDR实践之旅(七)Gamma、HLG、PQ公式详解 
 - [ ] HDR转SDR实践之旅(八)色调映射 
