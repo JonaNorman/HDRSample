@@ -18,9 +18,5 @@ public interface AndroidVideoDecoder extends AndroidDecoder {
         }
     }
 
-    interface CallBack extends AndroidDecoder.CallBack {
-
-    }
-
 
 }

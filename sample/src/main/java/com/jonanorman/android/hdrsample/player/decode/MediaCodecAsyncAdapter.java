@@ -30,6 +30,10 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     private final Queue<Integer> suspendOutputBufferQueue = new LinkedList<>();
     private final Map<Integer, MediaCodec.BufferInfo> suspendOutputBufferInfoMap = new HashMap();
 
+    private final List<Integer> inputResumeIdList = new ArrayList<>();
+    private final List<Integer> outputResumeIdList = new ArrayList<>();
+    private final List<MediaCodec.BufferInfo> outputResumeBufferInfoList = new ArrayList<>();
+
     private final MediaCodec.Callback asyncCallback = new MediaCodec.Callback() {
 
 
@@ -73,10 +77,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     private boolean pause;
     private boolean release;
     private int flushNumber;
-
-    private List<Integer> inputResumeIdList = new ArrayList<>();
-    private List<Integer> outputResumeIdList = new ArrayList<>();
-    private List<MediaCodec.BufferInfo> outputResumeBufferInfoList = new ArrayList<>();
 
 
     public MediaCodecAsyncAdapter(MediaFormat mediaFormat,

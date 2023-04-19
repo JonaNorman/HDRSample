@@ -1,9 +1,6 @@
 package com.jonanorman.android.hdrsample.player.decode;
 
-import android.view.Surface;
-
 class AndroidVideoDecoderImpl extends AndroidDecoderImpl implements AndroidVideoDecoder {
-
 
     MediaCodecAsyncAdapter mediaCodecAdapter;
 
@@ -16,7 +13,7 @@ class AndroidVideoDecoderImpl extends AndroidDecoderImpl implements AndroidVideo
         mediaCodecAdapter = new MediaCodecAsyncAdapter(
                 config.mediaFormat,
                 null,
-                new AndroidDecoderCallBackWrapper(config.callBack));
+                new CallBackWrapper(config.callBack));
     }
 
     @Override

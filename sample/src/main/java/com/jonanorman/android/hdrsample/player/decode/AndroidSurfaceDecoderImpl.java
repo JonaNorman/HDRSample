@@ -2,9 +2,8 @@ package com.jonanorman.android.hdrsample.player.decode;
 
 import android.view.Surface;
 
-class AndroidSurfaceDecoderImpl extends AndroidDecoderImpl implements AndroidSurfaceDecoder {
+class AndroidSurfaceDecoderImpl extends AndroidVideoDecoderImpl implements AndroidSurfaceDecoder {
 
-    MediaCodecAsyncAdapter mediaCodecAdapter;
 
     @Override
     protected void onConfigure(Decoder.Configuration configuration) {
@@ -15,43 +14,10 @@ class AndroidSurfaceDecoderImpl extends AndroidDecoderImpl implements AndroidSur
         mediaCodecAdapter = new MediaCodecAsyncAdapter(
                 config.mediaFormat,
                 config.surface,
-                new AndroidDecoderCallBackWrapper(config.callBack));
-    }
-
-    @Override
-    protected void onStart() {
-        mediaCodecAdapter.start();
+                new CallBackWrapper(config.callBack));
     }
 
 
-    @Override
-    protected void onPause() {
-        mediaCodecAdapter.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        mediaCodecAdapter.resume();
-    }
-
-    @Override
-    protected void onFlush() {
-        mediaCodecAdapter.flush();
-    }
-
-    @Override
-    protected void onStop() {
-        mediaCodecAdapter.release();
-        mediaCodecAdapter = null;
-    }
-
-    @Override
-    protected void onRelease() {
-        if (mediaCodecAdapter != null) {
-            mediaCodecAdapter.release();
-            mediaCodecAdapter = null;
-        }
-    }
     @Override
     public synchronized void setOutputSurface(Surface surface) {
         if (!isConfigured()) {

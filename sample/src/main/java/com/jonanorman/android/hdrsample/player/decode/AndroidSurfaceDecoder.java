@@ -25,9 +25,4 @@ public interface AndroidSurfaceDecoder extends AndroidVideoDecoder {
         }
     }
 
-    interface CallBack extends AndroidVideoDecoder.CallBack {
-
-    }
-
-
 }
