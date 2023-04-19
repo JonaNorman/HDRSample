@@ -28,15 +28,15 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
 
     public synchronized void setSurface(Surface surface) {
         this.surface = surface;
-       if (playHandler == null)return;
-        playHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                AndroidSurfaceDecoder surfaceDecoder = (AndroidSurfaceDecoder) androidDecoder;
-                surfaceDecoder.setOutputSurface(surface);
-            }
-        });
-
+        if (playHandler == null) return;
+        AndroidSurfaceDecoder surfaceDecoder = (AndroidSurfaceDecoder) androidDecoder;
+        if (!surfaceDecoder.isConfigured()) {
+            playHandler.waitAllMessage();
+        }
+        if (surface == null){
+            surface = getTextureSurface();
+        }
+        surfaceDecoder.setOutputSurface(surface);
     }
 
     @Override
@@ -50,15 +50,21 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
     @Override
     protected void onVideoInputFormatConfigure(MediaFormat inputFormat) {
         super.onVideoInputFormatConfigure(inputFormat);
-        MediaFormatUtil.setInteger(inputFormat,MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+    }
+
+
+    private synchronized TextureSurface getTextureSurface() {
+        if (textureSurface != null) return textureSurface;
+        textureSurface = TextureSurface.create();
+        return textureSurface;
     }
 
     @Override
     protected void onVideoDecoderConfigure(MediaFormat inputFormat) {
         synchronized (this) {
             if (surface == null) {
-                textureSurface = TextureSurface.create();
-                surface = textureSurface;
+                surface = getTextureSurface();
             }
         }
         androidDecoder.configure(new AndroidSurfaceDecoder.Configuration(inputFormat, new VideoDecoderCallBack(), surface));

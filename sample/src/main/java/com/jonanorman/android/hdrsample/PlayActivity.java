@@ -16,7 +16,6 @@ import com.jonanorman.android.hdrsample.player.source.FileSource;
 import com.jonanorman.android.hdrsample.player.surface.TextureSurface;
 
 public class PlayActivity extends AppCompatActivity {
-
     VideoSurfacePlayer videoPlayer;
     FrameLayout frameLayout;
     private SurfaceView surfaceView;
@@ -46,33 +45,19 @@ public class PlayActivity extends AppCompatActivity {
                 }
             }
 
-
-
             @Override
             public void onPlayError(Throwable throwable) {
                 Log.e("VideoPlayer", "errorMsg:" + throwable.getMessage() + "\n" + "errorStack:" + Log.getStackTraceString(throwable));
             }
         });
 
-
-
-
+        videoPlayer.prepare();
+        videoPlayer.start();
         surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
 
-            boolean aa = true;
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 videoPlayer.setSurface(holder.getSurface());
-                if (aa){
-                    videoPlayer.prepare();
-                    videoPlayer.start();
-                    aa = false;
-                }else {
-                    videoPlayer.resume();
-                }
-
-
-
             }
 
             @Override
@@ -82,7 +67,7 @@ public class PlayActivity extends AppCompatActivity {
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                videoPlayer.pause();
+                videoPlayer.setSurface(null);
             }
         });
     }
@@ -97,6 +82,7 @@ public class PlayActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        videoPlayer.resume();
     }
 
     @Override

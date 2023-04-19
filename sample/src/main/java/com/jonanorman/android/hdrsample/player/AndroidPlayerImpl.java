@@ -306,7 +306,7 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
             boolean render = AndroidPlayerImpl.this.onOutputBufferProcess(TimeUtil.microToSecond(presentationTimeUs), outputBuffer);
             render = render && isPlaying();
             long sleepTime = TimeUtil.microToMill(timeSyncer.syncTime(presentationTimeUs));
-//            render = render && sleepTime > -100;
+            render = render && sleepTime > -100;
             if (sleepTime > 0) {
                 try {
                     Thread.sleep(sleepTime);
