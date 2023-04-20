@@ -51,6 +51,17 @@ public interface GLEnvContext {
         return builder.build();
     }
 
+    static GLEnvContext create(GLEnvConfigChooser configChooser) {
+        GLEnvContext.Builder builder = new GLEnvContext.Builder(configChooser);
+        return builder.build();
+    }
+
+    static GLEnvContext create(@OpenGLESVersion int version,GLEnvConfigChooser configChooser) {
+        GLEnvContext.Builder builder = new GLEnvContext.Builder(configChooser);
+        builder.setClientVersion(version);
+        return builder.build();
+    }
+
 
     class Builder {
 

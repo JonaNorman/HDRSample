@@ -13,11 +13,10 @@ import com.jonanorman.android.hdrsample.util.ThrowableUtil;
 import com.jonanorman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Future;
 
-abstract class AndroidPlayerImpl implements VideoPlayer {
+abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
     private static final int PLAY_UNINIT = 0;
@@ -28,26 +27,27 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
     private static final int PLAY_STOP = 5;
     private static final int PLAY_RELEASE = 6;
 
+    private final ConcurrentLinkedDeque<Runnable> postFrameQueue = new ConcurrentLinkedDeque();
+    private final PlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
+
+    private final TimeSyncer timeSyncer = new TimeSyncer();
     private final String threadName;
     final AndroidDemuxer androidDemuxer;
     final AndroidDecoder androidDecoder;
-    private final PlayerTimeSyncer timeSyncer;
     private int state = PLAY_UNINIT;
-    MessageHandler playHandler;
     private Future stopFuture;
-    private PlayerCallBackHandler callBackHandler;
+
     private FileSource fileSource;
     private Float seekSecond;
 
-    private ConcurrentLinkedDeque<Runnable>  postFrameQueue = new ConcurrentLinkedDeque();
+    MessageHandler playHandler;
 
 
     public AndroidPlayerImpl(AndroidDecoder decoder, AndroidDemuxer androidDemuxer, String threadName) {
         this.androidDemuxer = androidDemuxer;
         this.androidDecoder = decoder;
         this.threadName = threadName;
-        this.timeSyncer = new PlayerTimeSyncer();
-        this.callBackHandler = new PlayerCallBackHandler();
+
     }
 
     @Override
@@ -107,14 +107,9 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
     }
 
 
-
-
     @Override
     public synchronized void stop() {
-        if (state != PLAY_PREPARE &&
-                state != PLAY_START &&
-                state != PLAY_RESUME &&
-                state != PLAY_PAUSE) {
+        if (!isPrepared()) {
             return;
         }
         state = PLAY_STOP;
@@ -174,7 +169,7 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
 
     @Override
     public void postFrame(Runnable runnable) {
-        if (isRelease())return;
+        if (isRelease()) return;
         postFrameQueue.offer(runnable);
     }
 
@@ -210,14 +205,20 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
         playHandler.addLifeCycleCallback(new MessageHandler.LifeCycleCallback() {
             @Override
             public void onHandlerRecycle() {
-                onRelease();
+                internalRelease();
             }
 
             @Override
             public void onHandlerError(Exception exception) {
+                internalRelease();
                 callBackHandler.error(exception);
             }
         });
+    }
+
+    private synchronized void internalRelease() {
+        state = PLAY_RELEASE;
+        onRelease();
     }
 
     private void waitLastPlayStop() {
@@ -297,31 +298,32 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
         public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer inputBuffer) {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
             androidDemuxer.readSampleBuffer(inputBuffer, bufferInfo);
-            androidDemuxer.advance();//todo
+            androidDemuxer.advance();
             return bufferInfo;
         }
 
         @Override
         public boolean onOutputBufferAvailable(long presentationTimeUs, ByteBuffer outputBuffer) {
-            boolean render = AndroidPlayerImpl.this.onOutputBufferProcess(TimeUtil.microToSecond(presentationTimeUs), outputBuffer);
-            render = render && isPlaying();
+            boolean render = AndroidPlayerImpl.this.onOutputBufferRender(TimeUtil.microToSecond(presentationTimeUs), outputBuffer);
             long sleepTime = TimeUtil.microToMill(timeSyncer.syncTime(presentationTimeUs));
-            render = render && sleepTime > -100;
             if (sleepTime > 0) {
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                 }
             }
-            return render;
+            return render && sleepTime > -100&& isPlaying();
         }
 
         @Override
         public void onOutputBufferRelease(long presentationTimeUs, boolean render) {
-            callBackHandler.process(TimeUtil.microToSecond(presentationTimeUs), false);//todo
-            while (!postFrameQueue.isEmpty()) {
-                Runnable runnable = postFrameQueue.poll();
-                runnable.run();
+            float timeSecond = TimeUtil.microToSecond(presentationTimeUs);
+            if (onOutputBufferProcess(timeSecond,  render)){
+                callBackHandler.process(timeSecond, false);//todo
+                while (!postFrameQueue.isEmpty()) {
+                    Runnable runnable = postFrameQueue.poll();
+                    runnable.run();
+                }
             }
         }
 
@@ -343,6 +345,8 @@ abstract class AndroidPlayerImpl implements VideoPlayer {
     protected abstract void onOutputFormatChanged(MediaFormat outputFormat);
 
 
-    protected abstract boolean onOutputBufferProcess(float timeSecond, ByteBuffer buffer);
+    protected abstract boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer);
+
+    protected abstract boolean onOutputBufferProcess(float timeSecond, boolean render);
 
 }

@@ -10,10 +10,8 @@ import android.widget.FrameLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.jonanorman.android.hdrsample.player.Player;
-import com.jonanorman.android.hdrsample.player.VideoPlayer;
 import com.jonanorman.android.hdrsample.player.VideoSurfacePlayer;
 import com.jonanorman.android.hdrsample.player.source.FileSource;
-import com.jonanorman.android.hdrsample.player.surface.TextureSurface;
 
 public class PlayActivity extends AppCompatActivity {
     VideoSurfacePlayer videoPlayer;

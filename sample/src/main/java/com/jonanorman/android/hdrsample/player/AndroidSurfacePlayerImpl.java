@@ -53,7 +53,6 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
     }
 
-
     private synchronized TextureSurface getTextureSurface() {
         if (textureSurface != null) return textureSurface;
         textureSurface = TextureSurface.create();
@@ -76,8 +75,13 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
     }
 
 
-    protected boolean onOutputBufferProcess(float timeSecond, ByteBuffer buffer) {
+    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
         return true;
+    }
+
+    @Override
+    protected boolean onOutputBufferProcess(float timeSecond, boolean render) {
+        return render;
     }
 
 }

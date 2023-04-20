@@ -10,7 +10,7 @@ import com.jonanorman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
 
-class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements VideoPlayer {
+class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements AndroidVideoPlayer {
 
     public static final String VIDEO_PLAYER = "AndroidVideoPlayer";
 
@@ -51,7 +51,12 @@ class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements VideoPlayer {
     }
 
 
-    protected boolean onOutputBufferProcess(float timeSecond, ByteBuffer buffer) {
+    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
+        return true;
+    }
+
+    @Override
+    protected boolean onOutputBufferProcess(float timeSecond, boolean render) {
         return true;
     }
 

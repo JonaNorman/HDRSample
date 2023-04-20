@@ -27,6 +27,17 @@ public interface GLEnvManager {
         return builder.build();
     }
 
+    static GLEnvManager create(GLEnvConfigChooser configChooser) {
+        GLEnvManager.Builder builder = new GLEnvManager.Builder(configChooser);
+        return builder.build();
+    }
+
+    static GLEnvManager create(@GLEnvContext.OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
+        GLEnvManager.Builder builder = new GLEnvManager.Builder(configChooser);
+        builder.setClientVersion(version);
+        return builder.build();
+    }
+
     class Builder {
 
         GLEnvDisplay envDisplay;
