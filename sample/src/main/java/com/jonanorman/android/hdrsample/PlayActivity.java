@@ -16,19 +16,16 @@ import com.jonanorman.android.hdrsample.player.source.FileSource;
 public class PlayActivity extends AppCompatActivity {
     VideoSurfacePlayer videoPlayer;
     FrameLayout frameLayout;
-    private SurfaceView surfaceView;
+    private SurfaceView surfaceView1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);// todo
         setContentView(R.layout.activity_hdr_player);
-        frameLayout = findViewById(R.id.contentLayout);
-        surfaceView = new SurfaceView(this);
-        frameLayout.addView(surfaceView);
+        surfaceView1 =  findViewById(R.id.SurfaceView1);
         videoPlayer = VideoSurfacePlayer.createAndroidVideoPlayer();
         videoPlayer.setSource(FileSource.createAssetFileSource(getApplicationContext(), "1.mp4"));
-
         videoPlayer.setCallback(new Player.Callback() {
             @Override
             public void onPlayStart() {
@@ -49,7 +46,7 @@ public class PlayActivity extends AppCompatActivity {
 
         videoPlayer.prepare();
         videoPlayer.start();
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        surfaceView1.getHolder().addCallback(new SurfaceHolder.Callback() {
 
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
