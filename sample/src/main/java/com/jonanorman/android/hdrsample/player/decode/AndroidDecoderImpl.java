@@ -164,5 +164,10 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
         public void onError(Exception exception) {
             callBack.onError(exception);
         }
+
+        @Override
+        public void onOutputBufferEndOfStream() {
+            callBack.onOutputBufferEndOfStream();
+        }
     }
 }

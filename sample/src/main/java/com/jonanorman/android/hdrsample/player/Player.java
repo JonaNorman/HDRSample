@@ -63,9 +63,15 @@ public interface Player {
 
         }
 
-        default void onPlayProcess(float timeSecond, boolean end) {
+        default void onPlayProcess(float timeSecond) {
 
         }
+
+        default void onPlayEnd() {
+
+
+        }
+
 
         default void onPlayError(Throwable throwable) {
 

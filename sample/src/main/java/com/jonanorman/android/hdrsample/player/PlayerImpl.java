@@ -49,8 +49,12 @@ abstract class PlayerImpl implements Player {
             executeCallback(callback -> callback.onPlayStop());
         }
 
-        public void process(float timeSecond, boolean end) {
-            executeCallback(callback -> callback.onPlayProcess(timeSecond, end));
+        public void process(float timeSecond) {
+            executeCallback(callback -> callback.onPlayProcess(timeSecond));
+        }
+
+        public void end() {
+            executeCallback(callback -> callback.onPlayEnd());
         }
 
         public void error(Throwable throwable) {

@@ -36,12 +36,10 @@ public class PlayActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onPlayProcess(float timeSecond, boolean end) {
-                if (end) {
-                    videoPlayer.seek(0);
-                    videoPlayer.start();
-                }
+            public void onPlayEnd() {
+                videoPlayer.seek(0);
             }
+
 
             @Override
             public void onPlayError(Throwable throwable) {

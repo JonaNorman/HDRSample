@@ -33,6 +33,8 @@ public interface AndroidDecoder extends Decoder {
         void onOutputFormatChanged(MediaFormat format);
 
         void onError(Exception exception);
+
+        void  onOutputBufferEndOfStream();
     }
 
 

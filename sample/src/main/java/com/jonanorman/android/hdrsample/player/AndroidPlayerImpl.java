@@ -319,7 +319,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         public void onOutputBufferRelease(long presentationTimeUs, boolean render) {
             float timeSecond = TimeUtil.microToSecond(presentationTimeUs);
             if (onOutputBufferProcess(timeSecond,  render)){
-                callBackHandler.process(timeSecond, false);//todo
+                callBackHandler.process(timeSecond);
                 while (!postFrameQueue.isEmpty()) {
                     Runnable runnable = postFrameQueue.poll();
                     runnable.run();
@@ -331,6 +331,11 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         @Override
         public void onError(Exception exception) {
             ThrowableUtil.throwException(exception);
+        }
+
+        @Override
+        public void onOutputBufferEndOfStream() {
+            callBackHandler.end();
         }
 
         @Override

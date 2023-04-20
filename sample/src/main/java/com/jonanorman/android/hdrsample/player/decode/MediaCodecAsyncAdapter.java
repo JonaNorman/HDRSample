@@ -5,6 +5,7 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -34,11 +35,16 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     private final List<Integer> outputResumeIdList = new ArrayList<>();
     private final List<MediaCodec.BufferInfo> outputResumeBufferInfoList = new ArrayList<>();
 
+    private boolean inputEndStream;
+
     private final MediaCodec.Callback asyncCallback = new MediaCodec.Callback() {
 
 
         @Override
         public void onInputBufferAvailable(@NonNull MediaCodec codec, int index) {
+            if (inputEndStream) {
+                return;
+            }
             ByteBuffer inputBuffer = codec.getInputBuffer(index);
             ByteBuffer byteBuffer = inputBuffer;
             byteBuffer.clear();
@@ -46,6 +52,11 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (bufferInfo == null) {
                 bufferInfo = new MediaCodec.BufferInfo();
                 bufferInfo.flags = MediaCodec.BUFFER_FLAG_END_OF_STREAM;
+            }
+            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                bufferInfo.offset = 0;
+                bufferInfo.size = 0;
+                inputEndStream = true;
             }
             codec.queueInputBuffer(index, bufferInfo.offset, bufferInfo.size, bufferInfo.presentationTimeUs, bufferInfo.flags);
         }
@@ -57,9 +68,10 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             outputBuffer.limit(info.offset + info.size);
             boolean render = outputBuffer.hasRemaining() && callBack.onOutputBufferAvailable(info.presentationTimeUs, outputBuffer);
             codec.releaseOutputBuffer(index, render);
-            callBack.onOutputBufferRelease(info.presentationTimeUs, render);
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                flush();
+                callBack.onOutputBufferEndOfStream();
+            } else {
+                callBack.onOutputBufferRelease(info.presentationTimeUs, render);
             }
         }
 
@@ -142,6 +154,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     private synchronized void finishFlush() {
         flushNumber--;
         if (flushNumber <= 0 && !isRelease()) {
+            inputEndStream =  false;
             mediaCodec.start();
         }
     }
@@ -306,6 +319,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         boolean onOutputBufferAvailable(long presentationTimeUs, ByteBuffer outputBuffer);
 
         void onOutputBufferRelease(long presentationTimeUs, boolean render);
+
+        void onOutputBufferEndOfStream();
 
         void onOutputFormatChanged(MediaFormat format);
 
