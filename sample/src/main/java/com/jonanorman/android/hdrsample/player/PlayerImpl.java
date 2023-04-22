@@ -18,6 +18,7 @@ abstract class PlayerImpl implements Player {
             this.defaultHandler = Looper.myLooper() == null ?
                     new Handler(Looper.getMainLooper())
                     : new Handler(Looper.myLooper());
+            this.handler = defaultHandler;
         }
 
         public synchronized void setHandler(Handler handler) {
@@ -42,6 +43,11 @@ abstract class PlayerImpl implements Player {
         }
 
         final synchronized void executeCallback(CallbackListener listener) {
+            synchronized (CallBackHandler.this) {
+                if (callback == null) {
+                    return;
+                }
+            }
             handler.post(new Runnable() {
                 @Override
                 public void run() {

@@ -1,6 +1,6 @@
 package com.jonanorman.android.hdrsample.player;
 
 
-public interface AndroidVideoPlayer extends AndroidPlayer {
+public interface AndroidVideoPlayer extends AndroidPlayer, VideoPlayer {
 
 }

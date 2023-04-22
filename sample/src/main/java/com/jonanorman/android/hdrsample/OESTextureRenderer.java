@@ -38,7 +38,11 @@ public class OESTextureRenderer {
                     "void main()\n" +
                     "{\n" +
                     "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-                    "    gl_FragColor = textureColor;\n" +
+                    "    mat3 tonemap = mat3(1.6605, -0.1246, -0.0182,\n" +
+                    "    -0.5876,  1.1329, -0.1006,\n" +
+                    "   -0.0728, -0.0083,  1.1187);\n" +
+                    "   vec3 tonemapColor = tonemap * textureColor.rgb;\n"+
+                    "    gl_FragColor = vec4(tonemapColor.rgb,textureColor.a);\n" +
                     "}";
 
     private static final String VERTEX_SHADER = "precision mediump float;\n" +

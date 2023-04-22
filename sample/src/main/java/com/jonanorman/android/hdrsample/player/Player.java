@@ -13,7 +13,6 @@ public interface Player {
 
     void start();
 
-    void setSurface(Surface surface);
 
     void seek(float timeSecond);
 
@@ -42,6 +41,8 @@ public interface Player {
     void postFrame(FrameRunnable runnable);
 
     void waitFrame();
+
+    void setRepeat(boolean repeat);
 
     interface Callback {
 

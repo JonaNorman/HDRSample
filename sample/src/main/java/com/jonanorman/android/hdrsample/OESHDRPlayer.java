@@ -169,4 +169,9 @@ class OESHDRPlayer implements AndroidVideoSurfacePlayer {
         });
 
     }
+
+    @Override
+    public void setRepeat(boolean repeat) {
+        videoPlayer.setRepeat(repeat);
+    }
 }

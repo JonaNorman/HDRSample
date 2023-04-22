@@ -44,6 +44,8 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     private AtomicReference<CountDownLatch> waitFrameLatch = new AtomicReference();
 
+    private volatile boolean repeat = true;
+
 
     MessageHandler playHandler;
 
@@ -118,6 +120,13 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         playHandler = null;
     }
 
+    @Override
+    public synchronized void setRepeat(boolean repeat) {
+        if (isRelease()){
+            return;
+        }
+
+    }
 
     @Override
     public synchronized void release() {
@@ -346,6 +355,9 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         @Override
         public void onOutputBufferEndOfStream() {
             callBackHandler.end();
+            if (repeat){
+                seek(0);
+            }
         }
 
         @Override
