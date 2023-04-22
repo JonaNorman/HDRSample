@@ -4,18 +4,17 @@ import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.view.Surface;
 
-import com.jonanorman.android.hdrsample.player.VideoSurfacePlayer;
+import com.jonanorman.android.hdrsample.player.AndroidVideoSurfacePlayer;
 import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvContext;
 import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvHandler;
 import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvWindowSurface;
 import com.jonanorman.android.hdrsample.player.source.FileSource;
 import com.jonanorman.android.hdrsample.util.GLESUtil;
 
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-class OESHDRPlayer implements VideoSurfacePlayer {
-    VideoSurfacePlayer videoPlayer;
-
+class OESHDRPlayer implements AndroidVideoSurfacePlayer {
+    AndroidVideoSurfacePlayer videoPlayer;
     GLEnvHandler envHandler;
     int textureId;
     SurfaceTexture surfaceTexture;
@@ -23,10 +22,11 @@ class OESHDRPlayer implements VideoSurfacePlayer {
 
     GLEnvWindowSurface envWindowSurface;
     OESTextureRenderer oesTextureRenderer;
+    AtomicBoolean hasSurface = new AtomicBoolean();
 
 
     public OESHDRPlayer() {
-        videoPlayer = VideoSurfacePlayer.createAndroidVideoPlayer();
+        videoPlayer = AndroidVideoSurfacePlayer.createSurfacePlayer();
         envHandler = GLEnvHandler.create();
         envHandler.postAndWait(new Runnable() {
             @Override
@@ -40,6 +40,8 @@ class OESHDRPlayer implements VideoSurfacePlayer {
                     @Override
                     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
                         surfaceTexture.updateTexImage();
+                        if (!hasSurface.get() || envWindowSurface == null) return;
+                        surfaceTexture.getTransformMatrix(oesTextureRenderer.getTextureMatrix().get());
                         oesTextureRenderer.setSurfaceSize(envWindowSurface.getWidth(), envWindowSurface.getHeight());
                         GLEnvContext envContext = envHandler.getEnvContext();
                         envContext.makeCurrent(envWindowSurface);
@@ -72,10 +74,6 @@ class OESHDRPlayer implements VideoSurfacePlayer {
         videoPlayer.seek(timeSecond);
     }
 
-    @Override
-    public void resume() {
-        videoPlayer.resume();
-    }
 
     @Override
     public void pause() {
@@ -133,16 +131,37 @@ class OESHDRPlayer implements VideoSurfacePlayer {
     }
 
     @Override
-    public void postFrame(Runnable runnable) {
+    public void postFrame(FrameRunnable runnable) {
         videoPlayer.postFrame(runnable);
     }
 
     @Override
-    public void setSurface(Surface surface) {
+    public void waitFrame() {
+        videoPlayer.waitFrame();
+    }
 
+
+    @Override
+    public void setSurface(Surface surface) {
+        hasSurface.set(surface != null);
+        if (surface == null) {
+            envHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (envWindowSurface != null) {
+                        envWindowSurface.release();
+                    }
+                }
+            });
+            return;
+        }
         envHandler.post(new Runnable() {
             @Override
             public void run() {
+                if (envWindowSurface != null) {
+                    envWindowSurface.release();
+                    envWindowSurface = null;
+                }
                 GLEnvContext envContext = envHandler.getEnvContext();
                 GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, surface);
                 envWindowSurface = builder.build();

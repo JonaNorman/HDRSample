@@ -5,12 +5,11 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.jonanorman.android.hdrsample.player.Player;
-import com.jonanorman.android.hdrsample.player.VideoSurfacePlayer;
 import com.jonanorman.android.hdrsample.player.source.FileSource;
 
 public class HDRPlayActivity extends AppCompatActivity {
@@ -26,10 +25,6 @@ public class HDRPlayActivity extends AppCompatActivity {
         videoPlayer = new OESHDRPlayer();
         videoPlayer.setSource(FileSource.createAssetFileSource(getApplicationContext(), "1.mp4"));
         videoPlayer.setCallback(new Player.Callback() {
-            @Override
-            public void onPlayStart() {
-
-            }
 
             @Override
             public void onPlayEnd() {
@@ -42,14 +37,15 @@ public class HDRPlayActivity extends AppCompatActivity {
                 Log.e("VideoPlayer", "errorMsg:" + throwable.getMessage() + "\n" + "errorStack:" + Log.getStackTraceString(throwable));
             }
         });
-
-        videoPlayer.prepare();
-        videoPlayer.start();
-        surfaceView1.getHolder().addCallback(new SurfaceHolder.Callback() {
-
+        surfaceView1.getHolder().addCallback(new SurfaceHolder.Callback2() {
+            @Override
+            public void surfaceRedrawNeeded(@NonNull SurfaceHolder holder) {
+                videoPlayer.waitFrame();
+            }
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 videoPlayer.setSurface(holder.getSurface());
+                videoPlayer.start();
             }
 
             @Override
@@ -60,21 +56,9 @@ public class HDRPlayActivity extends AppCompatActivity {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 videoPlayer.setSurface(null);
+                videoPlayer.pause();
             }
         });
-    }
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        videoPlayer.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        videoPlayer.resume();
     }
 
     @Override

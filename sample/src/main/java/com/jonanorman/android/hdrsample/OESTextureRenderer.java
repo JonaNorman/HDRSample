@@ -4,6 +4,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
 import com.jonanorman.android.hdrsample.util.GLESUtil;
+import com.jonanorman.android.hdrsample.util.Matrix4;
 
 import java.nio.FloatBuffer;
 
@@ -43,14 +44,15 @@ public class OESTextureRenderer {
     private static final String VERTEX_SHADER = "precision mediump float;\n" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
+            "uniform mat4 textureMatrix;\n" +
             "\n" +
             "varying vec2 textureCoordinate;\n" +
             "\n" +
             "void main()\n" +
             "{\n" +
             "    gl_Position = position;\n" +
-            "    textureCoordinate = vec2(inputTextureCoordinate.x,1.0-inputTextureCoordinate.y);\n" +
-            "}";// todo 改写textureMatrix
+            "    textureCoordinate = (textureMatrix*inputTextureCoordinate).xy;\n" +
+            "}";
 
 
     private FloatBuffer textureCoordinateBuffer;
@@ -59,6 +61,7 @@ public class OESTextureRenderer {
     private int positionCoordinateAttribute;
     private int textureCoordinateAttribute;
     private int textureUnitUniform;
+    private int textureMatrixUniform;
 
     private int programId;
 
@@ -70,6 +73,8 @@ public class OESTextureRenderer {
     private int height;
 
     private boolean release;
+
+   private Matrix4 textureMatrix = new Matrix4();
 
     public OESTextureRenderer() {
         positionCoordinateBuffer = GLESUtil.createDirectFloatBuffer(POSITION_COORDINATES);
@@ -84,6 +89,11 @@ public class OESTextureRenderer {
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
+    }
+
+
+    public Matrix4 getTextureMatrix() {
+        return textureMatrix;
     }
 
     public void render() {
@@ -101,6 +111,8 @@ public class OESTextureRenderer {
             positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
             textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
             textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
+            textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
+
         }
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
@@ -113,6 +125,7 @@ public class OESTextureRenderer {
             GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
             GLES20.glUniform1i(textureUnitUniform, 0);
         }
+        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         if (textureCoordinateAttribute >= 0) {

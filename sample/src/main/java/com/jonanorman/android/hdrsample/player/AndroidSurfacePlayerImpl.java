@@ -14,8 +14,8 @@ import com.jonanorman.android.hdrsample.util.MediaFormatUtil;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Callable;
 
-class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSurfacePlayer {
-    public static final String SURFACE_PLAYER = "AndroidVideoPlayer";
+class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements AndroidVideoSurfacePlayer {
+    public static final String SURFACE_PLAYER = "AndroidSurfacePlayer";
 
     private Surface surface;
 
@@ -36,7 +36,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
         if (!surfaceDecoder.isConfigured()) {
             playHandler.waitAllMessage();
         }
-        if (surface == null){
+        if (surface == null) {
             surface = getTextureSurface();
         }
         surfaceDecoder.setOutputSurface(surface);
@@ -45,8 +45,10 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
     @Override
     protected void onRelease() {
         super.onRelease();
-        if (textureSurface != null) {
-            textureSurface.release();
+        synchronized (this) {
+            if (textureSurface != null) {
+                textureSurface.release();
+            }
         }
     }
 
@@ -97,114 +99,71 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements VideoSu
         private SurfaceTexture surfaceTexture;
         private int textureId;
 
-        private Object lock = new Object();
+        private boolean release;
 
         private HolderSurface(SurfaceTexture texture, int textureId) {
             super(texture);
             this.surfaceTexture = texture;
             this.textureId = textureId;
             this.surfaceTexture.setOnFrameAvailableListener(surfaceTexture -> surfaceTexture.updateTexImage());
+        }
+
+
+        @Override
+        public synchronized void release() {
+            if (release) {
+                return;
+            }
+            release = true;
+            super.release();
+            this.surfaceTexture.release();
             synchronized (HANDLER_LOCK) {
-                HANDLE_HOLDER_COUNT++;
-            }
-        }
-
-        public void setSize(int width, int height) {
-            synchronized (lock) {
-                if (!isValid()) {
-                    return;
-                }
-                this.surfaceTexture.setDefaultBufferSize(width, height);
-            }
-        }
-
-        public void getTransformMatrix(float[] matrix) {
-            synchronized (lock) {
-                if (!isValid()) {
-                    return;
-                }
-                this.surfaceTexture.getTransformMatrix(matrix);
-            }
-        }
-
-        public long getTimestamp() {
-            synchronized (lock) {
-                if (!isValid()) {
-                    return 0;
-                }
-                return this.surfaceTexture.getTimestamp();
-            }
-        }
-
-
-        @Override
-        public void release() {
-            synchronized (lock) {
-                if (!isValid()) {
-                    return;
-                }
-                super.release();
-                this.surfaceTexture.release();
-                synchronized (HANDLER_LOCK) {
-                    HANDLE_HOLDER_COUNT--;
-                    if (HANDLE_HOLDER_COUNT == 0) {
-                        if (HANDLER != null) {
-                            HANDLER.recycle();
-                            HANDLER = null;
+                if (HANDLER == null) return;
+                HANDLE_HOLDER_COUNT--;
+                if (HANDLE_HOLDER_COUNT == 0) {
+                    HANDLER.recycle();
+                } else {
+                    HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GLESUtil.delTextureId(textureId);
                         }
-                    } else {
-                        HANDLER.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                GLESUtil.delTextureId(textureId);
-                            }
-                        });
-                    }
+                    });
                 }
             }
-        }
-
-        @Override
-        public synchronized boolean isValid() {
-            return super.isValid();
         }
 
         public static HolderSurface create() {
-            GLEnvHandler messageHandler = getGLEnvHandler();
-            return messageHandler.submitAndWait(new Callable<HolderSurface>() {
-                @Override
-                public HolderSurface call() {
-                    int textureId = GLESUtil.createExternalTextureId();
-                    SurfaceTexture surfaceTexture = new SurfaceTexture(textureId) {
-                        boolean release = false;
-                        boolean finalize = false;
-
-                        @Override
-                        public synchronized void release() {
-                            if (release || finalize) return;
-                            super.release();
-                            release = false;
-                        }
-
-                        @Override
-                        protected synchronized void finalize() throws Throwable {
-                            finalize = true;
-                            super.finalize();
-                        }
-                    };
-                    return new HolderSurface(surfaceTexture, textureId);
-                }
-            });
-
-        }
-
-        private static GLEnvHandler getGLEnvHandler() {
             synchronized (HANDLER_LOCK) {
-                if (HANDLER != null && !HANDLER.isRecycle()) {
-                    return HANDLER;
+                if (HANDLER == null || HANDLER.isRecycle()) {
+                    HANDLER = GLEnvHandler.create();
                 }
-                HANDLER = GLEnvHandler.create();
-                return HANDLER;
+                HolderSurface holderSurface = HANDLER.submitAndWait(new Callable<HolderSurface>() {
+                    @Override
+                    public HolderSurface call() {
+                        int textureId = GLESUtil.createExternalTextureId();
+                        SurfaceTexture surfaceTexture = new SurfaceTexture(textureId) {
+                            boolean release = false;
+                            boolean finalize = false;
+
+                            @Override
+                            public synchronized void release() {
+                                if (release || finalize) return;
+                                super.release();
+                                release = false;
+                            }
+
+                            @Override
+                            protected synchronized void finalize() throws Throwable {
+                                finalize = true;
+                                super.finalize();
+                            }
+                        };
+                        return new HolderSurface(surfaceTexture, textureId);
+                    }
+                });
+                HANDLE_HOLDER_COUNT++;
+                return holderSurface;
             }
         }
     }

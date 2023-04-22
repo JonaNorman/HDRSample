@@ -1,6 +1,7 @@
 package com.jonanorman.android.hdrsample.player;
 
 import android.os.Handler;
+import android.view.Surface;
 
 import com.jonanorman.android.hdrsample.player.source.FileSource;
 
@@ -12,10 +13,9 @@ public interface Player {
 
     void start();
 
+    void setSurface(Surface surface);
+
     void seek(float timeSecond);
-
-
-    void resume();
 
     void pause();
 
@@ -39,29 +39,12 @@ public interface Player {
 
     void setCallback(Callback callback, Handler handler);
 
-    void postFrame(Runnable runnable);
+    void postFrame(FrameRunnable runnable);
+
+    void waitFrame();
 
     interface Callback {
 
-        default void onPlayPrepare() {
-
-        }
-
-        default void onPlayStart() {
-
-        }
-
-        default void onPlayPause() {
-
-        }
-
-        default void onPlayResume() {
-
-        }
-
-        default void onPlayStop() {
-
-        }
 
         default void onPlayProcess(float timeSecond) {
 
@@ -76,6 +59,11 @@ public interface Player {
         default void onPlayError(Throwable throwable) {
 
         }
+    }
+
+    interface FrameRunnable {
+        void onFrameProcess(float timeSecond);
+
     }
 
 

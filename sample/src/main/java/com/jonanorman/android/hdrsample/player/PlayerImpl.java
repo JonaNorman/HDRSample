@@ -28,27 +28,6 @@ abstract class PlayerImpl implements Player {
             this.callback = callback;
         }
 
-        public void prepare() {
-            executeCallback(callback -> callback.onPlayPrepare());
-        }
-
-        public void start() {
-            executeCallback(callback -> callback.onPlayStart());
-        }
-
-        public void pause() {
-            executeCallback(callback -> callback.onPlayPause());
-        }
-
-
-        public void resume() {
-            executeCallback(callback -> callback.onPlayResume());
-        }
-
-        public void stop() {
-            executeCallback(callback -> callback.onPlayStop());
-        }
-
         public void process(float timeSecond) {
             executeCallback(callback -> callback.onPlayProcess(timeSecond));
         }
@@ -63,12 +42,6 @@ abstract class PlayerImpl implements Player {
         }
 
         final synchronized void executeCallback(CallbackListener listener) {
-            if (listener == null) {
-                return;
-            }
-            if (handler == null) {
-                return;
-            }
             handler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -100,7 +73,8 @@ abstract class PlayerImpl implements Player {
         }
 
         public synchronized void clean() {
-            resetSync();
+            firstPlaySystemTimeUs = 0;
+            firstPlayTimeUs = 0;
             currentTimeUs = 0;
         }
 

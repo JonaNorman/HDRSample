@@ -2,6 +2,7 @@ package com.jonanorman.android.hdrsample.player;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.view.Surface;
 
 import com.jonanorman.android.hdrsample.player.decode.AndroidDecoder;
 import com.jonanorman.android.hdrsample.player.decode.AndroidVideoDecoder;
@@ -10,18 +11,7 @@ import com.jonanorman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
 
-class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements AndroidVideoPlayer {
-
-    public static final String VIDEO_PLAYER = "AndroidVideoPlayer";
-
-    public AndroidVideoPlayerImpl() {
-        this(VIDEO_PLAYER);
-    }
-
-    public AndroidVideoPlayerImpl(String threadName) {
-        this(AndroidVideoDecoder.createVideoDecoder(), threadName);
-    }
-
+abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements AndroidVideoPlayer {
 
     public AndroidVideoPlayerImpl(AndroidDecoder decoder, String threadName) {
         super(decoder, AndroidVideoDemuxer.createVideoDemuxer(), threadName);
@@ -44,20 +34,6 @@ class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements AndroidVideoPl
 
     protected void onVideoDecoderConfigure(MediaFormat inputFormat) {
         androidDecoder.configure(new AndroidDecoder.Configuration(inputFormat, new VideoDecoderCallBack()));
-    }
-
-    protected void onOutputFormatChanged(MediaFormat mediaFormat) {
-
-    }
-
-
-    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
-        return true;
-    }
-
-    @Override
-    protected boolean onOutputBufferProcess(float timeSecond, boolean render) {
-        return true;
     }
 
 

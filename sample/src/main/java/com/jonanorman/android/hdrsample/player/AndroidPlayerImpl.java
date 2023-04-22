@@ -14,7 +14,9 @@ import com.jonanorman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     private static final String KEY_CSD_0 = "csd-0";
@@ -27,7 +29,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     private static final int PLAY_STOP = 5;
     private static final int PLAY_RELEASE = 6;
 
-    private final ConcurrentLinkedDeque<Runnable> postFrameQueue = new ConcurrentLinkedDeque();
+    private final ConcurrentLinkedDeque<FrameRunnable> postFrameQueue = new ConcurrentLinkedDeque();
     private final PlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
 
     private final TimeSyncer timeSyncer = new TimeSyncer();
@@ -38,7 +40,10 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     private Future stopFuture;
 
     private FileSource fileSource;
-    private Float seekSecond;
+    private AtomicReference<Float> seekSecond = new AtomicReference();
+
+    private AtomicReference<CountDownLatch> waitFrameLatch = new AtomicReference();
+
 
     MessageHandler playHandler;
 
@@ -47,7 +52,6 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         this.androidDemuxer = androidDemuxer;
         this.androidDecoder = decoder;
         this.threadName = threadName;
-
     }
 
     @Override
@@ -69,31 +73,28 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     @Override
     public synchronized void start() {
-        if (state != PLAY_PREPARE) {
-            return;
+        if (state == PLAY_UNINIT
+                || state == PLAY_STOP) {
+            prepare();
+            state = PLAY_START;
+            playHandler.post(this::onStart);
+        } else if (state == PLAY_PREPARE) {
+            state = PLAY_START;
+            playHandler.post(this::onStart);
+        } else if (isPause()) {
+            state = PLAY_RESUME;
+            playHandler.post(this::onResume);
         }
-        state = PLAY_START;
-        playHandler.post(this::onStart);
     }
 
 
     @Override
     public synchronized void seek(float timeSecond) {
         if (playHandler == null) {
-            seekSecond = timeSecond;
+            seekSecond.set(timeSecond);
             return;
         }
         playHandler.post(() -> onSeek(timeSecond));
-    }
-
-
-    @Override
-    public synchronized void resume() {
-        if (!isPause()) {
-            return;
-        }
-        state = PLAY_RESUME;
-        playHandler.post(this::onResume);
     }
 
 
@@ -129,6 +130,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
             playHandler.recycle();
             playHandler = null;
         }
+        notifyFrameSuccess();
     }
 
 
@@ -168,9 +170,29 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     }
 
     @Override
-    public void postFrame(Runnable runnable) {
+    public synchronized void postFrame(FrameRunnable runnable) {
         if (isRelease()) return;
         postFrameQueue.offer(runnable);
+    }
+
+    @Override
+    public void waitFrame() {
+        if (isRelease()) return;
+        CountDownLatch latch = new CountDownLatch(1);
+        waitFrameLatch.set(latch);
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+
+        }
+        waitFrameLatch.set(null);
+    }
+
+    private void notifyFrameSuccess() {
+        CountDownLatch latch = waitFrameLatch.getAndSet(null);
+        if (latch != null) {
+            latch.countDown();
+        }
     }
 
     @Override
@@ -205,20 +227,14 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         playHandler.addLifeCycleCallback(new MessageHandler.LifeCycleCallback() {
             @Override
             public void onHandlerFinish() {
-                internalRelease();
+                release();
             }
 
             @Override
             public void onHandlerError(Exception exception) {
-                internalRelease();
                 callBackHandler.error(exception);
             }
         });
-    }
-
-    private synchronized void internalRelease() {
-        state = PLAY_RELEASE;
-        onRelease();
     }
 
     private void waitLastPlayStop() {
@@ -246,18 +262,14 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, androidDemuxer.getCsd0Buffer());
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, androidDemuxer.getCsd1Buffer());
         onInputFormatConfigure(mediaFormat);
-        callBackHandler.prepare();
-        synchronized (this) {
-            if (seekSecond != null) {
-                onSeek(seekSecond);
-                seekSecond = null;
-            }
+        Float second = seekSecond.getAndSet(null);
+        if (second != null) {
+            onSeek(second);
         }
     }
 
     protected void onStart() {
         androidDecoder.start();
-        callBackHandler.start();
     }
 
     protected void onSeek(float timeSecond) {
@@ -268,19 +280,16 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     protected void onResume() {
         androidDecoder.resume();
-        callBackHandler.resume();
     }
 
     protected void onPause() {
         androidDecoder.pause();
-        callBackHandler.pause();
         timeSyncer.resetSync();
     }
 
 
     protected void onStop() {
         androidDecoder.stop();
-        callBackHandler.stop();
         androidDemuxer.seekToPreviousSync(0);
         timeSyncer.clean();
     }
@@ -312,18 +321,19 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
                 } catch (InterruptedException e) {
                 }
             }
-            return render && sleepTime > -100&& isPlaying();
+            return render && sleepTime > -60 && isPlaying();
         }
 
         @Override
         public void onOutputBufferRelease(long presentationTimeUs, boolean render) {
             float timeSecond = TimeUtil.microToSecond(presentationTimeUs);
-            if (onOutputBufferProcess(timeSecond,  render)){
+            if (onOutputBufferProcess(timeSecond, render)) {
                 callBackHandler.process(timeSecond);
                 while (!postFrameQueue.isEmpty()) {
-                    Runnable runnable = postFrameQueue.poll();
-                    runnable.run();
+                    FrameRunnable runnable = postFrameQueue.poll();
+                    runnable.onFrameProcess(timeSecond);
                 }
+                notifyFrameSuccess();
             }
         }
 
