@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.opengl.GLES20;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,10 +11,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvConfig;
-import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvDisplay;
-import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvManager;
 
 import java.util.ArrayList;
 import java.util.List;

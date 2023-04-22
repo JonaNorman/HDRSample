@@ -45,7 +45,7 @@ class AndroidVideoDemuxerImpl implements AndroidVideoDemuxer {
                     fileSourceDescriptor.getStartOffset(),
                     fileSourceDescriptor.getLength());
         } catch (IOException e) {
-            ThrowableUtil.throwException(e);
+            ThrowableUtil.throwRuntimeException(e);
         } finally {
             if (fileSourceDescriptor != null) {
                 fileSourceDescriptor.close();

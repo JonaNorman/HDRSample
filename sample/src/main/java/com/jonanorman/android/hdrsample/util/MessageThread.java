@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -20,6 +21,10 @@ class MessageThread extends android.os.HandlerThread {
 
     public void addErrorCallback(ErrorCallback errorCallback) {
         errorCallbackList.add(errorCallback);
+    }
+
+    public void removeErrorCallback(ErrorCallback errorCallback) {
+        errorCallbackList.remove(errorCallback);
     }
 
     public boolean isTerminated() {
@@ -50,7 +55,6 @@ class MessageThread extends android.os.HandlerThread {
     }
 
     public FutureTask createFutureTask(Runnable runnable) {
-
         return createFutureTask(runnable, true);
     }
 
@@ -60,7 +64,7 @@ class MessageThread extends android.os.HandlerThread {
     }
 
     public <T> FutureTask<T> createFutureTask(Callable<T> callable) {
-        return new FutureTaskImpl<T>(callable);
+        return new FutureTaskImpl(callable);
     }
 
     class FutureTaskImpl<T> extends FutureTask<T> {
@@ -81,6 +85,11 @@ class MessageThread extends android.os.HandlerThread {
             }else {
                 futureList.add(this);
             }
+        }
+
+        @Override
+        protected void setException(Throwable t) {
+            ThrowableUtil.throwRuntimeException(t);
         }
 
         @Override

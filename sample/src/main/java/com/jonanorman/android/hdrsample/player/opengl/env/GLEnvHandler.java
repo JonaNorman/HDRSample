@@ -24,7 +24,7 @@ public interface GLEnvHandler {
 
     <T> Future<T> submit(Callable<T> callable);
 
-    Future<GLEnvContext> getEnvContext();
+    GLEnvContext getEnvContext();
 
     <T> T submitAndWait(Callable<T> callable);
 

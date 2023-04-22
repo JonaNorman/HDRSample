@@ -5,7 +5,6 @@ import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -306,7 +305,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 return MediaCodec.createDecoderByType(mimeType);
             }
         } catch (IOException e) {
-            ThrowableUtil.throwException(e);
+            ThrowableUtil.throwRuntimeException(e);
         }
         return null;
     }

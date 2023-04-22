@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 
-import com.jonanorman.android.hdrsample.player.Player;
 import com.jonanorman.android.hdrsample.util.ThrowableUtil;
 
 import java.io.FileDescriptor;
@@ -35,7 +34,7 @@ class AssetFileSource implements FileSource {
                 }
             } catch (IOException ex) {
             }
-            ThrowableUtil.throwException(e);
+            ThrowableUtil.throwRuntimeException(e);
             return null;
         }
     }

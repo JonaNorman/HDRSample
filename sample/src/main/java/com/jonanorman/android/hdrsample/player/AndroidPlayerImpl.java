@@ -204,7 +204,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         playHandler = MessageHandler.obtain(threadName);
         playHandler.addLifeCycleCallback(new MessageHandler.LifeCycleCallback() {
             @Override
-            public void onHandlerRecycle() {
+            public void onHandlerFinish() {
                 internalRelease();
             }
 
@@ -330,7 +330,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
         @Override
         public void onError(Exception exception) {
-            ThrowableUtil.throwException(exception);
+            ThrowableUtil.throwRuntimeException(exception);
         }
 
         @Override

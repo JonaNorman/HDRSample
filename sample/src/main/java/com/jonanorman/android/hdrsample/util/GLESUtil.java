@@ -22,9 +22,6 @@ public class GLESUtil {
 
     private static final int FLOAT_SIZE = 4;
     private static final int SHORT_SIZE = 2;
-
-    private static final float[] IDENTITY_MATRIX = GLESUtil.createGLMatrix();
-
     public static int createVertexShader(String shaderCode) {
         return compileShaderCode(GLES20.GL_VERTEX_SHADER, shaderCode);
     }
@@ -205,7 +202,7 @@ public class GLESUtil {
         return buffer[0];
     }
 
-    public static void deleteFrameBufferBufferId(int bufferId) {
+    public static void deleteFrameBufferId(int bufferId) {
         if (bufferId <= 0) {
             return;
         }
@@ -235,32 +232,23 @@ public class GLESUtil {
     }
 
 
+    public static FloatBuffer createDirectFloatBuffer(float[] data) {
+        FloatBuffer buffer = ByteBuffer
+                .allocateDirect(data.length * FLOAT_SIZE)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        buffer.put(data);
+        buffer.clear();
+        return buffer;
+    }
+
+
     public static FloatBuffer createDirectFloatBuffer(int size) {
         FloatBuffer buffer = ByteBuffer
                 .allocateDirect(size * FLOAT_SIZE)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
         return buffer;
-    }
-
-
-    public static float[] createGLMatrix() {
-        float[] matrix = new float[16];
-        Matrix.setIdentityM(matrix, 0);
-        return matrix;
-    }
-
-    public static void copyGLMatrix(float[] src,float[] dst){
-        System.arraycopy(src,0,dst,0,dst.length);
-    }
-
-    public static boolean isIdentityMatrix(float[] matrix) {
-        return Arrays.equals(IDENTITY_MATRIX, matrix);
-    }
-
-
-    public static void transposeMatrix(float[] inputMatrix, float[] outputMatrix) {
-        Matrix.transposeM(outputMatrix, 0, inputMatrix, 0);
     }
 
 

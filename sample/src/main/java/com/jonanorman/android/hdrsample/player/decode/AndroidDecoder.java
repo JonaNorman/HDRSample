@@ -30,11 +30,12 @@ public interface AndroidDecoder extends Decoder {
 
         void onOutputBufferRelease(long presentationTimeUs, boolean render);
 
+        void onOutputBufferEndOfStream();
+
         void onOutputFormatChanged(MediaFormat format);
 
         void onError(Exception exception);
 
-        void  onOutputBufferEndOfStream();
     }
 
 

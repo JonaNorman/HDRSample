@@ -3,7 +3,7 @@ package com.jonanorman.android.hdrsample.player.opengl.env;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
 
-public interface GLEnvManager {
+public interface GLEnvAttachManager {
     void attachCurrentThread();
 
     void detachCurrentThread();
@@ -16,24 +16,24 @@ public interface GLEnvManager {
 
     GLEnvContext getEnvContext();
 
-    static GLEnvManager create() {
-        GLEnvManager.Builder builder = new GLEnvManager.Builder();
+    static GLEnvAttachManager create() {
+        GLEnvAttachManager.Builder builder = new GLEnvAttachManager.Builder();
         return builder.build();
     }
 
-    static GLEnvManager create(@GLEnvContext.OpenGLESVersion int version) {
-        GLEnvManager.Builder builder = new GLEnvManager.Builder();
+    static GLEnvAttachManager create(@GLEnvContext.OpenGLESVersion int version) {
+        GLEnvAttachManager.Builder builder = new GLEnvAttachManager.Builder();
         builder.setClientVersion(version);
         return builder.build();
     }
 
-    static GLEnvManager create(GLEnvConfigChooser configChooser) {
-        GLEnvManager.Builder builder = new GLEnvManager.Builder(configChooser);
+    static GLEnvAttachManager create(GLEnvConfigChooser configChooser) {
+        GLEnvAttachManager.Builder builder = new GLEnvAttachManager.Builder(configChooser);
         return builder.build();
     }
 
-    static GLEnvManager create(@GLEnvContext.OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
-        GLEnvManager.Builder builder = new GLEnvManager.Builder(configChooser);
+    static GLEnvAttachManager create(@GLEnvContext.OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
+        GLEnvAttachManager.Builder builder = new GLEnvAttachManager.Builder(configChooser);
         builder.setClientVersion(version);
         return builder.build();
     }
@@ -76,10 +76,10 @@ public interface GLEnvManager {
             this.version = version;
         }
 
-        public GLEnvManager build() {
+        public GLEnvAttachManager build() {
             GLEnvContext.Builder builder = new GLEnvContext.Builder(envDisplay, envConfig, shareContext);
             builder.setClientVersion(version);
-            return new EnvManagerImpl(builder.build());
+            return new EnvAttachManagerImpl(builder.build());
         }
     }
 }

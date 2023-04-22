@@ -240,13 +240,15 @@ public class Matrix4 implements Cloneable {
         return this;
     }
 
-    public void getInvert(Matrix4 matrix4) {
+    public Matrix4 getInvert(Matrix4 matrix4) {
         Matrix.invertM(matrix4.get(), 0, currentMatrix, 0);
+        return this;
     }
 
-    public void invert() {
+    public Matrix4 invert() {
         Matrix.invertM(tempMatrix, 0, currentMatrix, 0);
         System.arraycopy(tempMatrix, 0, currentMatrix, 0, MATRIX_LENGTH);
+        return this;
     }
 
     public void mapPoints(float[] point) {

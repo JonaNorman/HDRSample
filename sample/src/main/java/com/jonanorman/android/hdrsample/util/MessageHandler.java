@@ -4,7 +4,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Printer;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -13,17 +12,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class MessageHandler {
 
 
-    private static final String MESSAGE_HANDLER_PREFIX = "MessageHandler";
-    private static final String ALL_MESSAGE_PREFIX = MESSAGE_HANDLER_PREFIX + "(Total messages: ";
 
     private final Object lock = new Object();
     private final MessageThreadPool threadPool;
@@ -33,7 +28,7 @@ public class MessageHandler {
     private final Handler handler;
     private boolean recycle = false;
     private boolean start = false;
-    private AtomicInteger autoMessageId = new AtomicInteger();
+
 
     MessageHandler(MessageThreadPool threadPool, String threadName) {
         this(threadPool, threadName, null);
@@ -70,10 +65,10 @@ public class MessageHandler {
             @Override
             public void dispatchMessage(@NonNull Message msg) {
                 if (!start) {
-                    start = true;
                     for (LifeCycleCallback lifeCycleCallback : lifeCycleCallbackList) {
                         lifeCycleCallback.onHandlerStart();
                     }
+                    start = true;
                 }
                 super.dispatchMessage(msg);
             }
@@ -233,34 +228,6 @@ public class MessageHandler {
         return handler.hasMessages(what);
     }
 
-    public final boolean hasMessagesOrCallbacks() {
-        if (isRecycle()) {
-            return false;
-        }
-        AtomicInteger count = new AtomicInteger();
-        handler.getLooper().dump(new Printer() {
-            @Override
-            public void println(String str) {
-                boolean startsWith = str.startsWith(ALL_MESSAGE_PREFIX);
-                if (startsWith) {
-                    StringBuffer buffer = new StringBuffer();
-                    for (int i = ALL_MESSAGE_PREFIX.length(); i < str.length(); i++) {
-                        char chr = str.charAt(i);
-                        if (chr >= 48 && chr <= 57) {
-                            buffer.append(chr);
-                        } else if (chr == 44) {
-                            break;
-                        }
-                    }
-                    if (buffer.length() > 0) {
-                        count.set(Integer.valueOf(buffer.toString()));
-                    }
-                }
-            }
-        }, MESSAGE_HANDLER_PREFIX);
-        return count.get() > 0;
-    }
-
 
     public final boolean hasMessages(int what, Object object) {
         if (isRecycle()) {
@@ -292,10 +259,12 @@ public class MessageHandler {
             return false;
         }
         try {
-            runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
+            if (timeout<=0){
+                runnableFuture.get();
+            }else {
+                runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
+            }
             return true;
-        } catch (ExecutionException e) {
-            ThrowableUtil.throwException(e);
         } catch (Exception e) {
         }
         return false;
@@ -315,11 +284,13 @@ public class MessageHandler {
             return false;
         }
         try {
-            runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
+            if (timeout<=0){
+                runnableFuture.get();
+            }else {
+                runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
+            }
             return true;
-        } catch (ExecutionException e) {
-            ThrowableUtil.throwException(e);
-        } catch (Exception e) {
+        }  catch (Exception e) {
         }
         return false;
     }
@@ -361,8 +332,6 @@ public class MessageHandler {
         post(runnableFuture);
         try {
             return runnableFuture.get();
-        } catch (ExecutionException e) {
-            ThrowableUtil.throwException(e);
         } catch (Exception e) {
         }
         return null;
@@ -391,7 +360,7 @@ public class MessageHandler {
             if (recycle) {
                 return false;
             }
-            post(new Runnable() {
+            execute(new Runnable() {
                 @Override
                 public void run() {
                     if (!start) {
@@ -401,7 +370,7 @@ public class MessageHandler {
                     while (iterator.hasNext()) {
                         LifeCycleCallback callback = iterator.next();
                         lifeCycleCallbackList.remove(callback);
-                        callback.onHandlerRecycle();
+                        callback.onHandlerFinish();
                     }
                 }
             });
@@ -437,10 +406,6 @@ public class MessageHandler {
         synchronized (lock) {
             return recycle || thread.isTerminated();
         }
-    }
-
-    public Handler getHandler() {
-        return handler;
     }
 
     public static MessageHandler obtain() {
@@ -507,17 +472,13 @@ public class MessageHandler {
     }
 
 
-    public int getAutoMessageId() {
-        return autoMessageId.incrementAndGet();
-    }
-
     public interface LifeCycleCallback {
 
         default void onHandlerStart() {
 
         }
 
-        default void onHandlerRecycle() {
+        default void onHandlerFinish() {
 
         }
 

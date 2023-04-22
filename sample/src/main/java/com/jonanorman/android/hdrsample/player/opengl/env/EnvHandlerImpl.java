@@ -5,11 +5,14 @@ import android.opengl.EGLContext;
 import com.jonanorman.android.hdrsample.util.MessageHandler;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.RunnableFuture;
 
 class EnvHandlerImpl implements GLEnvHandler, MessageHandler.LifeCycleCallback {
     MessageHandler messageHandler;
-    GLEnvManager manager;
+    GLEnvAttachManager manager;
 
     private GLEnvDisplay envDisplay;
     private GLEnvConfig envConfig;
@@ -26,6 +29,12 @@ class EnvHandlerImpl implements GLEnvHandler, MessageHandler.LifeCycleCallback {
         this.version = version;
         messageHandler = MessageHandler.obtain();
         messageHandler.addLifeCycleCallback(this);
+        envContextFuture = submit(new Callable<GLEnvContext>() {
+            @Override
+            public GLEnvContext call() {
+                return manager.getEnvContext();
+            }
+        });
     }
 
 
@@ -65,18 +74,14 @@ class EnvHandlerImpl implements GLEnvHandler, MessageHandler.LifeCycleCallback {
     }
 
     @Override
-    public Future<GLEnvContext> getEnvContext() {
+    public GLEnvContext getEnvContext() {
         synchronized (this) {
-            if (envContextFuture != null) {
-                return envContextFuture;
+            try {
+                return envContextFuture.get();
+            } catch (Exception e) {
+
             }
-            envContextFuture = submit(new Callable<GLEnvContext>() {
-                @Override
-                public GLEnvContext call() throws Exception {
-                    return manager.getEnvContext();
-                }
-            });
-            return envContextFuture;
+            return null;
         }
     }
 
@@ -92,18 +97,17 @@ class EnvHandlerImpl implements GLEnvHandler, MessageHandler.LifeCycleCallback {
 
 
     @Override
-    public void onHandlerRecycle() {
+    public void onHandlerFinish() {
         manager.release();
     }
 
     @Override
     public void onHandlerError(Exception exception) {
-        manager.release();
     }
 
     @Override
     public void onHandlerStart() {
-        GLEnvManager.Builder builder = new GLEnvManager.Builder(envDisplay, envConfig, eglContext);
+        GLEnvAttachManager.Builder builder = new GLEnvAttachManager.Builder(envDisplay, envConfig, eglContext);
         builder.setClientVersion(version);
         manager = builder.build();
         manager.attachCurrentThread();

@@ -3,9 +3,9 @@ package com.jonanorman.android.hdrsample.player.opengl.env;
 import android.opengl.EGL14;
 import android.opengl.EGLSurface;
 
-class EnvManagerImpl implements GLEnvManager {
+class EnvAttachManagerImpl implements GLEnvAttachManager {
 
-    static ThreadLocal<EnvManagerImpl> GLENVMANAGER_THREAD_LOCAL = new ThreadLocal<>();
+    static ThreadLocal<EnvAttachManagerImpl> GLENVMANAGER_THREAD_LOCAL = new ThreadLocal<>();
     GLEnvContext envContext;
     GLEnvDisplay envDisplay;
     EGLSurface eglSurface;
@@ -13,7 +13,7 @@ class EnvManagerImpl implements GLEnvManager {
     Thread attachThread;
     boolean release;
 
-    public EnvManagerImpl(GLEnvContext envContext) {
+    public EnvAttachManagerImpl(GLEnvContext envContext) {
         this.envContext = envContext;
         envDisplay = envContext.getEnvDisplay();
         if (envDisplay.isSupportSurfacelessContext()) {
@@ -31,12 +31,14 @@ class EnvManagerImpl implements GLEnvManager {
         if (release) {
             return;
         }
-        EnvManagerImpl lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
+        EnvAttachManagerImpl lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
         if (lastEnvManager == this) {
             return;
         }
         if (lastEnvManager != null) {
-            lastEnvManager.attachThread = null;
+            synchronized (lastEnvManager){
+                lastEnvManager.attachThread = null;
+            }
         }
         envContext.makeCurrent(eglSurface);
         GLENVMANAGER_THREAD_LOCAL.set(this);
@@ -51,7 +53,7 @@ class EnvManagerImpl implements GLEnvManager {
         if (attachThread != null && attachThread != Thread.currentThread()) {
             throw new IllegalThreadStateException("detach must in " + attachThread.getName());
         }
-        GLEnvManager lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
+        GLEnvAttachManager lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
         if (lastEnvManager != this) {
             return;
         }
@@ -79,7 +81,7 @@ class EnvManagerImpl implements GLEnvManager {
     public synchronized void release() {
         if (release) return;
         release = true;
-        GLEnvManager lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
+        GLEnvAttachManager lastEnvManager = GLENVMANAGER_THREAD_LOCAL.get();
         if (lastEnvManager == this) {
             GLENVMANAGER_THREAD_LOCAL.set(null);
             if (attachThread != null) {
