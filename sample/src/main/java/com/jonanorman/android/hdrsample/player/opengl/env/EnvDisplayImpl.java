@@ -11,6 +11,8 @@ class EnvDisplayImpl implements GLEnvDisplay {
 
     private static final String EXTENSION_COLOR_SPACE_BT2020_PQ = "EGL_EXT_gl_colorspace_bt2020_pq";
 
+    private static final String EXTENSION_YUV_TARGET = "GL_EXT_YUV_target";
+
     private static final String EGL_KHR_surfaceless_context = "EGL_KHR_surfaceless_context";
 
 
@@ -23,7 +25,9 @@ class EnvDisplayImpl implements GLEnvDisplay {
 
     private String eglExtensions;
 
-    private boolean supportT2020PQ;
+    private boolean supportBT2020PQ;
+
+    private boolean supportYUVTarget;
 
     public EnvDisplayImpl() {
         this(EGL14.EGL_DEFAULT_DISPLAY);
@@ -61,7 +65,8 @@ class EnvDisplayImpl implements GLEnvDisplay {
         }
         eglExtensions = EGL14.eglQueryString(eglDisplay, EGL10.EGL_EXTENSIONS);
         eglExtensions = TextUtils.isEmpty(eglExtensions) ? "" : eglExtensions;
-        supportT2020PQ = eglExtensions.contains(EXTENSION_COLOR_SPACE_BT2020_PQ);
+        supportBT2020PQ = eglExtensions.contains(EXTENSION_COLOR_SPACE_BT2020_PQ);
+        supportYUVTarget =  eglExtensions.contains(EXTENSION_YUV_TARGET);
         supportSurfacelessContext = eglExtensions.contains(EGL_KHR_surfaceless_context);
     }
 
@@ -94,12 +99,17 @@ class EnvDisplayImpl implements GLEnvDisplay {
 
     @Override
     public boolean isSupportBT2020PQ() {
-        return supportT2020PQ;
+        return supportBT2020PQ;
     }
 
     @Override
     public boolean isSupportSurfacelessContext() {
         return supportSurfacelessContext;
+    }
+
+    @Override
+    public boolean isSupportYUVTarget() {
+        return supportYUVTarget;
     }
 
     @Override

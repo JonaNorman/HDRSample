@@ -1,4 +1,4 @@
-package com.jonanorman.android.hdrsample;
+package com.jonanorman.android.hdrsample.player;
 
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
@@ -8,8 +8,7 @@ import com.jonanorman.android.hdrsample.util.Matrix4;
 
 import java.nio.FloatBuffer;
 
-
-public class OESTextureRenderer {
+public class AndroidTexturePlayerRenderer {
 
     private static final int VERTEX_LENGTH = 2;
 
@@ -41,7 +40,7 @@ public class OESTextureRenderer {
                     "    mat3 tonemap = mat3(1.6605, -0.1246, -0.0182,\n" +
                     "    -0.5876,  1.1329, -0.1006,\n" +
                     "   -0.0728, -0.0083,  1.1187);\n" +
-                    "   vec3 tonemapColor = tonemap * textureColor.rgb;\n"+
+                    "   vec3 tonemapColor = tonemap * textureColor.rgb;\n" +
                     "    gl_FragColor = vec4(tonemapColor.rgb,textureColor.a);\n" +
                     "}";
 
@@ -78,9 +77,9 @@ public class OESTextureRenderer {
 
     private boolean release;
 
-   private Matrix4 textureMatrix = new Matrix4();
+    private Matrix4 textureMatrix = new Matrix4();
 
-    public OESTextureRenderer() {
+    public AndroidTexturePlayerRenderer() {
         positionCoordinateBuffer = GLESUtil.createDirectFloatBuffer(POSITION_COORDINATES);
         textureCoordinateBuffer = GLESUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
@@ -150,6 +149,5 @@ public class OESTextureRenderer {
         release = true;
         GLESUtil.delProgramId(programId);
     }
-
 
 }

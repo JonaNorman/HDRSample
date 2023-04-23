@@ -14,8 +14,8 @@ import com.jonanorman.android.hdrsample.util.MediaFormatUtil;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Callable;
 
-class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements AndroidVideoSurfacePlayer {
-    public static final String SURFACE_PLAYER = "AndroidSurfacePlayer";
+class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements AndroidSurfacePlayer {
+    private static final String SURFACE_PLAYER = "AndroidSurfacePlayer";
 
     private Surface surface;
 

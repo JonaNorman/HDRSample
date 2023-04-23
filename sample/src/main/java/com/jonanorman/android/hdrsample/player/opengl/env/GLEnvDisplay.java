@@ -24,6 +24,8 @@ public interface GLEnvDisplay {
 
     boolean isSupportSurfacelessContext();
 
+    boolean isSupportYUVTarget();
+
     String getEGLExtensions();
 
     boolean isRelease();

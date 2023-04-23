@@ -125,6 +125,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         if (isRelease()){
             return;
         }
+        this.repeat = repeat;
 
     }
 
