@@ -3,7 +3,6 @@ package com.jonanorman.android.hdrsample.player;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
-import com.jonanorman.android.hdrsample.player.opengl.env.GLEnvDisplay;
 import com.jonanorman.android.hdrsample.util.GLESUtil;
 import com.jonanorman.android.hdrsample.util.Matrix4;
 
@@ -31,80 +30,6 @@ public class AndroidTexturePlayerRenderer {
     };
 
 
-    private final static String OES_FRAGMENT_SHADER =
-            "#extension GL_OES_EGL_image_external : require\n" +
-                    "precision mediump float;\n" +
-                    "varying highp vec2 textureCoordinate;\n" +
-                    "uniform samplerExternalOES inputImageTexture;\n" +
-                    "\n" +
-                    "void main()\n" +
-                    "{\n" +
-                    "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-                    "    mat3 tonemap = mat3(1.6605, -0.1246, -0.0182,\n" +
-                    "    -0.5876,  1.1329, -0.1006,\n" +
-                    "   -0.0728, -0.0083,  1.1187);\n" +
-                    "   vec3 tonemapColor = tonemap * textureColor.rgb;\n" +
-                    "    gl_FragColor = vec4(tonemapColor.rgb,textureColor.a);\n" +
-                    "}";
-
-    private static final String OES_VERTEX_SHADER = "precision mediump float;\n" +
-            "attribute vec4 position;\n" +
-            "attribute vec4 inputTextureCoordinate;\n" +
-            "uniform mat4 textureMatrix;\n" +
-            "\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    gl_Position = position;\n" +
-            "    textureCoordinate = (textureMatrix*inputTextureCoordinate).xy;\n" +
-            "}";
-
-
-    private static final String EXT_2DY2Y_VERTEX_SHADER = "#version 300 es\n" +
-            "in vec4 position;\n" +
-            "in vec4 inputTextureCoordinate;\n" +
-            "uniform mat4 textureMatrix;\n" +
-            "out vec2 textureCoordinate;\n" +
-            "void main() {\n" +
-            "    gl_Position =position;\n" +
-            "    textureCoordinate =(textureMatrix*inputTextureCoordinate).xy;\n" +
-            "}";
-
-    private static final String EXT_2DY2Y_FRAGMENT_SHADER = "#version 300 es\n" +
-            "#extension GL_OES_EGL_image_external : require\n" +
-            "#extension GL_EXT_YUV_target : require\n" +
-            "precision highp float;\n" +
-            "\n" +
-            "uniform __samplerExternal2DY2YEXT inputImageTexture;\n" +
-            "\n" +
-            "in  vec2 textureCoordinate;\n" +
-            "out vec4 outColor;\n" +
-            "\n" +
-            "vec4 yuv_to_rgb(vec4 yuv){\n" +
-            "    mat4 colorMat = mat4(\n" +
-            "    1.167808, 1.167808, 1.167808, 0.0,\n" +
-            "    0.0, -0.187877, 2.148072, 0.0,\n" +
-            "    1.683611, -0.652337, 0.000000, 0.0,\n" +
-            "    -0.915688, 0.347458, -1.148145, 1.0\n" +
-            "    );\n" +
-            "    return colorMat* yuv;\n" +
-            "}\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    vec4 yuv  = texture(inputImageTexture, textureCoordinate);\n" +
-            "    vec4 rgb = yuv_to_rgb(yuv);\n" +
-            "    mat3 tonemap = mat3(1.6605, -0.1246, -0.0182,\n" +
-            "    -0.5876,  1.1329, -0.1006,\n" +
-            "   -0.0728, -0.0083,  1.1187);\n" +
-            "   vec3 tonemapColor = tonemap * rgb.rgb;\n" +
-            "    outColor = vec4(tonemapColor.rgb,rgb.a);\n" +
-            "}\n" +
-            "\n";
-
-
-
     private FloatBuffer textureCoordinateBuffer;
     private FloatBuffer positionCoordinateBuffer;
 
@@ -112,6 +37,8 @@ public class AndroidTexturePlayerRenderer {
     private int textureCoordinateAttribute;
     private int textureUnitUniform;
     private int textureMatrixUniform;
+    private int contentLuminanceUniform;
+    private int screenLuminanceUniform;
 
     private int programId;
 
@@ -121,6 +48,8 @@ public class AndroidTexturePlayerRenderer {
 
     private int width;
     private int height;
+    private float contentLuminance;
+    private float screenLuminance;
 
     private boolean release;
 
@@ -131,9 +60,9 @@ public class AndroidTexturePlayerRenderer {
         textureCoordinateBuffer = GLESUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
         String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);
         if (extensions != null && extensions.contains(EXTENSION_YUV_TARGET)){
-            this.programId = GLESUtil.createProgramId(EXT_2DY2Y_VERTEX_SHADER, EXT_2DY2Y_FRAGMENT_SHADER);
+            this.programId = GLESUtil.createProgramId(Shader.EXT_2DY2Y_VERTEX_SHADER, Shader.EXT_2DY2Y_FRAGMENT_SHADER);
         }else {
-            this.programId = GLESUtil.createProgramId(OES_VERTEX_SHADER, OES_FRAGMENT_SHADER);
+            this.programId = GLESUtil.createProgramId(Shader.OES_VERTEX_SHADER, Shader.OES_FRAGMENT_SHADER);
         }
 
     }
@@ -141,6 +70,15 @@ public class AndroidTexturePlayerRenderer {
     public void setSurfaceSize(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+
+    public void setContentLuminance(int contentLuminance){
+        this.contentLuminance = contentLuminance;
+    }
+
+    public void setScreenLuminance(float screenLuminance) {
+        this.screenLuminance = screenLuminance <=0?100: screenLuminance;
     }
 
     public void setTextureId(int textureId) {
@@ -168,7 +106,8 @@ public class AndroidTexturePlayerRenderer {
             textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
             textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
             textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
-
+            screenLuminanceUniform = GLES20.glGetUniformLocation(programId, "screenLuminance");
+            contentLuminanceUniform = GLES20.glGetUniformLocation(programId, "contentLuminance");
         }
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
@@ -182,6 +121,8 @@ public class AndroidTexturePlayerRenderer {
             GLES20.glUniform1i(textureUnitUniform, 0);
         }
         GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
+        GLES20.glUniform1f(contentLuminanceUniform, contentLuminance);
+        GLES20.glUniform1f(screenLuminanceUniform, screenLuminance);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         if (textureCoordinateAttribute >= 0) {

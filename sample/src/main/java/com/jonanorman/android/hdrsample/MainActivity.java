@@ -12,6 +12,8 @@ import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.jonanorman.android.hdrsample.util.AppUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 
