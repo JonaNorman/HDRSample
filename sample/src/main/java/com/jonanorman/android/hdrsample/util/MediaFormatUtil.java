@@ -1,11 +1,18 @@
 package com.jonanorman.android.hdrsample.util;
 
+import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.text.TextUtils;
 
 import java.nio.ByteBuffer;
 
 public class MediaFormatUtil {
+
+    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010 = 0x11F;
+    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010_UBWC = 0x124;
+    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010_VENUS = 0x7FA30C0A;
+
+    private static final int HAL_PIXEL_FORMAT_YCbCr_420_TP10_UBWC = 0x7FA30C09;
 
     public static int getInteger(MediaFormat mediaFormat, String name) {
         return getInteger(mediaFormat, name, 0);
@@ -87,5 +94,17 @@ public class MediaFormatUtil {
             return;
         }
         mediaFormat.setByteBuffer(name, buffer);
+    }
+
+    public static boolean isYuv420P10ColorFormat(MediaFormat mediaFormat) {
+        if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
+            return false;
+        }
+        int colorFormat = getInteger(mediaFormat, MediaFormat.KEY_COLOR_FORMAT);
+        return colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010
+                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010_UBWC
+                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010_VENUS
+                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_TP10_UBWC
+                || colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010;
     }
 }

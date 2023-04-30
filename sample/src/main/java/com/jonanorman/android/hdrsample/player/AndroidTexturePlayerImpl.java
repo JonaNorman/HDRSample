@@ -17,6 +17,7 @@ import com.jonanorman.android.hdrsample.util.ScreenBrightnessObserver;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 
 class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements AndroidTexturePlayer {
 
@@ -128,49 +129,10 @@ class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements Android
             hdrStaticInfo.clear();
             hdrStaticInfo.position(1);
             hdrStaticInfo.limit(hdrStaticInfo.capacity());
-            ByteBuffer buffer = ByteBuffer.allocate(24);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
-            buffer.put(hdrStaticInfo);
-            buffer.clear();
-            texturePlayerRenderer.setContentLuminance(buffer.asShortBuffer().get(11));
+            hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
+            ShortBuffer shortBuffer = hdrStaticInfo.asShortBuffer();
+            texturePlayerRenderer.setContentLuminance(shortBuffer.get(11));//maxFrameAverageLuminance
         }
-
-
-        // TODO: 2023/4/30
-//        decodeColorFormat = getInteger(decodeFormat, extractorFormat, MediaFormat.KEY_COLOR_FORMAT);
-//        if (!isColorFormatYuv420(decodeColorFormat)) {
-//            throw new RuntimeException("can not support color format " + decodeColorFormat);
-//        }
-//        boolean yuv420p10 = false;
-//        if (isColorFormatYuv420P10(decodeColorFormat)) {
-//            yuv420p10 = true;
-//            decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
-//        }
-//        decodeColorStandard = getInteger(decodeFormat, extractorFormat, MediaFormat.KEY_COLOR_STANDARD);
-//        if (decodeColorStandard == -1 || decodeColorStandard == 0) {
-//            decodeColorStandard = MediaFormat.COLOR_STANDARD_BT709;
-//        }
-//        decodeColorRange = getInteger(decodeFormat, extractorFormat, MediaFormat.KEY_COLOR_RANGE);
-//        if (decodeColorRange == -1 || decodeColorRange == 0) {
-//            decodeColorRange = MediaFormat.COLOR_RANGE_LIMITED;
-//        }
-//        decodeColorTransfer = getInteger(decodeFormat, extractorFormat, MediaFormat.KEY_COLOR_TRANSFER);
-//        if (decodeColorTransfer == -1 || decodeColorTransfer == 0) {
-//            decodeColorTransfer = MediaFormat.COLOR_TRANSFER_SDR_VIDEO;
-//        }
-//
-//        //            hdrStaticInfo.putShort((short) ((primaryRChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((primaryRChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((primaryGChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((primaryGChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((primaryBChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((primaryBChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((whitePointChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) ((whitePointChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-////            hdrStaticInfo.putShort((short) (maxMasteringLuminance() + 0.5f));
-////            hdrStaticInfo.putShort((short) (minMasteringLuminance() + 0.5f));
-////            hdrStaticInfo.putShort((short) maxContentLuminance());
-////            hdrStaticInfo.putShort((short) maxFrameAverageLuminance());
 
     }
 
