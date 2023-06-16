@@ -7,7 +7,7 @@ android {
     buildToolsVersion = "33.0.1"
 
     defaultConfig {
-        applicationId "com.jonanorman.android.hdrsample"
+        applicationId "com.norman.android.hdrsample"
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 1

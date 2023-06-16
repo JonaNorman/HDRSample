@@ -4,52 +4,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+
+    <com.norman.android.hdrsample.player.view.VideoSurfaceView
+        android:id="@+id/SurfaceView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-
-            <com.jonanorman.android.hdrsample.player.view.VideoSurfaceView
-                android:id="@+id/SurfaceView1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-            </com.jonanorman.android.hdrsample.player.view.VideoSurfaceView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="真HDR"
-                android:textColor="@android:color/white">
-
-            </TextView>
-
-        </FrameLayout>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-        </LinearLayout>
-
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-
-    </LinearLayout>
+    </com.norman.android.hdrsample.player.view.VideoSurfaceView>
 
 
 </LinearLayout>

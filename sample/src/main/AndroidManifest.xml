@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.jonanorman.android.hdrsample">
+    package="com.norman.android.hdrsample">
 
 
     <application
-        android:name=".MyApp"
+        android:name="com.norman.android.hdrsample.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity android:name="com.norman.android.hdrsample.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,7 +21,7 @@
         </activity>
 
         <activity
-            android:name=".HDRPlayActivity"
+            android:name="com.norman.android.hdrsample.HDRPlayActivity"
             android:label="HDR播放">
             <meta-data
                 android:name="example"
