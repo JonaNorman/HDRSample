@@ -35,6 +35,8 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     private volatile boolean repeat = true;
 
+    private volatile boolean hasEnd;
+
 
     public AndroidPlayerImpl(AndroidDecoder decoder, AndroidDemuxer androidDemuxer, String threadName) {
         super(threadName);
@@ -66,13 +68,26 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     @Override
     public void waitFrame() {
-        if (!isPlaying()) return;
-        try {
-            synchronized (frameWaiter) {
-                frameWaiter.wait();
-            }
-        } catch (InterruptedException e) {
+        waitFrame(0);
+    }
 
+    @Override
+    public void waitFrame(float second) {
+        long waitTime = TimeUtil.secondToMill(second);
+        long startTime = System.currentTimeMillis();
+        while (isPlaying() && !hasEnd) {
+            try {
+                synchronized (frameWaiter) {
+                    frameWaiter.wait(waitTime);
+                }
+            } catch (InterruptedException e) {
+
+            }
+            long remainTime = waitTime - (System.currentTimeMillis() - startTime);
+            if (remainTime <= 0) {
+                return;
+            }
+            waitTime = remainTime;
         }
     }
 
@@ -125,6 +140,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         timeSyncer.flush();
         seekTimeUs = TimeUtil.secondToMicro(timeSecond);
         androidDemuxer.seekPreSync(seekTimeUs);
+        hasEnd = false;
     }
 
     protected void onPlayResume() {
@@ -141,6 +157,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         androidDecoder.stop();
         androidDemuxer.seekPreSync(0);
         timeSyncer.reset();
+        hasEnd = false;
         seekTimeUs = null;
     }
 
@@ -184,7 +201,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
                 return false;
             }
             long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
-            if (sleepTime<= -MAX_FRAME_JANK_MS){
+            if (sleepTime <= -MAX_FRAME_JANK_MS) {
                 return false;
             }
             if (seekTimeUs != null && presentationTimeUs < seekTimeUs) {
@@ -220,6 +237,8 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         @Override
         public void onOutputBufferEndOfStream() {
             callBackHandler.callEnd();
+            hasEnd = true;
+            notifyFrameWaiter();
             if (repeat) {
                 seek(0);
             }

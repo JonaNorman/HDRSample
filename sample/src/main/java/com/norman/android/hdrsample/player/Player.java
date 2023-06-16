@@ -39,6 +39,10 @@ public interface Player {
 
     void waitFrame();
 
+    void waitFrame(float second);
+
+
+
     void setRepeat(boolean repeat);
 
     interface Callback {
