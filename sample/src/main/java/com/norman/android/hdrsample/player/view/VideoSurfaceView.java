@@ -37,6 +37,7 @@ public class VideoSurfaceView extends SurfaceView implements VideoView{
                 return;
             }
             if (surfaceHolderCallBack.videoPlayer != videoPlayer) {
+                surfaceHolderCallBack.videoPlayer.setSurface(null);
                 getHolder().removeCallback(surfaceHolderCallBack);
             }
         }

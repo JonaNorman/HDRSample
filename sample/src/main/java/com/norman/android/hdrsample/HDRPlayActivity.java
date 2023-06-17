@@ -12,9 +12,10 @@ import com.norman.android.hdrsample.player.AndroidVideoPlayer;
 import com.norman.android.hdrsample.player.Player;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.player.view.VideoSurfaceView;
+import com.norman.android.hdrsample.todo.CubeLutTextureRenderer;
 
 public class HDRPlayActivity extends AppCompatActivity {
-    AndroidVideoPlayer videoPlayer;
+    AndroidTexturePlayer videoPlayer;
     VideoSurfaceView surfaceView;
 
     @Override
@@ -23,8 +24,12 @@ public class HDRPlayActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
         surfaceView = findViewById(R.id.SurfaceView);
-        videoPlayer = AndroidSurfacePlayer.create();
-        videoPlayer.setSource(FileSource.createForAsset("video/1.mp4"));
+        videoPlayer = AndroidTexturePlayer.create();
+        videoPlayer.setSource(FileSource.createForAsset("video/hdr10-video-with-sdr-container.mp4"));
+
+        CubeLutTextureRenderer cubeLutTextureRenderer = new CubeLutTextureRenderer();
+        cubeLutTextureRenderer.setCubeLutForAsset("lut/BT2446_BT2407_HDR10_to_SDR_3DLUT/BT2446_BT2407_HDR10_to_SDR_1000nits_rev03.cube");
+        videoPlayer.setTextureRenderer(cubeLutTextureRenderer);
         surfaceView.setVideoPlayer(videoPlayer);
 
     }

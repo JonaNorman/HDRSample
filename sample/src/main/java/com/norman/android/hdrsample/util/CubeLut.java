@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class CubeLut {
@@ -32,6 +33,9 @@ public class CubeLut {
                     continue;
                 }
                 String[] parts = line.split("\\s+");
+                if (parts[0].equals("LUT_IN_VIDEO_RANGE") || parts[0].equals("LUT_OUT_VIDEO_RANGE")){
+                    continue;
+                }
                 if (parts[0].equals("LUT_1D_SIZE")) {
                     throw new RuntimeException("not support LUT_1D_SIZE");
                 } else if (parts[0].equals("LUT_2D_SIZE")) {
@@ -60,7 +64,7 @@ public class CubeLut {
                 } else {
                     if (buffer == null) {
                         int numChannels = 3;
-                        int bytesPerChannel = 4;
+                        int bytesPerChannel = Float.BYTES;
                         int bytesPerPixel = numChannels * bytesPerChannel;
                         buffer = ByteBuffer.allocateDirect(size * size * size * bytesPerPixel);
                         buffer.order(ByteOrder.nativeOrder());
@@ -84,8 +88,9 @@ public class CubeLut {
 
     public static CubeLut createForAsset(String assetName) {
         try {
-            AssetFileDescriptor assetFileDescriptor = FileUtil.openAssetFileDescriptor(assetName);
-            return new CubeLut(assetFileDescriptor.createInputStream());
+            Context context = AppUtil.getAppContext();
+            InputStream in = context.getAssets().open(assetName);
+            return new CubeLut(in);
         } catch (IOException e) {
             ExceptionUtil.throwRuntime(e);
         }

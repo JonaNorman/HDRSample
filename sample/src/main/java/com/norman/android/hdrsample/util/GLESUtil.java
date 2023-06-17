@@ -1,15 +1,17 @@
 package com.norman.android.hdrsample.util;
 
+import static android.opengl.GLES20.GL_NO_ERROR;
+import static android.opengl.GLES20.glGetError;
+
 import android.graphics.Bitmap;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
+import android.opengl.GLException;
+import android.opengl.GLU;
 import android.opengl.GLUtils;
 import android.util.Log;
 
-import java.nio.Buffer;
-
-import javax.microedition.khronos.opengles.GL10;
 
 
 public class GLESUtil {
@@ -88,14 +90,33 @@ public class GLESUtil {
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0]);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
+                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
-                GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
+        return texture[0];
+    }
+
+    public static int create3DTextureId() {
+        int[] texture = new int[1];
+        GLES20.glGenTextures(1, texture, 0);
+        GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, texture[0]);
+        GLES20.glTexParameterf(GLES30.GL_TEXTURE_3D,
+                GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GLES30.GL_TEXTURE_3D,
+                GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        GLES20.glTexParameteri(GLES30.GL_TEXTURE_3D,
+                GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES30.GL_TEXTURE_3D,
+                GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES30.GL_TEXTURE_3D,
+                GLES30.GL_TEXTURE_WRAP_R, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         return texture[0];
     }
 
@@ -158,4 +179,16 @@ public class GLESUtil {
         }
         GLES20.glDeleteRenderbuffers(1, new int[]{bufferId}, 0);
     }
+
+    public static void checkGLError(){
+        int errorCode;
+        while ((errorCode = glGetError()) != GL_NO_ERROR) {
+            String errorString = GLU.gluErrorString(errorCode);
+            if (errorString == null) {
+                errorString = "unknown error";
+            }
+            throw  new GLException(errorCode, "gl " + errorString + " 0x" + Integer.toHexString(errorCode));
+        }
+    }
+
 }
