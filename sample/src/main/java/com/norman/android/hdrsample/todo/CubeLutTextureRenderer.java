@@ -3,14 +3,14 @@ package com.norman.android.hdrsample.todo;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
+import android.util.Log;
 
 import com.norman.android.hdrsample.player.AndroidTexturePlayer;
 import com.norman.android.hdrsample.util.BufferUtil;
-import com.norman.android.hdrsample.util.CubeLut;
+import com.norman.android.hdrsample.util.LutCube;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer {
@@ -78,9 +78,9 @@ public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer
 
     private boolean lutEnable;
 
-    private CubeLut pendCube;
+    private LutCube pendCube;
 
-    private CubeLut currentCube;
+    private LutCube currentCube;
 
     private FloatBuffer textureCoordinateBuffer;
     private FloatBuffer positionCoordinateBuffer;
@@ -134,17 +134,17 @@ public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer
             lutSize = 0;
             lutEnable = false;
             if (currentCube != null) {
-                ByteBuffer byteBuffer = currentCube.buffer;
+                ByteBuffer byteBuffer = currentCube.getBuffer();
                 byteBuffer.rewind();
                 lutTextureId = GLESUtil.create3DTextureId();
                 GLESUtil.checkGLError();
                 GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
                 GLESUtil.checkGLError();
-                GLES30.glTexImage3D(GLES30.GL_TEXTURE_3D, 0, GLES30.GL_RGB16F, currentCube.size, currentCube.size, currentCube.size, 0, GLES30.GL_RGB, GLES30.GL_FLOAT, byteBuffer);
+                GLES30.glTexImage3D(GLES30.GL_TEXTURE_3D, 0, GLES30.GL_RGB16F, currentCube.getSize(), currentCube.getSize(), currentCube.getSize(), 0, GLES30.GL_RGB, GLES30.GL_FLOAT, byteBuffer);
                 GLESUtil.checkGLError();
                 GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
                 GLESUtil.checkGLError();
-                lutSize = currentCube.size;
+                lutSize = currentCube.getSize();
                 lutEnable =true;
             }
         }
@@ -219,6 +219,8 @@ public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer
 
 
     public void setCubeLutForAsset(String asset) {
-        pendCube = CubeLut.createForAsset(asset);
+        long time = System.currentTimeMillis();
+        pendCube = LutCube.createForAsset(asset);
+        Log.v("111111",(System.currentTimeMillis() - time)+"ms");
     }
 }

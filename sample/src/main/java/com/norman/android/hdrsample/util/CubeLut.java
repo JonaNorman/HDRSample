@@ -2,17 +2,23 @@ package com.norman.android.hdrsample.util;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.os.Build;
+import android.util.Log;
 
-import com.norman.android.hdrsample.player.source.FileSource;
+import androidx.annotation.RequiresApi;
 
-import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.stream.Collector;
 
 public class CubeLut {
 
@@ -23,17 +29,33 @@ public class CubeLut {
 
     public ByteBuffer buffer;
 
-    private CubeLut(InputStream inputStream) {
+    private CubeLut(String assetName) {
+        FileInputStream inputStream = null;
+        AssetFileDescriptor assetFileDescriptor =null;
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            String line;
-            while ((line = br.readLine()) != null) {
+            long time = System.currentTimeMillis();
+            assetFileDescriptor = FileUtil.openAssetFileDescriptor(assetName);
+            inputStream = assetFileDescriptor.createInputStream();
+            FileChannel fileChannel = inputStream.getChannel();
+            MappedByteBuffer myMappedBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
+            byte[] bytes = new byte[(int) fileChannel.size()];
+            myMappedBuffer.get(bytes);
+            String content = new String(bytes, StandardCharsets.UTF_8);
+            time = System.currentTimeMillis();
+
+            String[] arr = content.split("\n");
+            Log.v("1111111","jjjjjjjj"+(System.currentTimeMillis()-time)+"ms");
+
+
+            for (int i = 0; i < arr.length; i++) {
+                String line = arr[i];
                 line = line.trim();
+
                 if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
                 String[] parts = line.split("\\s+");
-                if (parts[0].equals("LUT_IN_VIDEO_RANGE") || parts[0].equals("LUT_OUT_VIDEO_RANGE")){
+                if (parts[0].equals("LUT_IN_VIDEO_RANGE") || parts[0].equals("LUT_OUT_VIDEO_RANGE")) {
                     continue;
                 }
                 if (parts[0].equals("LUT_1D_SIZE")) {
@@ -62,24 +84,57 @@ public class CubeLut {
                             Float.parseFloat(parts[3])
                     };
                 } else {
-                    if (buffer == null) {
-                        int numChannels = 3;
-                        int bytesPerChannel = Float.BYTES;
-                        int bytesPerPixel = numChannels * bytesPerChannel;
-                        buffer = ByteBuffer.allocateDirect(size * size * size * bytesPerPixel);
-                        buffer.order(ByteOrder.nativeOrder());
+
+                    Log.v("1111111","a"+(System.currentTimeMillis()-time)+"ms");
+                    time = System.currentTimeMillis();
+                    int numChannels = 3;
+                    int bytesPerChannel = Float.BYTES;
+                    int bytesPerPixel = numChannels * bytesPerChannel;
+                    buffer = ByteBuffer.allocateDirect(size * size * size * bytesPerPixel);
+                    buffer.order(ByteOrder.nativeOrder());
+
+                    String[]  arr1 =  new String[arr.length-i];
+
+                    System.arraycopy(arr,i,arr1,0,arr1.length);
+                    Log.v("1111111","b"+(System.currentTimeMillis()-time)+"ms");
+                    time = System.currentTimeMillis();
+
+                    String result=  String.join(" ", arr1);
+
+
+                    Log.v("1111111","c"+(System.currentTimeMillis()-time)+"ms");
+                    time = System.currentTimeMillis();
+
+
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        float[] aa  = toFloatArray(result);
+                        Log.v("1111111","d"+(System.currentTimeMillis()-time)+"ms");
+                        time = System.currentTimeMillis();
+                        buffer.asFloatBuffer().put(aa);
                     }
-                    for (int i = 0; i < 3; i++) {
-                        buffer.putFloat(Float.parseFloat(parts[i]));
-                    }
+                    break;
                 }
+
             }
+
+
+            Log.v("1111111","time"+(System.currentTimeMillis()-time)+"ms");
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             try {
-                inputStream.close();
+                if (inputStream != null){
+                    inputStream.close();
+                }
             } catch (IOException e) {
+            }
+            if (assetFileDescriptor != null) {
+                try {
+                    assetFileDescriptor.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -87,15 +142,44 @@ public class CubeLut {
 
 
     public static CubeLut createForAsset(String assetName) {
-        try {
-            Context context = AppUtil.getAppContext();
-            InputStream in = context.getAssets().open(assetName);
-            return new CubeLut(in);
-        } catch (IOException e) {
-            ExceptionUtil.throwRuntime(e);
-        }
-        return null;
+
+        return new CubeLut(assetName);
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    float[] toFloatArray(String result) {
+        class FloatArray {
+            int size;
+            float[] array;
+            FloatArray() {
+                this.size = 0;
+                this.array = new float[10];
+            }
+            void add(float f) {
+                if (size == array.length) {
+                    array = Arrays.copyOf(array, array.length * 2);
+                }
+                array[size++] = f;
+            }
+            FloatArray combine(FloatArray other) {
+                float[] resultArray = new float[array.length + other.array.length];
+                System.arraycopy(this.array, 0, resultArray, 0, size);
+                System.arraycopy(other.array, 0, resultArray, size, other.size);
+                this.array = resultArray;
+                this.size += other.size;
+                return this;
+            }
+            float[] result() {
+                return Arrays.copyOf(array, size);
+            }
+        }
+        return Arrays.stream(result.split(" ")).map(s1 -> Float.parseFloat(s1)).collect(
+                Collector.of(
+                        FloatArray::new, FloatArray::add,
+                        FloatArray::combine, FloatArray::result));
+    }
+
+
 
 }
 

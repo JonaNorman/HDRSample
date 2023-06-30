@@ -17,7 +17,7 @@ android {
     }
 
     aaptOptions {
-        noCompress "obj"  //表示不让aapt压缩的文件后缀
+        noCompress "cube"
     }
 
     buildTypes {
@@ -46,6 +46,8 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.10"
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+
 
 
 }
