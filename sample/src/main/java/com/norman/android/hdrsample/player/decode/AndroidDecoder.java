@@ -7,10 +7,33 @@ import androidx.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 
-public interface AndroidDecoder extends Decoder {
+public interface AndroidDecoder  {
 
+    void configure(AndroidDecoder.Configuration configuration);
 
-    class Configuration implements Decoder.Configuration {
+    void start();
+
+    void pause();
+
+    void resume();
+
+    void flush();
+
+    void stop();
+
+    void release();
+
+    boolean isConfigured();
+
+    boolean isStarted();
+
+    boolean isRunning();
+
+    boolean isRelease();
+
+    boolean isPause();
+
+    class Configuration {
         public final MediaFormat mediaFormat;
         public final CallBack callBack;
 
@@ -33,7 +56,7 @@ public interface AndroidDecoder extends Decoder {
 
         void onOutputFormatChanged(MediaFormat format);
 
-        void onError(Exception exception);
+        void onDecodeError(Exception exception);
 
     }
 

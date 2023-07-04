@@ -8,15 +8,11 @@ class AndroidSurfaceDecoderImpl extends AndroidVideoDecoderImpl implements Andro
 
 
     @Override
-    protected void onConfigure(Decoder.Configuration configuration) {
-        if (!(configuration instanceof AndroidDecoder.Configuration)) {
-            throw new IllegalArgumentException("must configure AndroidDecoder.Configuration");
-        }
-        AndroidDecoder.Configuration config = (AndroidDecoder.Configuration) configuration;
+    protected void onConfigure(AndroidDecoder.Configuration configuration) {
         mediaCodecAdapter = new MediaCodecAsyncAdapter(
-                config.mediaFormat,
+                configuration.mediaFormat,
                 outputSurface,
-                new CallBackWrapper(config.callBack));
+                new CallBackWrapper(configuration.callBack));
     }
 
 

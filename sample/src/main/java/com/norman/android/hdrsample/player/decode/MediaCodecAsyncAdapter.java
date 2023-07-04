@@ -16,11 +16,7 @@ import com.norman.android.hdrsample.util.ExceptionUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
@@ -40,8 +36,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (inputEndStream) {
                 return;
             }
-            ByteBuffer inputBuffer = codec.getInputBuffer(index);
-            ByteBuffer byteBuffer = inputBuffer;
+            ByteBuffer byteBuffer = codec.getInputBuffer(index);
+            if (byteBuffer == null) return;
             byteBuffer.clear();
             MediaCodec.BufferInfo bufferInfo = callBack.onInputBufferAvailable(byteBuffer);
             if (bufferInfo == null) {
@@ -59,6 +55,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         @Override
         public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index, @NonNull MediaCodec.BufferInfo info) {
             ByteBuffer outputBuffer = codec.getOutputBuffer(index);
+            if (outputBuffer == null) return;
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
             boolean render = outputBuffer.hasRemaining() && callBack.onOutputBufferAvailable(outputBuffer, info.presentationTimeUs);
@@ -72,7 +69,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         @Override
         public void onError(@NonNull MediaCodec codec, @NonNull MediaCodec.CodecException e) {
-            callBack.onError(e);
+            callBack.onMediaCodecError(e);
         }
 
         @Override
@@ -98,7 +95,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         this.mediaCodec = createMediaCodec(mediaFormat);
         this.mediaCodec.setCallback(this);
         this.mediaCodec.configure(mediaFormat, surface, null, 0);
-        this.handler = new Handler(Looper.myLooper() == null ? Looper.getMainLooper() : Looper.myLooper());
+        Looper looper = Looper.myLooper();
+        this.handler = new Handler(looper == null ? Looper.getMainLooper() : looper);
         this.resumeBuffer = new ResumeBuffer();
     }
 
@@ -181,7 +179,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-
     public synchronized boolean isRelease() {
         return release;
     }
@@ -224,7 +221,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         if (isRunning()) {
             asyncCallback.onOutputBufferAvailable(codec, index, info);
         } else {
-            resumeBuffer.addOutput(index,info);
+            resumeBuffer.addOutput(index, info);
         }
     }
 
@@ -282,7 +279,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         void onOutputFormatChanged(MediaFormat format);
 
-        void onError(Exception exception);
+        void onMediaCodecError(Exception exception);
     }
 
     class ResumeBuffer {
@@ -291,20 +288,20 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         private final List<Pair<Integer, MediaCodec.BufferInfo>> outputBufferList = new ArrayList<>();
 
-        public synchronized void  clean(){
+        public synchronized void clean() {
             inputBufferList.clear();
             outputBufferList.clear();
         }
 
-        public synchronized void addInput(int id){
+        public synchronized void addInput(int id) {
             inputBufferList.add(id);
         }
 
-        public synchronized void addOutput(int id, MediaCodec.BufferInfo bufferInfo){
-            outputBufferList.add(new Pair<>(id,bufferInfo));
+        public synchronized void addOutput(int id, MediaCodec.BufferInfo bufferInfo) {
+            outputBufferList.add(new Pair<>(id, bufferInfo));
         }
 
-        public synchronized void resume(){
+        public synchronized void resume() {
             for (Integer id : inputBufferList) {
                 asyncCallback.onInputBufferAvailable(mediaCodec, id);
             }

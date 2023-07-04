@@ -230,7 +230,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
 
         @Override
-        public void onError(Exception exception) {
+        public void onDecodeError(Exception exception) {
             ExceptionUtil.throwRuntime(exception);
         }
 

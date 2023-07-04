@@ -20,7 +20,7 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
 
 
     @Override
-    public synchronized void configure(Decoder.Configuration configuration) {
+    public synchronized void configure(AndroidDecoder.Configuration configuration) {
         if (state != DECODE_UNINIT &&
                 state != DECODE_STOP) {
             return;
@@ -119,7 +119,7 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
     }
 
 
-    protected abstract void onConfigure(Decoder.Configuration configuration);
+    protected abstract void onConfigure(AndroidDecoder.Configuration configuration);
 
     protected abstract void onStart();
 
@@ -161,8 +161,8 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
         }
 
         @Override
-        public void onError(Exception exception) {
-            callBack.onError(exception);
+        public void onMediaCodecError(Exception exception) {
+            callBack.onDecodeError(exception);
         }
 
         @Override
