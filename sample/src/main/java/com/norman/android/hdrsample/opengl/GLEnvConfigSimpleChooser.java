@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.player.opengl;
+package com.norman.android.hdrsample.opengl;
 
 public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
 

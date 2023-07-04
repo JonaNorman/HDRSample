@@ -7,9 +7,9 @@ import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.AndroidDecoder;
 import com.norman.android.hdrsample.player.decode.AndroidSurfaceDecoder;
-import com.norman.android.hdrsample.player.opengl.GLEnvContextManager;
-import com.norman.android.hdrsample.player.opengl.GLEnvContext;
-import com.norman.android.hdrsample.player.opengl.GLEnvWindowSurface;
+import com.norman.android.hdrsample.opengl.GLEnvContextManager;
+import com.norman.android.hdrsample.opengl.GLEnvContext;
+import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.player.dumex.AndroidDemuxer;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
