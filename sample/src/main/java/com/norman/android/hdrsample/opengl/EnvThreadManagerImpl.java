@@ -2,10 +2,10 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGLContext;
 
+import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCycleCallback {
     private MessageHandler messageHandler;
@@ -27,12 +27,7 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
         this.eglContext = eglContext;
         this.version = version;
         messageHandler = MessageHandler.obtain(this);
-        envContextFuture = submit(new Callable<GLEnvContext>() {
-            @Override
-            public GLEnvContext call() {
-                return contextManager.getEnvContext();
-            }
-        });
+        envContextFuture = submit(() -> contextManager.getEnvContext());
     }
 
 
@@ -57,12 +52,12 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
     }
 
     @Override
-    public boolean postWait(Runnable runnable) {
+    public boolean postSync(Runnable runnable) {
         return messageHandler.postSync(runnable);
     }
 
     @Override
-    public boolean postWait(Runnable runnable, long timeout) {
+    public boolean postSync(Runnable runnable, long timeout) {
         return messageHandler.postSync(runnable, timeout);
     }
 
@@ -73,16 +68,11 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
 
     @Override
     public GLEnvContext getEnvContext() {
-        try {
-            return envContextFuture.get();
-        } catch (Exception e) {
-
-        }
-        return null;
+        return  envContextFuture.get();
     }
 
     @Override
-    public <T> T submitWait(Callable<T> callable) {
+    public <T> T submitSync(Callable<T> callable) {
         return messageHandler.submitSync(callable);
     }
 

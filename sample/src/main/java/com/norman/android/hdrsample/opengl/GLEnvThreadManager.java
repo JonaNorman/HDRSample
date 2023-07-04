@@ -18,15 +18,15 @@ public interface GLEnvThreadManager {
 
     boolean postDelayed(Runnable r, long delayMillis);
 
-    boolean postWait(Runnable runnable);
+    boolean postSync(Runnable runnable);
 
-    boolean postWait(Runnable runnable, long timeout);
+    boolean postSync(Runnable runnable, long timeout);
 
     <T> Future<T> submit(Callable<T> callable);
 
     GLEnvContext getEnvContext();
 
-    <T> T submitWait(Callable<T> callable);
+    <T> T submitSync(Callable<T> callable);
 
     Future<Boolean> submit(Runnable runnable);
 

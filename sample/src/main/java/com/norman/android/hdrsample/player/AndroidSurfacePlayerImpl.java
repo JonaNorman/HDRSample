@@ -165,7 +165,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Android
                 if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
                     ENV_THREAD_MANAGER = GLEnvThreadManager.create();
                 }
-                HolderSurface holderSurface = ENV_THREAD_MANAGER.submitWait(new Callable<HolderSurface>() {
+                HolderSurface holderSurface = ENV_THREAD_MANAGER.submitSync(new Callable<HolderSurface>() {
                     @Override
                     public HolderSurface call() {
                         int textureId = GLESUtil.createExternalTextureId();
