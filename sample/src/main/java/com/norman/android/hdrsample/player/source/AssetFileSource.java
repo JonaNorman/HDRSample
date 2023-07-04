@@ -1,10 +1,7 @@
 package com.norman.android.hdrsample.player.source;
 
-import android.content.Context;
 import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 
-import com.norman.android.hdrsample.util.ExceptionUtil;
 import com.norman.android.hdrsample.util.FileUtil;
 
 import java.io.FileDescriptor;
@@ -34,7 +31,7 @@ public class AssetFileSource implements FileSource {
 
         AssetFileDescriptor assetFileDescriptor;
         boolean closed;
-        Object lock = new Object();
+       final Object lock = new Object();
 
         public AssetFileSourceDescriptor(AssetFileDescriptor assetFileDescriptor) {
             this.assetFileDescriptor = assetFileDescriptor;

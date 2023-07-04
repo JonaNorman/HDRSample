@@ -2,9 +2,19 @@ package com.norman.android.hdrsample.player.dumex;
 
 import android.media.MediaCodec;
 
+import com.norman.android.hdrsample.player.source.FileSource;
+
 import java.nio.ByteBuffer;
 
-public interface AndroidDemuxer extends Demuxer {
+public interface AndroidDemuxer  {
+
+    void setSource(FileSource fileSource);
+
+    boolean isAvailable();
+
+    boolean isRelease();
+
+    void release();
 
     void seekPreSync(long timeUs);
 

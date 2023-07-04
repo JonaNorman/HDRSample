@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.player;
+package com.norman.android.hdrsample.player.view;
 
 public abstract class ScaleMode {
 
