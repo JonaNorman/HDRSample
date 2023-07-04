@@ -10,22 +10,14 @@ import java.io.IOException;
 
 public class FileUtil {
 
-   public static AssetFileDescriptor openAssetFileDescriptor(String assetName){
-      AssetFileDescriptor assetFileDescriptor = null;
-      try {
-         Context context = AppUtil.getAppContext();
-         AssetManager assetManager = context.getAssets();
-         assetFileDescriptor = assetManager.openFd(assetName);
-         return assetFileDescriptor;
-      } catch (IOException e) {
-         try {
-            if (assetFileDescriptor != null) {
-               assetFileDescriptor.close();
-            }
-         } catch (IOException ex) {
-         }
-         ExceptionUtil.throwRuntime(e);
-         return null;
-      }
-   }
+    public static AssetFileDescriptor openAssetFileDescriptor(String assetName) {
+        try {
+            Context context = AppUtil.getAppContext();
+            AssetManager assetManager = context.getAssets();
+            return assetManager.openFd(assetName);
+        } catch (IOException e) {
+            ExceptionUtil.throwRuntime(e);
+            return null;
+        }
+    }
 }

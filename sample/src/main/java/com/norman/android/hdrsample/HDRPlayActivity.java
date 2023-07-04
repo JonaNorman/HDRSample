@@ -1,23 +1,14 @@
 package com.norman.android.hdrsample;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.norman.android.hdrsample.player.AndroidSurfacePlayer;
 import com.norman.android.hdrsample.player.AndroidTexturePlayer;
-import com.norman.android.hdrsample.player.AndroidVideoPlayer;
-import com.norman.android.hdrsample.player.Player;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.player.view.VideoSurfaceView;
 import com.norman.android.hdrsample.todo.CubeLutTextureRenderer;
-import com.norman.android.hdrsample.util.CubeLut;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 public class HDRPlayActivity extends AppCompatActivity {
     AndroidTexturePlayer videoPlayer;

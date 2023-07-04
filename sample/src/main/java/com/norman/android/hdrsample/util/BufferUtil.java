@@ -25,4 +25,28 @@ public class BufferUtil {
                 .asFloatBuffer();
         return buffer;
     }
+
+    public static ByteBuffer growCapacity(ByteBuffer byteBuffer) {
+        return growCapacity(byteBuffer, byteBuffer.capacity() * 2);
+    }
+
+    public static ByteBuffer growCapacity(ByteBuffer byteBuffer, int newCapacity) {
+        final int oloCapacity = byteBuffer.capacity();
+        if (newCapacity < oloCapacity) {
+            throw new IllegalArgumentException("new capacity must greater than old");
+        }
+        final ByteBuffer outBuffer = byteBuffer.isDirect() ?
+                ByteBuffer.allocateDirect(newCapacity) :
+                ByteBuffer.allocate(newCapacity);
+
+        final int oldPos = byteBuffer.position();
+        final int oldLimit = byteBuffer.limit();
+        byteBuffer.clear();
+        outBuffer.put(byteBuffer);
+        byteBuffer.position(oldPos);
+        byteBuffer.limit(oldLimit);
+        outBuffer.position(oldPos);
+        return outBuffer;
+    }
+
 }
