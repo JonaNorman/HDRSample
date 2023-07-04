@@ -4,6 +4,8 @@ import android.os.Handler;
 import android.os.SystemClock;
 
 
+import com.norman.android.hdrsample.util.TimeUtil;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -106,7 +108,7 @@ public class MessageThreadPool {
                         cacheCleaning = false;
                         handlerThread.quit();
                     } else {
-                        handler.postDelayed(this, intervalCleanTime * 1000);
+                        handler.postDelayed(this, TimeUtil.secondToMill(intervalCleanTime));
                     }
                 }
             }

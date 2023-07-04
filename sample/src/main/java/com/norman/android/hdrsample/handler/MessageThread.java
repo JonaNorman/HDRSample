@@ -5,12 +5,12 @@ import android.os.MessageQueue;
 
 import com.norman.android.hdrsample.util.ExceptionUtil;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 class MessageThread extends android.os.HandlerThread {
 
@@ -35,9 +35,9 @@ class MessageThread extends android.os.HandlerThread {
         return getState() == State.TERMINATED;
     }
 
-    public boolean isIdle() {
+    boolean isIdle() {
         Looper looper = getLooper();
-        if (looper == null){
+        if (looper == null) {
             return false;
         }
         MessageQueue messageQueue = looper.getQueue();
@@ -54,64 +54,86 @@ class MessageThread extends android.os.HandlerThread {
             }
             errorCallbackList.clear();
         } finally {
-            cancelAll();
-        }
-    }
-
-
-    private void cancelAll() {
-        for (Future future : futureList) {
-            future.cancel(true);
-        }
-        futureList.clear();
-    }
-
-    public FutureTask createFutureTask(Runnable runnable) {
-        return createFutureTask(runnable, true);
-    }
-
-    public <T> FutureTask<T> createFutureTask(Runnable runnable, T value) {
-        FutureTaskImpl<T> futureTask = new FutureTaskImpl<T>(runnable, value);
-        return futureTask;
-    }
-
-    public <T> FutureTask<T> createFutureTask(Callable<T> callable) {
-        return new FutureTaskImpl(callable);
-    }
-
-    class FutureTaskImpl<T> extends FutureTask<T> {
-
-        public FutureTaskImpl(Callable callable) {
-            super(callable);
-            init();
-        }
-
-        public FutureTaskImpl(Runnable runnable, T result) {
-            super(runnable, result);
-            init();
-        }
-
-        private void init() {
-            if (isTerminated()) {
-                cancel(true);
-            } else {
-                futureList.add(this);
+            for (Future future : futureList) {
+                future.cancel(true);
             }
+            futureList.clear();
+        }
+    }
+
+
+    public RunnableFuture<Boolean> createFuture(Runnable runnable) {
+        return createFuture(runnable, true);
+    }
+
+    public <T> RunnableFuture<T> createFuture(Runnable runnable, T value) {
+        return new FutureImpl<>(runnable, value);
+    }
+
+    public <T> RunnableFuture<T> createFuture(Callable<T> callable) {
+        return new FutureImpl<>(callable);
+    }
+
+    class FutureImpl<T> implements Future<T>, RunnableFuture<T> {
+
+        private final FutureTask<T> futureTask;
+
+        public FutureImpl(Runnable runnable, T result) {
+            this(Executors.callable(runnable, result));
         }
 
-        @Override
-        protected void setException(Throwable t) {
-            set(null);
-            ExceptionUtil.throwRuntime(t);
+        public FutureImpl(Callable<T> callable) {
+            futureTask = new FutureTask<T>(callable) {
+                @Override
+                protected void setException(Throwable t) {
+                    set(null);
+                    ExceptionUtil.throwRuntime(t);
+                }
+            };
         }
+
 
         @Override
         public void run() {
             try {
-                super.run();
+                futureList.add(this);
+                futureTask.run();
             } finally {
                 futureList.remove(this);
             }
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return futureTask.cancel(mayInterruptIfRunning);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return futureTask.isCancelled();
+        }
+
+        @Override
+        public boolean isDone() {
+            return futureTask.isDone();
+        }
+
+        @Override
+        public T get() {
+            try {
+                return futureTask.get();
+            } catch (Exception ignored) {
+            }
+            return null;
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) {
+            try {
+                return futureTask.get(timeout, unit);
+            } catch (Exception ignored) {
+            }
+            return null;
         }
     }
 

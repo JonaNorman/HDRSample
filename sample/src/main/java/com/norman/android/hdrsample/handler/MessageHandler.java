@@ -2,15 +2,12 @@ package com.norman.android.hdrsample.handler;
 
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class MessageHandler {
@@ -34,6 +31,18 @@ public class MessageHandler {
     private boolean hasStart = false;
 
 
+    private Runnable finishCallbackRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!hasStart) {
+                return;
+            }
+            if (lifeCycleCallback != null) {
+                lifeCycleCallback.onHandlerFinish();
+            }
+        }
+    };
+
     MessageHandler(MessageThreadPool threadPool, String threadName, Handler.Callback callback, LifeCycleCallback lifeCycleCallback) {
         super();
         this.threadPool = threadPool;
@@ -52,6 +61,7 @@ public class MessageHandler {
                 super.dispatchMessage(msg);
             }
         };
+
     }
 
 
@@ -221,83 +231,54 @@ public class MessageHandler {
         return handler.hasCallbacks(r);
     }
 
-    public boolean postWait(Runnable runnable) {
-        return postWait(runnable, 0);
+    public boolean postSync(Runnable runnable) {
+        return postSync(runnable, 0);
     }
 
-    public boolean postWait(Runnable runnable, long timeout) {
+    public boolean postSync(Runnable runnable, long timeout) {
         if (isFinish()) {
             return false;
         }
-        RunnableFuture runnableFuture = thread.createFutureTask(runnable);
+        RunnableFuture<Boolean> runnableFuture = thread.createFuture(runnable);
         boolean success = post(runnableFuture);
         if (!success) {
             return false;
         }
-        try {
-            if (timeout <= 0) {
-                runnableFuture.get();
-            } else {
-                runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
-            }
-            return true;
-        } catch (Exception e) {
+        Boolean result;
+        if (timeout <= 0) {
+            result = runnableFuture.get();
+        } else {
+            result = runnableFuture.get(timeout, TimeUnit.MILLISECONDS);
         }
-        return false;
+        return result != null;
     }
 
-
-    public boolean execute(Runnable runnable) {
-        if (isFinish()) {
-            return false;
-        }
-        if (Looper.myLooper() == handler.getLooper()) {
-            runnable.run();
-            return true;
-        }
-        return post(runnable);
+    public boolean isCurrentThread() {
+        return handler.getLooper().isCurrentThread();
     }
 
-    public boolean executeWait(Runnable runnable) {
-        return postWait(runnable, 0);
-    }
-
-    public boolean executeWait(Runnable runnable, long timeout) {
-        if (isFinish()) {
-            return false;
-        }
-        if (Looper.myLooper() == handler.getLooper()) {
-            runnable.run();
-            return true;
-        }
-        return postWait(runnable, timeout);
-    }
 
     public <T> Future<T> submit(Callable<T> callable) {
-        RunnableFuture runnableFuture = thread.createFutureTask(callable);
+        RunnableFuture<T> runnableFuture = thread.createFuture(callable);
         post(runnableFuture);
         return runnableFuture;
     }
 
-    public <T> T submitWait(Callable<T> callable) {
-        RunnableFuture<T> runnableFuture = thread.createFutureTask(callable);
+    public <T> T submitSync(Callable<T> callable) {
+        RunnableFuture<T> runnableFuture = thread.createFuture(callable);
         post(runnableFuture);
-        try {
-            return runnableFuture.get();
-        } catch (Exception e) {
-        }
-        return null;
+        return runnableFuture.get();
     }
 
     public Future<Boolean> submit(Runnable runnable) {
-        RunnableFuture runnableFuture = thread.createFutureTask(runnable);
+        RunnableFuture<Boolean> runnableFuture = thread.createFuture(runnable);
         post(runnableFuture);
         return runnableFuture;
     }
 
 
     public boolean waitAllMessage() {
-        return postWait(() -> {
+        return postSync(() -> {
         });
     }
 
@@ -312,17 +293,11 @@ public class MessageHandler {
             if (hasFinish) {
                 return false;
             }
-            execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (!hasStart) {
-                        return;
-                    }
-                    if (lifeCycleCallback != null){
-                        lifeCycleCallback.onHandlerFinish();
-                    }
-                }
-            });
+            if (isCurrentThread()) {
+                finishCallbackRunnable.run();
+            } else {
+                post(finishCallbackRunnable);
+            }
             hasFinish = true;
             thread.removeErrorCallback(errorCallback);
             this.threadPool.recycle(thread);
@@ -330,7 +305,7 @@ public class MessageHandler {
         }
     }
 
-    public boolean finishSafeWait() {
+    public boolean finishSafeSync() {
         finishSafe();
         return waitAllMessage();
     }
@@ -340,7 +315,7 @@ public class MessageHandler {
         return finishSafe();
     }
 
-    public boolean finishWait() {
+    public boolean finishSync() {
         finish();
         return waitAllMessage();
     }
@@ -371,24 +346,24 @@ public class MessageHandler {
     }
 
     public static MessageHandler obtain(LifeCycleCallback lifeCycleCallback) {
-        return obtain((String) null, null,lifeCycleCallback);
+        return obtain((String) null, null, lifeCycleCallback);
     }
 
-    public static MessageHandler obtain(Handler.Callback callback,LifeCycleCallback lifeCycleCallback) {
-        return obtain((String) null, callback,lifeCycleCallback);
+    public static MessageHandler obtain(Handler.Callback callback, LifeCycleCallback lifeCycleCallback) {
+        return obtain((String) null, callback, lifeCycleCallback);
     }
 
     public static MessageHandler obtain(String threadName, Handler.Callback callback) {
-        return obtain(threadName, callback,null);
+        return obtain(threadName, callback, null);
     }
 
     public static MessageHandler obtain(String threadName, LifeCycleCallback lifeCycleCallback) {
-        return obtain(threadName, null,lifeCycleCallback);
+        return obtain(threadName, null, lifeCycleCallback);
     }
 
-    public static MessageHandler obtain(String threadName, Handler.Callback callback,LifeCycleCallback lifeCycleCallback) {
+    public static MessageHandler obtain(String threadName, Handler.Callback callback, LifeCycleCallback lifeCycleCallback) {
         MessageThreadPool pool = MessageThreadPool.get();
-        return obtain(pool, threadName, callback,lifeCycleCallback);
+        return obtain(pool, threadName, callback, lifeCycleCallback);
     }
 
     public static MessageHandler obtain(MessageThreadPool pool) {
@@ -403,17 +378,17 @@ public class MessageHandler {
         return obtain(pool, null, callback);
     }
 
-    public static MessageHandler obtain(MessageThreadPool pool, Handler.Callback callback,LifeCycleCallback lifeCycleCallback) {
-        return obtain(pool, null, callback,lifeCycleCallback);
+    public static MessageHandler obtain(MessageThreadPool pool, Handler.Callback callback, LifeCycleCallback lifeCycleCallback) {
+        return obtain(pool, null, callback, lifeCycleCallback);
     }
 
 
     public static MessageHandler obtain(MessageThreadPool pool, String threadName, Handler.Callback callback) {
-        return obtain(pool, threadName, callback,null);
+        return obtain(pool, threadName, callback, null);
     }
 
-    public static MessageHandler obtain(MessageThreadPool pool, String threadName, Handler.Callback callback,LifeCycleCallback lifeCycleCallback) {
-        return new MessageHandler(pool, threadName, callback,lifeCycleCallback);
+    public static MessageHandler obtain(MessageThreadPool pool, String threadName, Handler.Callback callback, LifeCycleCallback lifeCycleCallback) {
+        return new MessageHandler(pool, threadName, callback, lifeCycleCallback);
     }
 
 

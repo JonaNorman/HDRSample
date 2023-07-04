@@ -58,12 +58,12 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
 
     @Override
     public boolean postWait(Runnable runnable) {
-        return messageHandler.postWait(runnable);
+        return messageHandler.postSync(runnable);
     }
 
     @Override
     public boolean postWait(Runnable runnable, long timeout) {
-        return messageHandler.postWait(runnable, timeout);
+        return messageHandler.postSync(runnable, timeout);
     }
 
     @Override
@@ -83,7 +83,7 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
 
     @Override
     public <T> T submitWait(Callable<T> callable) {
-        return messageHandler.submitWait(callable);
+        return messageHandler.submitSync(callable);
     }
 
     @Override
