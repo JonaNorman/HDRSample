@@ -25,7 +25,7 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
                 envConfig.getEGLConfig(),
                 surfaceAttrib.getAttribArray(), 0);
         if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -62,7 +62,7 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
         release = true;
         boolean destroySurface = EGL14.eglDestroySurface(envDisplay.getEGLDisplay(), eglSurface);
         if (!destroySurface) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 

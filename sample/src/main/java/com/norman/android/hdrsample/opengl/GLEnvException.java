@@ -14,7 +14,7 @@ public class GLEnvException extends RuntimeException {
         return errorCode;
     }
 
-    static void checkAndThrow() {
+    static void checkError() {
         while (true) {
             int error = EGL14.eglGetError();
             if (error == EGL14.EGL_SUCCESS) {
@@ -27,7 +27,7 @@ public class GLEnvException extends RuntimeException {
     }
 
 
-    static void clear() {
+    static void clearError() {
         while (true) {
             int error = EGL14.eglGetError();
             if (error == EGL14.EGL_SUCCESS) {

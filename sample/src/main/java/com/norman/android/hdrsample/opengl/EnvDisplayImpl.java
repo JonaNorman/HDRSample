@@ -5,25 +5,26 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLDisplay;
 import android.text.TextUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.microedition.khronos.egl.EGL10;
 
 class EnvDisplayImpl implements GLEnvDisplay {
 
     private static final String EXTENSION_COLOR_SPACE_BT2020_PQ = "EGL_EXT_gl_colorspace_bt2020_pq";
-
     private static final String EGL_KHR_surfaceless_context = "EGL_KHR_surfaceless_context";
 
 
+    private final Map<String,Boolean> extensionsContainMap = new HashMap<>();
 
     private final EGLDisplay eglDisplay;
     private final int displayId;
     private final GLEnvConfig[] envConfigs;
-    private  boolean supportSurfacelessContext;
     private boolean release;
 
     private String eglExtensions;
 
-    private boolean supportBT2020PQ;
 
     public EnvDisplayImpl() {
         this(EGL14.EGL_DEFAULT_DISPLAY);
@@ -33,18 +34,18 @@ class EnvDisplayImpl implements GLEnvDisplay {
         displayId = id;
         eglDisplay = EGL14.eglGetDisplay(id);
         if (eglDisplay == EGL14.EGL_NO_DISPLAY || eglDisplay == null) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
         int[] majorVersion = new int[1];
         int[] minorVersion = new int[1];
         if (!EGL14.eglInitialize(eglDisplay, majorVersion, 0, minorVersion, 0)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
         int[] configNum = {1};
         while (true) {
             EGLConfig[] configs = new EGLConfig[configNum[0] * 2];
             if (!EGL14.eglGetConfigs(eglDisplay, configs, 0, configs.length, configNum, 0)) {
-                GLEnvException.checkAndThrow();
+                GLEnvException.checkError();
             }
             if (configNum[0] < configs.length) {
                 break;
@@ -53,16 +54,12 @@ class EnvDisplayImpl implements GLEnvDisplay {
         int maxConfigNum = configNum[0];
         EGLConfig[] eglConfigs = new EGLConfig[maxConfigNum];
         if (!EGL14.eglGetConfigs(eglDisplay, eglConfigs, 0, maxConfigNum, configNum, 0)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
         envConfigs = new GLEnvConfig[maxConfigNum];
         for (int i = 0; i < maxConfigNum; i++) {
             envConfigs[i] = new EnvConfigImpl(eglDisplay, eglConfigs[i]);
         }
-        eglExtensions = EGL14.eglQueryString(eglDisplay, EGL10.EGL_EXTENSIONS);
-        eglExtensions = TextUtils.isEmpty(eglExtensions) ? "" : eglExtensions;
-        supportBT2020PQ = eglExtensions.contains(EXTENSION_COLOR_SPACE_BT2020_PQ);
-        supportSurfacelessContext = eglExtensions.contains(EGL_KHR_surfaceless_context);
     }
 
     @Override
@@ -88,7 +85,7 @@ class EnvDisplayImpl implements GLEnvDisplay {
         release = true;
         boolean terminate = EGL14.eglTerminate(eglDisplay);
         if (!terminate) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -98,23 +95,42 @@ class EnvDisplayImpl implements GLEnvDisplay {
             return;
         }
         if (!EGL14.eglReleaseThread()) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
     @Override
     public boolean isSupportBT2020PQ() {
-        return supportBT2020PQ;
+        return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_PQ);
     }
 
     @Override
     public boolean isSupportSurfacelessContext() {
-        return supportSurfacelessContext;
+        return containEGLExtension(EGL_KHR_surfaceless_context);
     }
 
     @Override
     public String getEGLExtensions() {
+        if (eglExtensions != null){
+            return eglExtensions;
+        }
+        if (isRelease()){
+            eglExtensions = "";
+        }else {
+            eglExtensions = EGL14.eglQueryString(eglDisplay, EGL10.EGL_EXTENSIONS);
+            eglExtensions = TextUtils.isEmpty(eglExtensions) ? "" : eglExtensions;
+        }
         return eglExtensions;
+    }
+
+    private boolean containEGLExtension(String key){
+        Boolean value = extensionsContainMap.get(key);
+        if (value != null){
+            return value;
+        }
+        value =   getEGLExtensions().contains(key);
+        extensionsContainMap.put(key,value);
+        return  value;
     }
 
     @Override

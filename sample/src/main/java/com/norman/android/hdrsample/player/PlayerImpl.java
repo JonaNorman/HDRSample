@@ -5,7 +5,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Pair;
 
-import com.norman.android.hdrsample.util.MessageHandler;
+import com.norman.android.hdrsample.handler.MessageHandler;
 import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.util.ArrayList;

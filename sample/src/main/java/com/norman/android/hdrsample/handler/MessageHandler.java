@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.handler;
 
 import android.os.Build;
 import android.os.Handler;

@@ -1,11 +1,8 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.opengl;
 
 import android.opengl.Matrix;
 
-import java.util.Arrays;
-import java.util.Stack;
-
-public class Matrix4 implements Cloneable {
+public class GLMatrix implements Cloneable {
 
     private static final int MATRIX_LENGTH = 16;
     private static final int POINT_LENGTH = 4;
@@ -15,57 +12,57 @@ public class Matrix4 implements Cloneable {
     private final float[] currentMatrix = new float[MATRIX_LENGTH];
 
 
-    public Matrix4(float[] matrix) {
+    public GLMatrix(float[] matrix) {
         set(matrix);
     }
 
 
-    public Matrix4(Matrix4 matrix) {
+    public GLMatrix(GLMatrix matrix) {
         set(matrix.get());
     }
 
-    public Matrix4(android.graphics.Matrix matrix) {
+    public GLMatrix(android.graphics.Matrix matrix) {
         set(matrix);
     }
 
 
-    public Matrix4() {
+    public GLMatrix() {
         Matrix.setIdentityM(currentMatrix, 0);
     }
 
 
 
-    public Matrix4 setLookAt(float eyeX, float eyeY, float eyeZ,
-                          float centerX, float centerY, float centerZ, float upX, float upY,
-                          float upZ) {
+    public GLMatrix setLookAt(float eyeX, float eyeY, float eyeZ,
+                              float centerX, float centerY, float centerZ, float upX, float upY,
+                              float upZ) {
         Matrix.setLookAtM(currentMatrix, 0, eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
         return this;
     }
 
-    public Matrix4 setLookAt(float[] eye,
-                          float[] center,
-                          float[] up) {
+    public GLMatrix setLookAt(float[] eye,
+                              float[] center,
+                              float[] up) {
         Matrix.setLookAtM(currentMatrix, 0, eye[0], eye[1], eye[2], center[0], center[1], center[2], up[0], up[1], up[2]);
         return this;
     }
 
-    public Matrix4 setFrustum(float left, float right, float bottom, float top, float near, float far) {
+    public GLMatrix setFrustum(float left, float right, float bottom, float top, float near, float far) {
         Matrix.frustumM(currentMatrix, 0, left, right, bottom, top, near, far);
         return this;
     }
 
-    public Matrix4 setPerspective(float fovy, float aspect, float zNear, float zFar) {
+    public GLMatrix setPerspective(float fovy, float aspect, float zNear, float zFar) {
         Matrix.perspectiveM(currentMatrix, 0, fovy, aspect, zNear, zFar);
         return this;
     }
 
-    public Matrix4 setOrtho(float left, float right, float bottom, float top, float near, float far) {
+    public GLMatrix setOrtho(float left, float right, float bottom, float top, float near, float far) {
         Matrix.orthoM(currentMatrix, 0, left, right, bottom, top, near, far);
         return this;
 
     }
 
-    public Matrix4 rotate(float angle, float x, float y, float z) {
+    public GLMatrix rotate(float angle, float x, float y, float z) {
         while (angle >= 360.0f) {
             angle -= 360.0f;
         }
@@ -77,27 +74,27 @@ public class Matrix4 implements Cloneable {
         return this;
     }
 
-    public Matrix4 rotateX(float angle) {
+    public GLMatrix rotateX(float angle) {
         return rotate(angle, 1, 0, 0);
     }
 
-    public Matrix4 rotateY(float angle) {
+    public GLMatrix rotateY(float angle) {
         return rotate(angle, 0, 1, 0);
     }
 
-    public Matrix4 rotateZ(float angle) {
+    public GLMatrix rotateZ(float angle) {
         return rotate(angle, 0, 0, 1);
     }
 
 
-    public Matrix4 translate(float x, float y, float z) {
+    public GLMatrix translate(float x, float y, float z) {
         Matrix.setIdentityM(tempMatrix, 0);
         Matrix.translateM(tempMatrix, 0, x, y, z);
         mul(tempMatrix);
         return this;
     }
 
-    public Matrix4 preTranslate(float x, float y, float z) {
+    public GLMatrix preTranslate(float x, float y, float z) {
         Matrix.setIdentityM(tempMatrix, 0);
         Matrix.translateM(tempMatrix, 0, x, y, z);
         preMul(tempMatrix);
@@ -105,35 +102,35 @@ public class Matrix4 implements Cloneable {
     }
 
 
-    public Matrix4 translateX(float x) {
+    public GLMatrix translateX(float x) {
         translate(x, 0, 0);
         return this;
     }
 
-    public Matrix4 translateY(float y) {
+    public GLMatrix translateY(float y) {
         translate(0, y, 0);
         return this;
     }
 
-    public Matrix4 translateZ(float z) {
+    public GLMatrix translateZ(float z) {
         scale(0, 0, z);
         return this;
     }
 
 
-    public Matrix4 scaleX(float scale) {
+    public GLMatrix scaleX(float scale) {
         return scale(scale, 1, 1);
     }
 
-    public Matrix4 scaleY(float scale) {
+    public GLMatrix scaleY(float scale) {
         return scale(1, scale, 1);
     }
 
-    public Matrix4 scaleZ(float scale) {
+    public GLMatrix scaleZ(float scale) {
         return scale(1, 1, scale);
     }
 
-    public Matrix4 scale(float x, float y, float z) {
+    public GLMatrix scale(float x, float y, float z) {
         Matrix.setIdentityM(tempMatrix, 0);
         Matrix.scaleM(tempMatrix, 0, x, y, z);
         mul(tempMatrix);
@@ -141,49 +138,49 @@ public class Matrix4 implements Cloneable {
     }
 
 
-    public Matrix4 scale(float x) {
+    public GLMatrix scale(float x) {
         return scale(x, x, x);
     }
 
-    public Matrix4 flipX() {
+    public GLMatrix flipX() {
         scale(-1, 1, 1);
         return this;
     }
 
 
-    public Matrix4 flipY() {
+    public GLMatrix flipY() {
         scale(1, -1, 1);
         return this;
     }
 
-    public Matrix4 flipZ() {
+    public GLMatrix flipZ() {
         scale(1, 1, -1);
         return this;
     }
 
 
-    public Matrix4 reset() {
+    public GLMatrix reset() {
         Matrix.setIdentityM(currentMatrix, 0);
         return this;
     }
 
-    public Matrix4 preMul(Matrix4 matrix4) {
+    public GLMatrix preMul(GLMatrix matrix4) {
         multiplyMM(currentMatrix, currentMatrix, matrix4.get());
         return this;
     }
 
-    public Matrix4 preMul(float[] matrix) {
+    public GLMatrix preMul(float[] matrix) {
         multiplyMM(currentMatrix, this.currentMatrix, matrix);
         return this;
     }
 
-    public Matrix4 mul(Matrix4 matrix) {
+    public GLMatrix mul(GLMatrix matrix) {
         multiplyMM(currentMatrix, matrix.get(), this.currentMatrix);
         return this;
     }
 
 
-    public Matrix4 mul(float[] matrix) {
+    public GLMatrix mul(float[] matrix) {
         multiplyMM(currentMatrix, matrix, this.currentMatrix);
         return this;
     }
@@ -193,30 +190,30 @@ public class Matrix4 implements Cloneable {
         return currentMatrix;
     }
 
-    public Matrix4 get(float[] matrix) {
+    public GLMatrix get(float[] matrix) {
         copyMM(currentMatrix,matrix);
         return this;
     }
 
 
-    public Matrix4 set(float[] matrix) {
+    public GLMatrix set(float[] matrix) {
         copyMM(matrix,currentMatrix);
         return this;
     }
 
-    public Matrix4 setTranspose(float[] matrix) {
+    public GLMatrix setTranspose(float[] matrix) {
         copyMM(matrix,currentMatrix);
         transpose();
         return this;
     }
 
-    public Matrix4 set(Matrix4 matrix4) {
+    public GLMatrix set(GLMatrix matrix4) {
         set(matrix4.get());
         return this;
     }
 
 
-    public Matrix4 set(android.graphics.Matrix matrix) {
+    public GLMatrix set(android.graphics.Matrix matrix) {
         float[] values = tempMatrix;
         matrix.getValues(values);
         currentMatrix[0] = values[0 * 3 + 0];
@@ -241,7 +238,7 @@ public class Matrix4 implements Cloneable {
         return this;
     }
 
-    public void getInvert(Matrix4 matrix4) {
+    public void getInvert(GLMatrix matrix4) {
         Matrix.invertM(matrix4.get(), 0, currentMatrix, 0);
     }
 
@@ -266,8 +263,8 @@ public class Matrix4 implements Cloneable {
     }
 
     @Override
-    public Matrix4 clone() {
-        Matrix4 matrix4 = new Matrix4(currentMatrix);
+    public GLMatrix clone() {
+        GLMatrix matrix4 = new GLMatrix(currentMatrix);
         return matrix4;
     }
 

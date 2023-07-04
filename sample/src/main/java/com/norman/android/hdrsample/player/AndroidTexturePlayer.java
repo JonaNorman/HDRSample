@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.player;
 
-import com.norman.android.hdrsample.util.Matrix4;
+import com.norman.android.hdrsample.opengl.GLMatrix;
 
 public interface AndroidTexturePlayer extends AndroidVideoPlayer {
 
@@ -52,7 +52,7 @@ public interface AndroidTexturePlayer extends AndroidVideoPlayer {
         public int textureId;
         public int width;
         public int height;
-        public Matrix4 textureMatrix = new Matrix4();
+        public GLMatrix textureMatrix = new GLMatrix();
     }
 
     class SurfaceInfo {

@@ -66,7 +66,7 @@ class EnvConfigImpl implements GLEnvConfig {
             if (EGL14.eglGetConfigAttrib(display, config, configValue.key, temp, 0)) {
                 configValue.setValue(temp[0]);
             } else {
-               GLEnvException.clear();
+               GLEnvException.clearError();
             }
         }
     }

@@ -28,7 +28,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
                 windowSurfaceAttrib.getAttribArray(),
                 0);
         if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -38,7 +38,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         if (!isRelease()) {
             boolean querySurface = EGL14.eglQuerySurface(envDisplay.getEGLDisplay(), eglSurface, EGL14.EGL_WIDTH, surfaceSize, 0);
             if (!querySurface) {
-                GLEnvException.checkAndThrow();
+                GLEnvException.checkError();
             }
         }
         return surfaceSize[0];
@@ -49,7 +49,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         if (!isRelease()) {
             boolean querySurface = EGL14.eglQuerySurface(envDisplay.getEGLDisplay(), eglSurface, EGL14.EGL_HEIGHT, surfaceSize, 1);
             if (!querySurface) {
-                GLEnvException.checkAndThrow();
+                GLEnvException.checkError();
             }
         }
         return surfaceSize[1];
@@ -61,7 +61,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         release = true;
         boolean destroySurface = EGL14.eglDestroySurface(envDisplay.getEGLDisplay(), eglSurface);
         if (!destroySurface) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -92,7 +92,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         if (isRelease()) return;
         boolean presentationTimeANDROID = EGLExt.eglPresentationTimeANDROID(envDisplay.getEGLDisplay(), eglSurface, presentationNs);
         if (!presentationTimeANDROID) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -102,7 +102,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         if (isRelease()) return;
         boolean swapBuffers = EGL14.eglSwapBuffers(envDisplay.getEGLDisplay(), eglSurface);
         if (!swapBuffers) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 

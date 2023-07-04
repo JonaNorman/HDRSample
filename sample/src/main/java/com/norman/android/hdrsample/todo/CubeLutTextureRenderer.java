@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.norman.android.hdrsample.player.AndroidTexturePlayer;
 import com.norman.android.hdrsample.util.BufferUtil;
-import com.norman.android.hdrsample.util.CubeLut3D;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;

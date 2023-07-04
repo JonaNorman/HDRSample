@@ -102,8 +102,7 @@ public interface GLEnvContext {
         public GLEnvContext build() {
             GLEnvContextAttrs attrs = new EnvContextAttrsImpl();
             attrs.setClientVersion(version);
-            GLEnvContext envContext = new EnvContextImpl(envDisplay, envConfig, attrs, shareContext);
-            return envContext;
+            return new EnvContextImpl(envDisplay, envConfig, attrs, shareContext);
         }
     }
 

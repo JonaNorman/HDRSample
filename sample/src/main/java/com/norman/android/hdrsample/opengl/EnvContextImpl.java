@@ -19,7 +19,7 @@ class EnvContextImpl implements GLEnvContext {
                 envConfig.getEGLConfig(), context,
                 contextAttrib.getAttribArray(), 0);
         if (eglContext == null || eglContext == EGL14.EGL_NO_CONTEXT) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -44,7 +44,7 @@ class EnvContextImpl implements GLEnvContext {
     public void makeCurrent(GLEnvSurface envSurface) {
         if (isRelease()) return;
         if (!EGL14.eglMakeCurrent(envDisplay.getEGLDisplay(), envSurface.getEGLSurface(), envSurface.getEGLSurface(), eglContext)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -52,7 +52,7 @@ class EnvContextImpl implements GLEnvContext {
     public void makeCurrent(EGLSurface eglSurface) {
         if (isRelease()) return;
         if (!EGL14.eglMakeCurrent(envDisplay.getEGLDisplay(), eglSurface, eglSurface, eglContext)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -61,7 +61,7 @@ class EnvContextImpl implements GLEnvContext {
     public void makeNoCurrent() {
         if (isRelease()) return;
         if (!EGL14.eglMakeCurrent(envDisplay.getEGLDisplay(), EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_SURFACE, EGL14.EGL_NO_CONTEXT)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
     }
 
@@ -75,7 +75,7 @@ class EnvContextImpl implements GLEnvContext {
         }
         release = true;
         if (!EGL14.eglDestroyContext(envDisplay.getEGLDisplay(), eglContext)) {
-            GLEnvException.checkAndThrow();
+            GLEnvException.checkError();
         }
 
     }

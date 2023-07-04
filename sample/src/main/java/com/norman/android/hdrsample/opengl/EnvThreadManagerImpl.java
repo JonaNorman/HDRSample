@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGLContext;
 
-import com.norman.android.hdrsample.util.MessageHandler;
+import com.norman.android.hdrsample.handler.MessageHandler;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;

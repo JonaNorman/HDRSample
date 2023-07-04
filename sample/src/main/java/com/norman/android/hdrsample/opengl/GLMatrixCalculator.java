@@ -1,22 +1,22 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.opengl;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Matrix4Multiplier {
+public class GLMatrixCalculator {
 
-    private List<Matrix4> matrix4List = new ArrayList<>();
+    private List<GLMatrix> matrix4List = new ArrayList<>();
 
 
-    public void add(Matrix4 matrix) {
+    public void add(GLMatrix matrix) {
         matrix4List.add(matrix);
     }
 
-    public void remove(Matrix4 matrix) {
+    public void remove(GLMatrix matrix) {
         matrix4List.remove(matrix);
     }
 
-    public int indexOf(Matrix4 matrix) {
+    public int indexOf(GLMatrix matrix) {
         return matrix4List.indexOf(matrix);
     }
 
@@ -28,17 +28,17 @@ public class Matrix4Multiplier {
         matrix4List.clear();
     }
 
-    public void add(int index, Matrix4 matrix) {
+    public void add(int index, GLMatrix matrix) {
         matrix4List.add(index, matrix);
     }
 
-    public void set(int index, Matrix4 matrix) {
+    public void set(int index, GLMatrix matrix) {
         matrix4List.set(index, matrix);
     }
 
-    public void getFinal(Matrix4 finalMatrix) {
+    public void getMulMatrix(GLMatrix finalMatrix) {
         finalMatrix.reset();
-        for (Matrix4 matrix : matrix4List) {
+        for (GLMatrix matrix : matrix4List) {
             finalMatrix.mul(matrix);
         }
     }

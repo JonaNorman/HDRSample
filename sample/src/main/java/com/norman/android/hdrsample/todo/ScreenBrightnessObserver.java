@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.todo;
 
 
 import android.database.ContentObserver;
@@ -8,6 +8,9 @@ import android.os.Looper;
 import android.provider.Settings;
 
 import androidx.core.math.MathUtils;
+
+import com.norman.android.hdrsample.util.AppUtil;
+import com.norman.android.hdrsample.util.DisplayUtil;
 
 
 public class ScreenBrightnessObserver extends ContentObserver {

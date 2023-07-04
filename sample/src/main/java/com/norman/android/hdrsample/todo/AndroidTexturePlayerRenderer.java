@@ -7,9 +7,8 @@ import android.opengl.GLES20;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.DisplayUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
-import com.norman.android.hdrsample.util.Matrix4;
+import com.norman.android.hdrsample.opengl.GLMatrix;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
-import com.norman.android.hdrsample.util.ScreenBrightnessObserver;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -61,7 +60,7 @@ public class AndroidTexturePlayerRenderer {
 
     private boolean release;
 
-    private Matrix4 textureMatrix = new Matrix4();
+    private GLMatrix textureMatrix = new GLMatrix();
     boolean keepBrightnessOnHDR;
 
     ScreenBrightnessObserver screenBrightnessObserver = new ScreenBrightnessObserver();
@@ -100,7 +99,7 @@ public class AndroidTexturePlayerRenderer {
     }
 
 
-    public Matrix4 getTextureMatrix() {
+    public GLMatrix getTextureMatrix() {
         return textureMatrix;
     }
 

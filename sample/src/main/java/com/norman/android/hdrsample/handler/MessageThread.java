@@ -1,7 +1,9 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.handler;
 
 import android.os.Looper;
 import android.os.MessageQueue;
+
+import com.norman.android.hdrsample.util.ExceptionUtil;
 
 import java.util.Iterator;
 import java.util.List;
