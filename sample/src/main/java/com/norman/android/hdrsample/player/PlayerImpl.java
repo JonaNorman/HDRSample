@@ -72,7 +72,7 @@ abstract class PlayerImpl implements Player {
 
 
     @Override
-    public synchronized void start() {
+    public synchronized void play() {
         if (state == PLAY_UNINIT
                 || state == PLAY_STOP) {
             prepare();
@@ -247,9 +247,14 @@ abstract class PlayerImpl implements Player {
             this.callback = callback;
         }
 
+        public void callPrepare() {
+            executeCallback(callback -> callback.onPlayPrepare());
+        }
         public void callProcess(float timeSecond) {
             executeCallback(callback -> callback.onPlayProcess(timeSecond));
         }
+
+
 
         public void callEnd() {
             executeCallback(callback -> callback.onPlayEnd());

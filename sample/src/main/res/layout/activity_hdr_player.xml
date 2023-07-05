@@ -5,12 +5,12 @@
     android:orientation="vertical">
 
 
-    <com.norman.android.hdrsample.player.view.VideoSurfaceView
-        android:id="@+id/SurfaceView"
+    <com.norman.android.hdrsample.player.view.VideoPlayerView
+        android:id="@+id/VideoPlayerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    </com.norman.android.hdrsample.player.view.VideoSurfaceView>
+    </com.norman.android.hdrsample.player.view.VideoPlayerView>
 
 
 </LinearLayout>

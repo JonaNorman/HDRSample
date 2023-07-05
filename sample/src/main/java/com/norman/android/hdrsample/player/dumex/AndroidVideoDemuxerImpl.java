@@ -37,6 +37,7 @@ class AndroidVideoDemuxerImpl implements AndroidVideoDemuxer {
             return;
         }
         releaseExtractor();
+        resetMetaInfo();
         extractor = new MediaExtractor();
         FileSource.Descriptor fileSourceDescriptor = fileSource.createFileDescriptor();
         try {
@@ -125,7 +126,6 @@ class AndroidVideoDemuxerImpl implements AndroidVideoDemuxer {
 
     private synchronized void releaseExtractor() {
         if (extractor != null) extractor.release();
-        resetMetaInfo();
         extractor = null;
     }
 

@@ -129,6 +129,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, androidDemuxer.getCsd1Buffer());
         onInputFormatPrepare(androidDemuxer, mediaFormat);
         onDecoderConfigure(androidDecoder, mediaFormat);
+        callBackHandler.callPrepare();
     }
 
     protected void onPlayStart() {

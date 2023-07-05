@@ -10,7 +10,7 @@ public interface Player {
 
     void prepare();
 
-    void start();
+    void play();
 
 
     void seek(float timeSecond);
@@ -47,6 +47,7 @@ public interface Player {
 
     interface Callback {
 
+        void onPlayPrepare();
 
          void onPlayProcess(float timeSecond);
 
