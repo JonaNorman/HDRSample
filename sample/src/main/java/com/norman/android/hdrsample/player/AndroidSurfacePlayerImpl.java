@@ -9,7 +9,7 @@ import android.view.Surface;
 import com.norman.android.hdrsample.player.decode.AndroidDecoder;
 import com.norman.android.hdrsample.player.decode.AndroidSurfaceDecoder;
 import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
-import com.norman.android.hdrsample.player.dumex.AndroidDemuxer;
+import com.norman.android.hdrsample.player.extract.AndroidExtractor;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
@@ -50,7 +50,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Android
     }
 
     @Override
-    protected void onInputFormatPrepare(AndroidDemuxer demuxer, MediaFormat inputFormat) {
+    protected void onInputFormatPrepare(AndroidExtractor demuxer, MediaFormat inputFormat) {
         super.onInputFormatPrepare(demuxer, inputFormat);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
     }

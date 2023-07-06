@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.norman.android.hdrsample.player.decode.AndroidDecoder;
-import com.norman.android.hdrsample.player.dumex.AndroidDemuxer;
+import com.norman.android.hdrsample.player.extract.AndroidExtractor;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.ExceptionUtil;
@@ -26,7 +26,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
 
     private Long seekTimeUs;
 
-    private AndroidDemuxer androidDemuxer;
+    private AndroidExtractor androidDemuxer;
     private AndroidDecoder androidDecoder;
 
     private FileSource fileSource;
@@ -38,7 +38,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
     private volatile boolean hasEnd;
 
 
-    public AndroidPlayerImpl(AndroidDecoder decoder, AndroidDemuxer androidDemuxer, String threadName) {
+    public AndroidPlayerImpl(AndroidDecoder decoder, AndroidExtractor androidDemuxer, String threadName) {
         super(threadName);
         this.androidDemuxer = androidDemuxer;
         this.androidDecoder = decoder;
@@ -172,7 +172,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         return androidDecoder;
     }
 
-    public AndroidDemuxer getAndroidDemuxer() {
+    public AndroidExtractor getAndroidDemuxer() {
         return androidDemuxer;
     }
 
@@ -251,7 +251,7 @@ abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
         }
     }
 
-    protected abstract void onInputFormatPrepare(AndroidDemuxer demuxer, MediaFormat inputFormat);
+    protected abstract void onInputFormatPrepare(AndroidExtractor demuxer, MediaFormat inputFormat);
 
     protected abstract void onDecoderConfigure(AndroidDecoder decoder, MediaFormat inputFormat);
 

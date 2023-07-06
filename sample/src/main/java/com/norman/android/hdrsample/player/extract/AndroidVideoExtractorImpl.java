@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.player.dumex;
+package com.norman.android.hdrsample.player.extract;
 
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
@@ -11,7 +11,7 @@ import com.norman.android.hdrsample.util.ExceptionUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class AndroidVideoDemuxerImpl implements AndroidVideoDemuxer {
+class AndroidVideoExtractorImpl implements AndroidVideoExtractor {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
     private String mimeType;

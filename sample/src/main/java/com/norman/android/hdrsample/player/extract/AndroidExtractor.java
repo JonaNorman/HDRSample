@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.player.dumex;
+package com.norman.android.hdrsample.player.extract;
 
 import android.media.MediaCodec;
 
@@ -6,7 +6,7 @@ import com.norman.android.hdrsample.player.source.FileSource;
 
 import java.nio.ByteBuffer;
 
-public interface AndroidDemuxer  {
+public interface AndroidExtractor {
 
     void setSource(FileSource fileSource);
 
