@@ -14,13 +14,13 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
-abstract class AndroidPlayerImpl extends PlayerImpl implements AndroidPlayer {
+abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
 
     private static final int MAX_FRAME_JANK_MS = 50;
 
-    private final PlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
+    private final AbstractPlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
 
     private final TimeSyncer timeSyncer = new TimeSyncer();
 

@@ -1,12 +1,12 @@
 package com.norman.android.hdrsample.player;
 
-public interface AndroidSurfacePlayer extends AndroidVideoPlayer {
+public interface SurfacePlayer extends VideoPlayer {
 
-    static AndroidSurfacePlayer create(){
+    static SurfacePlayer create(){
         return new AndroidSurfacePlayerImpl();
     }
 
-    static AndroidSurfacePlayer create(String threadName){
+    static SurfacePlayer create(String threadName){
         return new AndroidSurfacePlayerImpl(threadName);
     }
 

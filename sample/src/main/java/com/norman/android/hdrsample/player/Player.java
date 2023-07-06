@@ -47,7 +47,7 @@ public interface Player {
 
     interface Callback {
 
-        void onPlayPrepare();
+         void onPlayPrepare();
 
          void onPlayProcess(float timeSecond);
 

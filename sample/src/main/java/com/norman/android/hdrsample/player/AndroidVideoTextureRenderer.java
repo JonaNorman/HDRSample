@@ -9,7 +9,7 @@ import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.FloatBuffer;
 
-class AndroidVideoTextureRenderer extends AndroidTexturePlayer.TextureRenderer {
+class AndroidVideoTextureRenderer extends TexturePlayer.TextureRenderer {
 
     private static final int VERTEX_LENGTH = 2;
 
@@ -76,7 +76,7 @@ class AndroidVideoTextureRenderer extends AndroidTexturePlayer.TextureRenderer {
 
 
     @Override
-    protected void onCreate(AndroidTexturePlayer.TextureInfo textureInfo, AndroidTexturePlayer.SurfaceInfo surfaceInfo) {
+    protected void onCreate(TexturePlayer.TextureInfo textureInfo, TexturePlayer.SurfaceInfo surfaceInfo) {
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
@@ -87,7 +87,7 @@ class AndroidVideoTextureRenderer extends AndroidTexturePlayer.TextureRenderer {
     }
 
     @Override
-    protected void onRender(AndroidTexturePlayer.TextureInfo textureInfo, AndroidTexturePlayer.SurfaceInfo surfaceInfo) {
+    protected void onRender(TexturePlayer.TextureInfo textureInfo, TexturePlayer.SurfaceInfo surfaceInfo) {
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
         GLES20.glUseProgram(programId);

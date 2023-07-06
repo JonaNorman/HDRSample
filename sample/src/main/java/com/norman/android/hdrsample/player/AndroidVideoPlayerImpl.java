@@ -11,7 +11,7 @@ import com.norman.android.hdrsample.util.MediaFormatUtil;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements AndroidVideoPlayer {
+abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements VideoPlayer {
 
     private List<VideoSizeChangeListener> videoSizeChangedListeners = new CopyOnWriteArrayList<>();
 

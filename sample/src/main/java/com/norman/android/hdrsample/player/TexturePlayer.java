@@ -2,17 +2,17 @@ package com.norman.android.hdrsample.player;
 
 import com.norman.android.hdrsample.opengl.GLMatrix;
 
-public interface AndroidTexturePlayer extends AndroidVideoPlayer {
+public interface TexturePlayer extends VideoPlayer {
 
 
     void setTextureRenderer(TextureRenderer textureRenderer);
 
-    static AndroidTexturePlayer create() {
+    static TexturePlayer create() {
         return new AndroidTexturePlayerImpl();
     }
 
 
-    static AndroidTexturePlayer create(String threadName) {
+    static TexturePlayer create(String threadName) {
         return new AndroidTexturePlayerImpl(threadName);
     }
 

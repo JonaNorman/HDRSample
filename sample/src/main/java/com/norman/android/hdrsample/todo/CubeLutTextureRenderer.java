@@ -5,14 +5,14 @@ import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.util.Log;
 
-import com.norman.android.hdrsample.player.AndroidTexturePlayer;
+import com.norman.android.hdrsample.player.TexturePlayer;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer {
+public class CubeLutTextureRenderer extends TexturePlayer.TextureRenderer {
 
     private static final int VERTEX_LENGTH = 2;
 
@@ -107,7 +107,7 @@ public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer
 
 
     @Override
-    protected void onCreate(AndroidTexturePlayer.TextureInfo textureInfo, AndroidTexturePlayer.SurfaceInfo surfaceInfo) {
+    protected void onCreate(TexturePlayer.TextureInfo textureInfo, TexturePlayer.SurfaceInfo surfaceInfo) {
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
@@ -123,7 +123,7 @@ public class CubeLutTextureRenderer extends AndroidTexturePlayer.TextureRenderer
     }
 
     @Override
-    protected void onRender(AndroidTexturePlayer.TextureInfo textureInfo, AndroidTexturePlayer.SurfaceInfo surfaceInfo) {
+    protected void onRender(TexturePlayer.TextureInfo textureInfo, TexturePlayer.SurfaceInfo surfaceInfo) {
         GLESUtil.checkGLError();
         if (pendCube != currentCube) {
             currentCube = pendCube;

@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.util.MediaFormatUtil;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Callable;
 
-class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements AndroidSurfacePlayer {
+class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements SurfacePlayer {
     private static final String SURFACE_PLAYER = "AndroidSurfacePlayer";
 
     private DecoderSurface decoderSurface = new DecoderSurface();

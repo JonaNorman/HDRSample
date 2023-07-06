@@ -5,13 +5,13 @@ import android.view.WindowManager;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.norman.android.hdrsample.player.AndroidTexturePlayer;
+import com.norman.android.hdrsample.player.TexturePlayer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.view.VideoPlayerView;
 import com.norman.android.hdrsample.todo.CubeLutTextureRenderer;
 
 public class HDRPlayActivity extends AppCompatActivity {
-    AndroidTexturePlayer videoPlayer;
+    TexturePlayer videoPlayer;
     VideoPlayerView surfaceView;
 
     @Override
@@ -20,7 +20,7 @@ public class HDRPlayActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
         surfaceView = findViewById(R.id.VideoPlayerView);
-        videoPlayer = AndroidTexturePlayer.create();
+        videoPlayer = TexturePlayer.create();
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
 
         CubeLutTextureRenderer cubeLutTextureRenderer = new CubeLutTextureRenderer();

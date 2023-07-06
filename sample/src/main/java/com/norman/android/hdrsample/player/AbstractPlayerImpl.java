@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Pair;
 
+import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
 import com.norman.android.hdrsample.util.TimeUtil;
 
@@ -12,9 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Future;
 
-abstract class PlayerImpl implements Player {
+abstract class AbstractPlayerImpl implements Player {
 
     private static final int PLAY_UNINIT = 0;
     private static final int PLAY_PREPARE = 1;
@@ -35,7 +35,7 @@ abstract class PlayerImpl implements Player {
     private MessageHandler messageHandler;
 
 
-    public PlayerImpl(String threadName) {
+    public AbstractPlayerImpl(String threadName) {
         this.threadName = threadName;
     }
 
@@ -140,12 +140,8 @@ abstract class PlayerImpl implements Player {
     private synchronized void prepareHandler() {
         if (messageHandler != null) return;
         if (stopFuture != null) {
-            try {
-                stopFuture.get();
-            } catch (Exception e) {
-            } finally {
-                stopFuture = null;
-            }
+            stopFuture.get();
+            stopFuture = null;
         }
         messageHandler = MessageHandler.obtain(threadName, new MessageHandler.LifeCycleCallback() {
             @Override
@@ -167,46 +163,31 @@ abstract class PlayerImpl implements Player {
 
     @Override
     public synchronized boolean isPlaying() {
-        if (state == PLAY_START ||
-                state == PLAY_RESUME) {
-            return true;
-        }
-        return false;
+        return state == PLAY_START ||
+                state == PLAY_RESUME;
     }
 
 
     @Override
     public synchronized boolean isPrepare() {
-        if (state == PLAY_UNINIT ||
-                state == PLAY_STOP ||
-                state == PLAY_RELEASE) {
-            return false;
-        }
-        return true;
+        return state != PLAY_UNINIT &&
+                state != PLAY_STOP &&
+                state != PLAY_RELEASE;
     }
 
     @Override
     public synchronized boolean isPause() {
-        if (state == PLAY_PAUSE) {
-            return true;
-        }
-        return false;
+        return state == PLAY_PAUSE;
     }
 
     @Override
     public synchronized boolean isStop() {
-        if (state == PLAY_STOP) {
-            return true;
-        }
-        return false;
+        return state == PLAY_STOP;
     }
 
     @Override
     public synchronized boolean isRelease() {
-        if (state == PLAY_RELEASE) {
-            return true;
-        }
-        return false;
+        return state == PLAY_RELEASE;
     }
 
 

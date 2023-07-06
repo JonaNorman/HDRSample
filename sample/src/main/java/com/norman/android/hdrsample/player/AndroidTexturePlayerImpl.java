@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
 
-class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements AndroidTexturePlayer {
+class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements TexturePlayer {
 
     private static final String TEXTURE_PLAYER = "AndroidTexturePlayer";
 
