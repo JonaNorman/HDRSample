@@ -93,8 +93,8 @@ class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements Texture
     }
 
     @Override
-    protected void onInputFormatPrepare(AndroidExtractor demuxer, MediaFormat inputFormat) {
-        super.onInputFormatPrepare(demuxer, inputFormat);
+    protected void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat) {
+        super.onInputFormatPrepare(extractor, inputFormat);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         textureInfo.width = MediaFormatUtil.getInteger(inputFormat, MediaFormat.KEY_WIDTH);
         textureInfo.height = MediaFormatUtil.getInteger(inputFormat, MediaFormat.KEY_HEIGHT);

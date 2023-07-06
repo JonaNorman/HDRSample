@@ -31,7 +31,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
     private FileSource fileSource;
 
-    private Object frameWaiter = new Object();
+    private final Object frameWaiter = new Object();
 
     private volatile boolean repeat = true;
 
@@ -251,7 +251,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         }
     }
 
-    protected abstract void onInputFormatPrepare(AndroidExtractor demuxer, MediaFormat inputFormat);
+    protected abstract void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat);
 
     protected abstract void onDecoderConfigure(AndroidDecoder decoder, MediaFormat inputFormat);
 

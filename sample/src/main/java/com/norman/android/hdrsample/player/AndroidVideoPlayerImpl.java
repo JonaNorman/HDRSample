@@ -20,8 +20,8 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
     }
 
     @Override
-    protected void onInputFormatPrepare(AndroidExtractor demuxer, MediaFormat inputFormat) {
-        AndroidVideoExtractor videoDemuxer = (AndroidVideoExtractor) demuxer;
+    protected void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat) {
+        AndroidVideoExtractor videoDemuxer = (AndroidVideoExtractor) extractor;
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoDemuxer.getWidth());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoDemuxer.getHeight());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, videoDemuxer.getColorStandard());

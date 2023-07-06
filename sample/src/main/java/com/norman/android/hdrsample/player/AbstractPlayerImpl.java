@@ -35,6 +35,7 @@ abstract class AbstractPlayerImpl implements Player {
     private MessageHandler messageHandler;
 
 
+
     public AbstractPlayerImpl(String threadName) {
         this.threadName = threadName;
     }
@@ -146,11 +147,8 @@ abstract class AbstractPlayerImpl implements Player {
         messageHandler = MessageHandler.obtain(threadName, new MessageHandler.LifeCycleCallback() {
             @Override
             public void onHandlerFinish() {
-                if (isRelease()) {
-                    onPlayRelease();
-                } else {
-                    release();
-                }
+                release();
+                onPlayRelease();
             }
 
             @Override
@@ -189,7 +187,6 @@ abstract class AbstractPlayerImpl implements Player {
     public synchronized boolean isRelease() {
         return state == PLAY_RELEASE;
     }
-
 
     protected abstract void onPlayPrepare();
 
