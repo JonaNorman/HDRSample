@@ -13,7 +13,16 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements VideoPlayer {
 
+    private static final String KEY_CROP_LEFT = "crop-left";
+    private static final String KEY_CROP_RIGHT = "crop-right";
+    private static final String KEY_CROP_TOP = "crop-top";
+    private static final String KEY_CROP_BOTTOM = "crop-bottom";
+
     private List<VideoSizeChangeListener> videoSizeChangedListeners = new CopyOnWriteArrayList<>();
+
+    private int videoWidth;
+
+    private int videoHeight;
 
     public AndroidVideoPlayerImpl(AndroidDecoder decoder, String threadName) {
         super(decoder, AndroidVideoExtractor.create(), threadName);
@@ -28,9 +37,6 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
-        for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
-            videoSizeChangedListener.onVideoSizeChange(videoExtractor.getWidth(), videoExtractor.getHeight());
-        }
     }
 
     @Override
@@ -38,17 +44,35 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
         decoder.configure(new AndroidDecoder.Configuration(inputFormat, new VideoDecoderCallBack()));
     }
 
-
     @Override
-    public int getWidth() {
-        AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) getAndroidExtractor();
-        return videoExtractor.getWidth();
+    protected void onOutputFormatChanged(MediaFormat outputFormat) {
+        int width = MediaFormatUtil.getInteger(outputFormat,MediaFormat.KEY_WIDTH);
+        int height = MediaFormatUtil.getInteger(outputFormat,MediaFormat.KEY_HEIGHT);
+        int cropLeft = MediaFormatUtil.getInteger(outputFormat,KEY_CROP_LEFT);
+        int cropRight = MediaFormatUtil.getInteger(outputFormat,KEY_CROP_RIGHT);
+        int cropTop = MediaFormatUtil.getInteger(outputFormat,KEY_CROP_TOP);
+        int cropBottom = MediaFormatUtil.getInteger(outputFormat,KEY_CROP_BOTTOM);
+        if (cropRight>0&& cropBottom>0){
+            width= cropRight-cropLeft+1;
+            height= cropBottom-cropTop+1;
+        }
+        synchronized (this){
+            videoWidth = width;
+            videoHeight = height;
+        }
+        for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
+            videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+        }
     }
 
     @Override
-    public int getHeight() {
-        AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) getAndroidExtractor();
-        return videoExtractor.getHeight();
+    public synchronized int getWidth() {
+        return videoWidth;
+    }
+
+    @Override
+    public synchronized int getHeight() {
+        return videoHeight;
     }
 
     @Override

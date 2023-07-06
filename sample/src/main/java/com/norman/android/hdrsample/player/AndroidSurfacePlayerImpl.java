@@ -66,7 +66,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
 
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
-
+        super.onOutputFormatChanged(outputFormat);
     }
 
     protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {

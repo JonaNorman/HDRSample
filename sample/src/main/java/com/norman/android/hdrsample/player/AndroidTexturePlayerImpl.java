@@ -110,7 +110,7 @@ class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements Texture
 
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
-
+        super.onOutputFormatChanged(outputFormat);
     }
 
 
