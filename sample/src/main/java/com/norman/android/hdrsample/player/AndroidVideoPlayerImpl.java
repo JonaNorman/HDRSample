@@ -21,15 +21,15 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
 
     @Override
     protected void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat) {
-        AndroidVideoExtractor videoDemuxer = (AndroidVideoExtractor) extractor;
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoDemuxer.getWidth());
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoDemuxer.getHeight());
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, videoDemuxer.getColorStandard());
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, videoDemuxer.getColorRange());
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, videoDemuxer.getColorTransfer());
+        AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) extractor;
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, videoExtractor.getColorStandard());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
-            videoSizeChangedListener.onVideoSizeChange(videoDemuxer.getWidth(), videoDemuxer.getHeight());
+            videoSizeChangedListener.onVideoSizeChange(videoExtractor.getWidth(), videoExtractor.getHeight());
         }
     }
 
@@ -41,14 +41,14 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
 
     @Override
     public int getWidth() {
-        AndroidVideoExtractor videoDemuxer = (AndroidVideoExtractor) getAndroidDemuxer();
-        return videoDemuxer.getWidth();
+        AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) getAndroidExtractor();
+        return videoExtractor.getWidth();
     }
 
     @Override
     public int getHeight() {
-        AndroidVideoExtractor videoDemuxer = (AndroidVideoExtractor) getAndroidDemuxer();
-        return videoDemuxer.getHeight();
+        AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) getAndroidExtractor();
+        return videoExtractor.getHeight();
     }
 
     @Override

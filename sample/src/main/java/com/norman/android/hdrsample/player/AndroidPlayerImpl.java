@@ -26,7 +26,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
     private Long seekTimeUs;
 
-    private AndroidExtractor androidDemuxer;
+    private AndroidExtractor androidExtractor;
     private AndroidDecoder androidDecoder;
 
     private FileSource fileSource;
@@ -38,9 +38,9 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
     private volatile boolean hasEnd;
 
 
-    public AndroidPlayerImpl(AndroidDecoder decoder, AndroidExtractor androidDemuxer, String threadName) {
+    public AndroidPlayerImpl(AndroidDecoder decoder, AndroidExtractor androidExtractor, String threadName) {
         super(threadName);
-        this.androidDemuxer = androidDemuxer;
+        this.androidExtractor = androidExtractor;
         this.androidDecoder = decoder;
     }
 
@@ -116,18 +116,18 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
 
     protected void onPlayPrepare() {
-        androidDemuxer.setSource(fileSource);
-        if (!androidDemuxer.isAvailable()) {
+        androidExtractor.setSource(fileSource);
+        if (!androidExtractor.isAvailable()) {
             throw new RuntimeException("file can not play");
         }
         MediaFormat mediaFormat = new MediaFormat();
-        MediaFormatUtil.setString(mediaFormat, MediaFormat.KEY_MIME, androidDemuxer.getMimeType());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, androidDemuxer.getMaxInputSize());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_PROFILE, androidDemuxer.getProfile());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, androidDemuxer.getProfileLevel());
-        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, androidDemuxer.getCsd0Buffer());
-        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, androidDemuxer.getCsd1Buffer());
-        onInputFormatPrepare(androidDemuxer, mediaFormat);
+        MediaFormatUtil.setString(mediaFormat, MediaFormat.KEY_MIME, androidExtractor.getMimeType());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, androidExtractor.getMaxInputSize());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_PROFILE, androidExtractor.getProfile());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, androidExtractor.getProfileLevel());
+        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, androidExtractor.getCsd0Buffer());
+        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, androidExtractor.getCsd1Buffer());
+        onInputFormatPrepare(androidExtractor, mediaFormat);
         onDecoderConfigure(androidDecoder, mediaFormat);
         callBackHandler.callPrepare();
     }
@@ -140,7 +140,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         androidDecoder.flush();
         timeSyncer.flush();
         seekTimeUs = TimeUtil.secondToMicro(timeSecond);
-        androidDemuxer.seekPreSync(seekTimeUs);
+        androidExtractor.seekPreSync(seekTimeUs);
         hasEnd = false;
     }
 
@@ -156,7 +156,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
     protected void onPlayStop() {
         androidDecoder.stop();
-        androidDemuxer.seekPreSync(0);
+        androidExtractor.seekPreSync(0);
         timeSyncer.reset();
         hasEnd = false;
         seekTimeUs = null;
@@ -164,7 +164,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
 
     protected void onPlayRelease() {
-        androidDemuxer.release();
+        androidExtractor.release();
         androidDecoder.release();
     }
 
@@ -172,8 +172,8 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         return androidDecoder;
     }
 
-    public AndroidExtractor getAndroidDemuxer() {
-        return androidDemuxer;
+    public AndroidExtractor getAndroidExtractor() {
+        return androidExtractor;
     }
 
     @Override
@@ -188,8 +188,8 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         @Override
         public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer inputBuffer) {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            androidDemuxer.readSampleBuffer(inputBuffer, bufferInfo);
-            androidDemuxer.advance();
+            androidExtractor.readSampleBuffer(inputBuffer, bufferInfo);
+            androidExtractor.advance();
             return bufferInfo;
         }
 
