@@ -127,10 +127,10 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
 
         @Override
         public void onVideoSizeChange(int width, int height) {
+            videoAspectRatio = width * 1.0f / height;
             post(new Runnable() {
                 @Override
                 public void run() {
-                    videoAspectRatio = width * 1.0f / height;
                     requestLayout();
                 }
             });
