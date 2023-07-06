@@ -66,6 +66,12 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     }
 
     @Override
+    public boolean isValid() {
+        if (release) return false;
+        return  surface.isValid();
+    }
+
+    @Override
     public boolean isRelease() {
         return release;
     }

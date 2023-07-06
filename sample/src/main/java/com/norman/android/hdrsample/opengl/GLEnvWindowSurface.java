@@ -16,6 +16,8 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
 
     Surface getSurface();
 
+    boolean isValid();
+
 
     class Builder {
         GLEnvDisplay envDisplay;

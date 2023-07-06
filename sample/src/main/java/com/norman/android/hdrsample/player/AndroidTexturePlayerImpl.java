@@ -142,6 +142,12 @@ class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements Android
 
         public synchronized void setOutputSurface(Surface surface) {
             outputSurface = surface;
+            if (surface == null || !surface.isValid()) {
+                if (windowSurface != null) {
+                    windowSurface.release();
+                    windowSurface = null;
+                }
+            }
         }
 
 
@@ -167,7 +173,7 @@ class AndroidTexturePlayerImpl extends AndroidVideoPlayerImpl implements Android
                 windowSurface.release();
                 windowSurface = GLEnvWindowSurface.create(envContext,outputSurface);
             }
-            if (!windowSurface.getSurface().isValid()) {
+            if (!windowSurface.isValid()) {
                 windowSurface.release();
                 windowSurface = null;
             }
