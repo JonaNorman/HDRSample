@@ -10,15 +10,20 @@ import java.io.IOException;
 public class AssetFileSource implements FileSource {
 
     final String assetPath;
-    public AssetFileSource(String assetPath) {
+
+    AssetFileSource(String assetPath) {
         this.assetPath = assetPath;
+    }
+
+    public static AssetFileSource create(String assetPath) {
+        return new AssetFileSource(assetPath);
     }
 
 
     @Override
     public Descriptor createFileDescriptor() {
-       AssetFileDescriptor assetFileDescriptor = FileUtil.openAssetFileDescriptor(assetPath);
-       return new AssetFileSourceDescriptor(assetFileDescriptor);
+        AssetFileDescriptor assetFileDescriptor = FileUtil.openAssetFileDescriptor(assetPath);
+        return new AssetFileSourceDescriptor(assetFileDescriptor);
     }
 
     @Override
@@ -31,7 +36,7 @@ public class AssetFileSource implements FileSource {
 
         AssetFileDescriptor assetFileDescriptor;
         boolean closed;
-       final Object lock = new Object();
+        final Object lock = new Object();
 
         public AssetFileSourceDescriptor(AssetFileDescriptor assetFileDescriptor) {
             this.assetFileDescriptor = assetFileDescriptor;
