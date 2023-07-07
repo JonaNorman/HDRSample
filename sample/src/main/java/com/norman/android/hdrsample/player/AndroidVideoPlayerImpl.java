@@ -31,12 +31,19 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
     @Override
     protected void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat) {
         AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) extractor;
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
+        synchronized (this){
+            videoWidth = videoExtractor.getWidth();
+            videoHeight = videoExtractor.getHeight();
+        }
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoWidth);
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoHeight);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, videoExtractor.getColorStandard());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
+        for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
+            videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+        }
     }
 
     @Override
@@ -56,12 +63,18 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
             width= cropRight-cropLeft+1;
             height= cropBottom-cropTop+1;
         }
+        boolean change = false;
         synchronized (this){
+            if (width !=videoWidth || height != videoHeight){
+                change = true;
+            }
             videoWidth = width;
             videoHeight = height;
         }
-        for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
-            videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+        if (change){
+            for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
+                videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+            }
         }
     }
 

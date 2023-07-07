@@ -251,7 +251,11 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
             } else {
                 videoPlayer.setSurface(null);
             }
-            onVideoSizeChange(videoPlayer.getWidth(), videoPlayer.getHeight());
+            int width = videoPlayer.getWidth();
+            int height = videoPlayer.getHeight();
+            if (width != 0 && height != 0){
+                onVideoSizeChange(width, height);
+            }
             videoPlayer.addSizeChangeListener(this);
         }
 
@@ -288,7 +292,6 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
 
         @Override
         public synchronized void onVideoSizeChange(int width, int height) {
-            if (width == 0 || height == 0) return;
             videoAspectRatio = width * 1.0f / height;
             if (Looper.getMainLooper() == Looper.myLooper()){
                 view.requestLayout();
