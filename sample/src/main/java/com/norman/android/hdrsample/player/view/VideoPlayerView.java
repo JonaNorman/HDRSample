@@ -71,17 +71,15 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
             layoutParams.gravity = Gravity.CENTER;
             if (this.viewType == VIEW_TYPE_SURFACE_VIEW){
                 ratioPlayerView = new AspectRatioSurfaceView(getContext());
-                ratioPlayerView.setVideoPlayer(videoPlayer);
-                addView((View) ratioPlayerView, layoutParams);
             }else {
                 ratioPlayerView = new AspectRatioTextureView(getContext());
-                ratioPlayerView.setVideoPlayer(videoPlayer);
-                addView((View) ratioPlayerView, layoutParams);
             }
+            ratioPlayerView.setVideoPlayer(videoPlayer);
+            addView((View) ratioPlayerView, layoutParams);
         }
     }
 
-    class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener,AspectRatioPlayerView {
+   static class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener,AspectRatioPlayerView {
 
         AspectVideoPlayerHelper videoPlayerHelper;
 
@@ -146,7 +144,7 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
         }
     }
 
-    class AspectRatioSurfaceView extends SurfaceView implements SurfaceHolder.Callback2,AspectRatioPlayerView {
+   static class AspectRatioSurfaceView extends SurfaceView implements SurfaceHolder.Callback2,AspectRatioPlayerView {
 
         private final AspectVideoPlayerHelper videoPlayerHelper;
 
@@ -216,7 +214,7 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
         }
     }
 
-    class AspectVideoPlayerHelper implements VideoPlayer.VideoSizeChangeListener {
+    static class AspectVideoPlayerHelper implements VideoPlayer.VideoSizeChangeListener {
         float videoAspectRatio;
         VideoPlayer videoPlayer;
         Surface surface;

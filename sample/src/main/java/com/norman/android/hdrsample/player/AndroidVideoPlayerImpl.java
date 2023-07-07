@@ -31,18 +31,16 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
     @Override
     protected void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat) {
         AndroidVideoExtractor videoExtractor = (AndroidVideoExtractor) extractor;
-        synchronized (this){
-            videoWidth = videoExtractor.getWidth();
-            videoHeight = videoExtractor.getHeight();
-        }
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoWidth);
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoHeight);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, videoExtractor.getColorStandard());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
-        for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
-            videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
+        if (setVideoSize(videoExtractor.getWidth(),videoExtractor.getHeight())){
+            for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
+                videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
+            }
         }
     }
 
@@ -63,20 +61,20 @@ abstract class AndroidVideoPlayerImpl extends AndroidPlayerImpl implements Video
             width= cropRight-cropLeft+1;
             height= cropBottom-cropTop+1;
         }
-        boolean change = false;
-        synchronized (this){
-            if (width !=videoWidth || height != videoHeight){
-                change = true;
-            }
-            videoWidth = width;
-            videoHeight = height;
-        }
-        if (change){
+        if (setVideoSize(width,height)){
             for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
                 videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
             }
         }
     }
+
+     synchronized boolean setVideoSize(int width,int height){
+         int oldWidth = videoWidth;
+         int oldHeight = videoHeight;
+         videoWidth =width;
+         videoHeight =height;
+         return oldWidth != videoWidth || oldHeight != videoHeight;
+     }
 
     @Override
     public synchronized int getWidth() {

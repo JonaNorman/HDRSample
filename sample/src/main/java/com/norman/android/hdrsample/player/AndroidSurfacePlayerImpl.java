@@ -73,7 +73,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
         return render;
     }
 
-    class DecoderSurface {
+    static class DecoderSurface {
         private Surface outputSurface;
 
         private SurfaceHolder holderSurface;
