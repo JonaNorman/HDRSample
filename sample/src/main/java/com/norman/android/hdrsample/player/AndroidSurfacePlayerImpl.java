@@ -1,14 +1,14 @@
 package com.norman.android.hdrsample.player;
 
 
-import android.graphics.SurfaceTexture;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.view.Surface;
 
+import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
+import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.AndroidDecoder;
 import com.norman.android.hdrsample.player.decode.AndroidSurfaceDecoder;
-import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
 import com.norman.android.hdrsample.player.extract.AndroidExtractor;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements SurfacePlayer {
     private static final String SURFACE_PLAYER = "AndroidSurfacePlayer";
 
-    private DecoderSurface decoderSurface = new DecoderSurface();
+    private final DecoderSurface decoderSurface = new DecoderSurface();
 
 
     public AndroidSurfacePlayerImpl() {
@@ -31,15 +31,9 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
     }
 
     public synchronized void setSurface(Surface surface) {
-        decoderSurface.setOutputSurface(surface);
-        post(new Runnable() {
-            @Override
-            public void run() {
-                AndroidSurfaceDecoder surfaceDecoder = (AndroidSurfaceDecoder) getAndroidDecoder();
-                surfaceDecoder.setOutputSurface(decoderSurface.getSurface());
-            }
-        },true);
-
+        decoderSurface.setSurface(surface);
+        AndroidSurfaceDecoder surfaceDecoder = (AndroidSurfaceDecoder) getAndroidDecoder();
+        surfaceDecoder.setOutputSurface(decoderSurface.getOutputSurface());
     }
 
 
@@ -59,7 +53,7 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
     @Override
     protected void onDecoderConfigure(AndroidDecoder decoder, MediaFormat inputFormat) {
         AndroidSurfaceDecoder androidSurfaceDecoder = (AndroidSurfaceDecoder) decoder;
-        androidSurfaceDecoder.setOutputSurface(decoderSurface.getSurface());
+        androidSurfaceDecoder.setOutputSurface(decoderSurface.getOutputSurface());
         super.onDecoderConfigure(decoder, inputFormat);
     }
 
@@ -69,13 +63,9 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
         super.onOutputFormatChanged(outputFormat);
     }
 
+    @Override
     protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
-        AndroidSurfaceDecoder surfaceDecoder = (AndroidSurfaceDecoder) getAndroidDecoder();
-        Surface surface =  surfaceDecoder.getOutputSurface();
-        if (surface == null || !surface.isValid()){
-            return false;
-        }
-        return true;
+        return decoderSurface.isValid();
     }
 
     @Override
@@ -83,68 +73,86 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
         return render;
     }
 
-
     class DecoderSurface {
         private Surface outputSurface;
 
-        private HolderSurface holderSurface;
+        private SurfaceHolder holderSurface;
 
         private boolean release;
 
-        public synchronized void setOutputSurface(Surface surface) {
+        public synchronized void setSurface(Surface surface) {
             this.outputSurface = surface;
         }
 
-        public synchronized void release(){
-            if (release){
-                return;
-            }
-            release = true;
-            if (holderSurface != null){
-                holderSurface.release();
-                holderSurface = null;
-            }
-        }
         public synchronized Surface getSurface() {
-            if (release) {
-                return null;
+            return outputSurface;
+        }
+
+        public synchronized boolean isValid(){
+            if (release){
+                return false;
             }
-            if (outputSurface != null) return outputSurface;
-            if (holderSurface != null) return holderSurface;
-            holderSurface = HolderSurface.create();
-            return holderSurface;
-        }
-    }
-
-    static final class HolderSurface extends Surface {
-
-        private static GLEnvThreadManager ENV_THREAD_MANAGER;
-        private static int THREAD_HOLDER_COUNT;
-
-        private static Object HANDLER_LOCK = new Object();
-
-        private SurfaceTexture surfaceTexture;
-        private int textureId;
-
-        private boolean release;
-
-        private HolderSurface(SurfaceTexture texture, int textureId) {
-            super(texture);
-            this.surfaceTexture = texture;
-            this.textureId = textureId;
-            this.surfaceTexture.setOnFrameAvailableListener(surfaceTexture -> surfaceTexture.updateTexImage());
+            return outputSurface != null && outputSurface.isValid();
         }
 
-
-        @Override
         public synchronized void release() {
             if (release) {
                 return;
             }
             release = true;
-            super.release();
-            this.surfaceTexture.release();
-            synchronized (HANDLER_LOCK) {
+            if (holderSurface != null) {
+                holderSurface.release();
+                holderSurface = null;
+            }
+        }
+
+        public synchronized Surface getOutputSurface() {
+            if (release) {
+                return null;
+            }
+            if (outputSurface != null) return outputSurface;
+            if (holderSurface != null) return holderSurface.getSurface();
+            holderSurface = new SurfaceHolder();
+            return holderSurface.getSurface();
+        }
+    }
+
+    static final class SurfaceHolder {
+
+        private static GLEnvThreadManager ENV_THREAD_MANAGER;
+        private static int THREAD_HOLDER_COUNT;
+
+        private final GLTextureSurface textureSurface;
+        private boolean release;
+
+
+        public SurfaceHolder() {
+            synchronized (SurfaceHolder.class) {
+                if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
+                    ENV_THREAD_MANAGER = GLEnvThreadManager.create();
+                }
+                this.textureSurface = ENV_THREAD_MANAGER.submitSync(new Callable<GLTextureSurface>() {
+                    @Override
+                    public GLTextureSurface call()  {
+                        return new GLTextureSurface(GLESUtil.createExternalTextureId());
+                    }
+                });
+                THREAD_HOLDER_COUNT++;
+            }
+        }
+
+        public synchronized Surface getSurface(){
+            return textureSurface;
+        }
+
+
+        public synchronized void release() {
+            if (release) {
+                return;
+            }
+            release = true;
+            textureSurface.release();
+            synchronized (SurfaceHolder.class) {
                 if (ENV_THREAD_MANAGER == null) return;
                 THREAD_HOLDER_COUNT--;
                 if (THREAD_HOLDER_COUNT == 0) {
@@ -153,45 +161,12 @@ class AndroidSurfacePlayerImpl extends AndroidVideoPlayerImpl implements Surface
                     ENV_THREAD_MANAGER.post(new Runnable() {
                         @Override
                         public void run() {
-                            GLESUtil.delTextureId(textureId);
+                            GLESUtil.delTextureId(textureSurface.getTextureId());
                         }
                     });
                 }
             }
         }
 
-        public static HolderSurface create() {
-            synchronized (HANDLER_LOCK) {
-                if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
-                    ENV_THREAD_MANAGER = GLEnvThreadManager.create();
-                }
-                HolderSurface holderSurface = ENV_THREAD_MANAGER.submitSync(new Callable<HolderSurface>() {
-                    @Override
-                    public HolderSurface call() {
-                        int textureId = GLESUtil.createExternalTextureId();
-                        SurfaceTexture surfaceTexture = new SurfaceTexture(textureId) {
-                            boolean release = false;
-                            boolean finalize = false;
-
-                            @Override
-                            public synchronized void release() {
-                                if (release || finalize) return;
-                                super.release();
-                                release = false;
-                            }
-
-                            @Override
-                            protected synchronized void finalize() throws Throwable {
-                                finalize = true;
-                                super.finalize();
-                            }
-                        };
-                        return new HolderSurface(surfaceTexture, textureId);
-                    }
-                });
-                THREAD_HOLDER_COUNT++;
-                return holderSurface;
-            }
-        }
     }
 }

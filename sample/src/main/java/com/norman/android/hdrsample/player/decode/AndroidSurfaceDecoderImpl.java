@@ -18,11 +18,12 @@ class AndroidSurfaceDecoderImpl extends AndroidVideoDecoderImpl implements Andro
 
     @Override
     public synchronized void setOutputSurface(Surface surface) {
-        if(surface == null){
+        if (isRelease()) return;
+        if (surface == null) {
             throw new NullPointerException("surface must not null");
         }
         outputSurface = surface;
-        if (isConfigured()){
+        if (isConfigured()) {
             mediaCodecAdapter.setOutputSurface(surface);
         }
     }
@@ -31,4 +32,5 @@ class AndroidSurfaceDecoderImpl extends AndroidVideoDecoderImpl implements Andro
     public synchronized Surface getOutputSurface() {
         return outputSurface;
     }
+
 }

@@ -82,6 +82,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     private boolean release;
     private int flushNumber;
 
+    private Surface outSurface;
+
 
     public MediaCodecAsyncAdapter(MediaFormat mediaFormat,
                                   CallBack callback) {
@@ -98,6 +100,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         Looper looper = Looper.myLooper();
         this.handler = new Handler(looper == null ? Looper.getMainLooper() : looper);
         this.resumeBuffer = new ResumeBuffer();
+        this.outSurface = surface;
     }
 
     public synchronized void start() {
@@ -168,8 +171,13 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         mediaCodec.setOutputSurface(surface);
+        outSurface = surface;
     }
 
+
+    public synchronized Surface getOutSurface() {
+        return outSurface;
+    }
 
     private void resumeBuffer() {
         if (isReleaseOrFlushing() || isPaused()) {
