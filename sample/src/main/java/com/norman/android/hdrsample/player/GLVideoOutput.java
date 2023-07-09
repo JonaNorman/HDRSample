@@ -1,6 +1,5 @@
 package com.norman.android.hdrsample.player;
 
-import android.graphics.SurfaceTexture;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.view.Surface;
@@ -9,11 +8,10 @@ import com.norman.android.hdrsample.opengl.GLEnvContext;
 import com.norman.android.hdrsample.opengl.GLEnvContextManager;
 import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.opengl.GLMatrix;
+import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
-
-import java.nio.ByteBuffer;
 
 public class GLVideoOutput extends VideoOutput {
 
@@ -23,8 +21,7 @@ public class GLVideoOutput extends VideoOutput {
     private final TextureInfo textureInfo = new TextureInfo();
 
     private int textureId;
-    private SurfaceTexture renderSurfaceTexture;
-    private Surface renderSurface;
+    private GLTextureSurface textureSurface;
 
     private GLEnvContextManager envContextManager;
     private GLEnvContext envContext;
@@ -43,8 +40,7 @@ public class GLVideoOutput extends VideoOutput {
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
         textureId = GLESUtil.createExternalTextureId();
-        renderSurfaceTexture = new SurfaceTexture(textureId);
-        renderSurface = new Surface(renderSurfaceTexture);
+        textureSurface = new GLTextureSurface(textureId);
     }
 
     @Override
@@ -52,8 +48,7 @@ public class GLVideoOutput extends VideoOutput {
         playerSurface.clean();
         playRenderer.clean();
         envContextManager.detach();
-        renderSurfaceTexture.release();
-        renderSurface.release();
+        textureSurface.release();
     }
 
 
@@ -70,7 +65,7 @@ public class GLVideoOutput extends VideoOutput {
     @Override
     protected void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
         decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
-        decoder.setOutputSurface(renderSurface);
+        decoder.setOutputSurface(textureSurface);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         textureInfo.width = MediaFormatUtil.getInteger(inputFormat, MediaFormat.KEY_WIDTH);
         textureInfo.height = MediaFormatUtil.getInteger(inputFormat, MediaFormat.KEY_HEIGHT);
@@ -88,18 +83,14 @@ public class GLVideoOutput extends VideoOutput {
     }
 
 
-    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
-        return true;
-    }
-
     @Override
-    protected void onOutputBufferRelease(float timeSecond,boolean render) {
+    protected void onOutputBufferRelease(long presentationTimeUs) {
         GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface();
-        if (windowSurface == null || !render) {
+        if (windowSurface == null) {
             return;
         }
-        renderSurfaceTexture.updateTexImage();
-        renderSurfaceTexture.getTransformMatrix(textureInfo.textureMatrix.get());
+        textureSurface.updateTexImage();
+        textureSurface.getTransformMatrix(textureInfo.textureMatrix.get());
         envContext.makeCurrent(windowSurface);
         TextureRenderer renderer = playRenderer.getCurrentRenderer();
         surfaceInfo.width = windowSurface.getWidth();

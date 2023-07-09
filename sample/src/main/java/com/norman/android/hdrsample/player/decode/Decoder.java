@@ -50,7 +50,7 @@ public interface Decoder {
 
         boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
-        void onOutputBufferRelease(long presentationTimeUs, boolean render);
+        void onOutputBufferRelease(long presentationTimeUs);
 
         void onOutputBufferEndOfStream();
 

@@ -7,6 +7,7 @@ import android.view.Surface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -21,6 +22,8 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
     private static final String KEY_CROP_TOP = "crop-top";
     private static final String KEY_CROP_BOTTOM = "crop-bottom";
 
+    private static final int MAX_FRAME_JANK_MS = 50;
+
     private final List<VideoSizeChangeListener> videoSizeChangedListeners = new CopyOnWriteArrayList<>();
 
     private int videoWidth;
@@ -29,11 +32,15 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
 
     private final VideoOutput videoOutput;
 
+    private final TimeSyncer timeSyncer = new TimeSyncer();
+
+    private Long seekTimeUs;
+
     public VideoPlayerImpl(VideoOutput videoOutput) {
-        this(VIDEO_PLAYER_NAME,videoOutput);
+        this(VIDEO_PLAYER_NAME, videoOutput);
     }
 
-    public VideoPlayerImpl(String threadName,VideoOutput videoOutput) {
+    public VideoPlayerImpl(String threadName, VideoOutput videoOutput) {
         super(VideoDecoder.create(), VideoExtractor.create(), threadName);
         this.videoOutput = videoOutput;
     }
@@ -45,6 +52,25 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         super.onPlayPrepare();
     }
 
+    @Override
+    protected void onPlaySeek(long presentationTimeUs) {
+        super.onPlaySeek(presentationTimeUs);
+        seekTimeUs = presentationTimeUs;
+        timeSyncer.flush();
+    }
+
+    @Override
+    protected void onPlayPause() {
+        super.onPlayPause();
+        timeSyncer.flush();
+    }
+
+    @Override
+    protected void onPlayStop() {
+        super.onPlayStop();
+        timeSyncer.reset();
+        seekTimeUs = null;
+    }
 
     @Override
     protected void onInputFormatPrepare(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
@@ -54,14 +80,13 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, extractor.getWidth());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, extractor.getHeight());
+        videoOutput.onDecoderPrepare(decoder, inputFormat);
         if (setVideoSize(extractor.getWidth(), extractor.getHeight())) {
             for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
                 videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
             }
         }
-        videoOutput.onDecoderPrepare(decoder, inputFormat);
     }
-
 
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
@@ -84,13 +109,33 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
     }
 
     @Override
-    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
-        return videoOutput.onOutputBufferRender(timeSecond, buffer);
+    protected boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
+        if (!isPlaying()) {
+            return false;
+        }
+        if (seekTimeUs != null && presentationTimeUs < seekTimeUs) {
+            return false;
+        } else if (seekTimeUs != null) {
+            seekTimeUs = null;
+        }
+        long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
+        if (sleepTime <= -MAX_FRAME_JANK_MS) {
+            return false;
+        }
+        videoOutput.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
+        return true;
     }
 
     @Override
-    protected void onOutputBufferRelease(float timeSecond, boolean render) {
-        videoOutput.onOutputBufferRelease(timeSecond, render);
+    protected void onOutputBufferRelease(long presentationTimeUs) {
+        long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
+        if (sleepTime > 0) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException ignored) {
+            }
+        }
+        videoOutput.onOutputBufferRelease(presentationTimeUs);
     }
 
     @Override

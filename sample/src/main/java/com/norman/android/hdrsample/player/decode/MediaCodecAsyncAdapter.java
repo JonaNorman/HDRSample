@@ -72,7 +72,10 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 callBack.onOutputBufferEndOfStream();
             } else {
-                callBack.onOutputBufferRelease(info.presentationTimeUs, render);
+                if (!outSurfaceMode || render){
+                    callBack.onOutputBufferRelease(info.presentationTimeUs);
+                }
+
             }
         }
 
@@ -319,7 +322,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
-        void onOutputBufferRelease(long presentationTimeUs, boolean render);
+        void onOutputBufferRelease(long presentationTimeUs);
 
         void onOutputBufferEndOfStream();
 

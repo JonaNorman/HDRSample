@@ -18,13 +18,8 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
 
-    private static final int MAX_FRAME_JANK_MS = 50;
-
     private final BasePlayer.CallBackHandler callBackHandler = new CallBackHandler();
 
-    private final TimeSyncer timeSyncer = new TimeSyncer();
-
-    private Long seekTimeUs;
 
     private E extractor;
     private D decoder;
@@ -36,6 +31,9 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     private volatile boolean repeat = true;
 
     private volatile boolean hasEnd;
+
+
+    private volatile  float currentTime;
 
 
     public DecodePlayer(D decoder, E extractor, String threadName) {
@@ -52,7 +50,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     @Override
     public synchronized void seek(float timeSecond) {
-        post(() -> onPlaySeek(timeSecond));
+        post(() -> onPlaySeek(TimeUtil.secondToMicro(timeSecond)));
     }
 
     @Override
@@ -100,7 +98,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     @Override
     public float getCurrentTime() {
-        return TimeUtil.microToSecond(timeSyncer.getCurrentTimeUs());
+        return currentTime;
     }
 
     @Override
@@ -135,11 +133,9 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         decoder.start();
     }
 
-    protected void onPlaySeek(float timeSecond) {
+    protected void onPlaySeek(long presentationTimeUs) {
         decoder.flush();
-        timeSyncer.flush();
-        seekTimeUs = TimeUtil.secondToMicro(timeSecond);
-        extractor.seekPreSync(seekTimeUs);
+        extractor.seekPreSync(presentationTimeUs);
         hasEnd = false;
     }
 
@@ -149,16 +145,13 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     protected void onPlayPause() {
         decoder.pause();
-        timeSyncer.flush();
     }
 
 
     protected void onPlayStop() {
         decoder.stop();
         extractor.seekPreSync(0);
-        timeSyncer.reset();
         hasEnd = false;
-        seekTimeUs = null;
     }
 
 
@@ -186,36 +179,14 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
         @Override
         public boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
-            if (!isPlaying()) {
-                return false;
-            }
-            if (!onOutputBufferRender(TimeUtil.microToSecond(presentationTimeUs), outputBuffer)) {
-                return false;
-            }
-            long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
-            if (sleepTime <= -MAX_FRAME_JANK_MS) {
-                return false;
-            }
-            if (seekTimeUs != null && presentationTimeUs < seekTimeUs) {
-                return false;
-            } else if (seekTimeUs != null) {
-                seekTimeUs = null;
-            }
-            return true;
+            return  DecodePlayer.this.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
         }
 
         @Override
-        public void onOutputBufferRelease(long presentationTimeUs,boolean render) {
-            long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
-            if (sleepTime > 0) {
-                try {
-                    Thread.sleep(sleepTime);
-                } catch (InterruptedException e) {
-                }
-            }
-            float timeSecond = TimeUtil.microToSecond(presentationTimeUs);
-            DecodePlayer.this.onOutputBufferRelease(timeSecond,render);
-            callBackHandler.callProcess(timeSecond);
+        public void onOutputBufferRelease(long presentationTimeUs) {
+            DecodePlayer.this.onOutputBufferRelease(presentationTimeUs);
+            currentTime = TimeUtil.microToSecond(presentationTimeUs);
+            callBackHandler.callProcess(currentTime);
             notifyFrameWaiter();
         }
 
@@ -247,8 +218,8 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     protected abstract void onOutputFormatChanged(MediaFormat outputFormat);
 
 
-    protected abstract boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer);
+    protected abstract boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
-    protected abstract void onOutputBufferRelease(float timeSecond,boolean render);
+    protected abstract void onOutputBufferRelease(long presentationTimeUs);
 
 }

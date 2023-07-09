@@ -32,26 +32,34 @@ public abstract class VideoOutput {
 
 
 
+
+
     public abstract void setOutputSurface(Surface surface);
 
-    protected  abstract void onPrepare();
-
-    protected  abstract void onRelease();
 
     protected abstract void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat);
 
     protected abstract void onDecoderStop();
 
+
+    protected   void onPrepare(){
+
+    }
+
+    protected   void onRelease(){
+
+    }
+
     protected  void onOutputFormatChanged(MediaFormat outputFormat){
 
     }
 
+    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
 
-    protected boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer) {
-        return true;
     }
 
-    protected void onOutputBufferRelease(float timeSecond, boolean render) {
+
+    protected void onOutputBufferRelease(long presentationTimeUs) {
 
     }
 

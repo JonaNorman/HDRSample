@@ -15,10 +15,6 @@ public class SurfaceVideoOutput extends VideoOutput {
     public static SurfaceVideoOutput create(){
         return new SurfaceVideoOutput();
     }
-
-
-
-
     @Override
     protected synchronized void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
         decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
@@ -39,15 +35,5 @@ public class SurfaceVideoOutput extends VideoOutput {
         if (videoDecoder != null) {
             videoDecoder.setOutputSurface(surface);
         }
-    }
-
-    @Override
-    protected void onPrepare() {
-
-    }
-
-    @Override
-    protected void onRelease() {
-
     }
 }
