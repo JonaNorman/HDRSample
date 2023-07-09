@@ -6,7 +6,7 @@ import com.norman.android.hdrsample.player.source.FileSource;
 
 import java.nio.ByteBuffer;
 
-public interface AndroidExtractor {
+public interface Extractor {
 
     void setSource(FileSource fileSource);
 

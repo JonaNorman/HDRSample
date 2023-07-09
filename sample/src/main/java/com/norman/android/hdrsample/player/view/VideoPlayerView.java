@@ -190,7 +190,6 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
         @Override
         public void surfaceRedrawNeeded(@NonNull SurfaceHolder holder) {
             videoPlayerHelper.waitFrame();
-            ;
         }
 
         @Override
@@ -237,7 +236,7 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
                 return;
             }
             if (videoPlayer != null) {
-                videoPlayer.setSurface(null);
+                videoPlayer.setOutputSurface(null);
                 videoPlayer.removeSizeChangeListener(this);
             }
             videoPlayer = player;
@@ -245,9 +244,9 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
                 return;
             }
             if (surface != null && surface.isValid()) {
-                videoPlayer.setSurface(surface);
+                videoPlayer.setOutputSurface(surface);
             } else {
-                videoPlayer.setSurface(null);
+                videoPlayer.setOutputSurface(null);
             }
             int width = videoPlayer.getWidth();
             int height = videoPlayer.getHeight();
@@ -265,22 +264,22 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
         public synchronized void setSurface(Surface surface) {
             this.surface = surface;
             if (videoPlayer == null) return;
-            videoPlayer.setSurface(surface);
+            videoPlayer.setOutputSurface(surface);
         }
 
         public synchronized void setSurface(SurfaceHolder holder) {
             if (holder == null) {
-                videoPlayer.setSurface(null);
+                videoPlayer.setOutputSurface(null);
             } else {
-                videoPlayer.setSurface(holder.getSurface());
+                videoPlayer.setOutputSurface(holder.getSurface());
             }
         }
 
         public synchronized void setSurface(SurfaceTexture texture) {
             if (texture == null || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && texture.isReleased())) {
-                videoPlayer.setSurface(null);
+                videoPlayer.setOutputSurface(null);
             } else {
-                videoPlayer.setSurface(new Surface(texture));
+                videoPlayer.setOutputSurface(new Surface(texture));
             }
         }
 
@@ -296,7 +295,6 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
             }else {
                 view.post(() -> view.requestLayout());
             }
-
         }
     }
 

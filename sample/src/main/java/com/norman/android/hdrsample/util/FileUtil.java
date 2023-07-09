@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 
-import com.norman.android.hdrsample.player.source.AssetFileSource;
-
 import java.io.IOException;
 
 public class FileUtil {
@@ -16,8 +14,7 @@ public class FileUtil {
             AssetManager assetManager = context.getAssets();
             return assetManager.openFd(assetName);
         } catch (IOException e) {
-            ExceptionUtil.throwRuntime(e);
-            return null;
+            throw  ExceptionUtil.throwRuntime(e);
         }
     }
 }

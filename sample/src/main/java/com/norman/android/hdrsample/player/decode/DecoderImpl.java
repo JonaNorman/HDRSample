@@ -1,12 +1,7 @@
 package com.norman.android.hdrsample.player.decode;
 
 
-import android.media.MediaCodec;
-import android.media.MediaFormat;
-
-import java.nio.ByteBuffer;
-
-abstract class AndroidDecoderImpl implements AndroidDecoder {
+abstract class DecoderImpl implements Decoder {
 
     private static final int DECODE_UNINIT = 0;
     private static final int DECODE_CONFIGURE = 1;
@@ -20,7 +15,7 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
 
 
     @Override
-    public synchronized void configure(AndroidDecoder.Configuration configuration) {
+    public synchronized void configure(Decoder.Configuration configuration) {
         if (state != DECODE_UNINIT &&
                 state != DECODE_STOP) {
             return;
@@ -119,7 +114,7 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
     }
 
 
-    protected abstract void onConfigure(AndroidDecoder.Configuration configuration);
+    protected abstract void onConfigure(Decoder.Configuration configuration);
 
     protected abstract void onStart();
 
@@ -133,41 +128,4 @@ abstract class AndroidDecoderImpl implements AndroidDecoder {
 
     protected abstract void onRelease();
 
-    static class CallBackWrapper implements MediaCodecAsyncAdapter.CallBack {
-        private final CallBack callBack;
-
-        public CallBackWrapper(CallBack callBack) {
-            this.callBack = callBack;
-        }
-
-        @Override
-        public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer byteBuffer) {
-            return callBack.onInputBufferAvailable(byteBuffer);
-        }
-
-        @Override
-        public boolean onOutputBufferAvailable(ByteBuffer outputBuffer,long presentationTimeUs ) {
-            return callBack.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
-        }
-
-        @Override
-        public void onOutputBufferRelease(long presentationTimeUs, boolean render) {
-            callBack.onOutputBufferRelease(presentationTimeUs, render);
-        }
-
-        @Override
-        public void onOutputFormatChanged(MediaFormat format) {
-            callBack.onOutputFormatChanged(format);
-        }
-
-        @Override
-        public void onMediaCodecError(Exception exception) {
-            callBack.onDecodeError(exception);
-        }
-
-        @Override
-        public void onOutputBufferEndOfStream() {
-            callBack.onOutputBufferEndOfStream();
-        }
-    }
 }

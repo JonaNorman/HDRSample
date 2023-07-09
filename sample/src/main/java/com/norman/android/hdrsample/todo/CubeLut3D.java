@@ -258,7 +258,7 @@ public class CubeLut3D {
 
 
         } catch (IOException e) {
-            ExceptionUtil.throwRuntime(e);
+            throw  ExceptionUtil.throwRuntime(e);
         } finally {
             try {
                 if (inputStream != null) {

@@ -7,24 +7,29 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Pair;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
 
-import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
+import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.util.ExceptionUtil;
+import com.norman.android.hdrsample.util.GLESUtil;
+import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
-    private final Handler handler;
-    private final MediaCodec mediaCodec;
-    private final CallBack callBack;
+    private  Handler handler;
+    private  MediaCodec mediaCodec;
+    private  CallBack callBack;
 
-    private final ResumeBuffer resumeBuffer;
+    private  ResumeBuffer resumeBuffer;
 
     private boolean inputEndStream;
 
@@ -58,7 +63,11 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (outputBuffer == null) return;
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
-            boolean render = outputBuffer.hasRemaining() && callBack.onOutputBufferAvailable(outputBuffer, info.presentationTimeUs);
+            boolean render = outputBuffer.hasRemaining();
+            if (outSurfaceMode) {
+                render = render && isValidSurface();
+            }
+            render = render && callBack.onOutputBufferAvailable(outputBuffer, info.presentationTimeUs);
             codec.releaseOutputBuffer(index, render);
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 callBack.onOutputBufferEndOfStream();
@@ -84,23 +93,34 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     private Surface outSurface;
 
+    private HolderSurface holderSurface;
+
+    private final boolean outSurfaceMode;
+
 
     public MediaCodecAsyncAdapter(MediaFormat mediaFormat,
                                   CallBack callback) {
-        this(mediaFormat, null, callback);
+        this.outSurfaceMode = false;
+        init(mediaFormat,callback);
     }
 
     public MediaCodecAsyncAdapter(MediaFormat mediaFormat,
                                   Surface surface,
                                   CallBack callback) {
+        this.outSurfaceMode = true;
+        this.outSurface = surface;
+        init(mediaFormat,callback);
+    }
+
+    void init(MediaFormat mediaFormat,
+              CallBack callback){
         this.callBack = callback;
         this.mediaCodec = createMediaCodec(mediaFormat);
         this.mediaCodec.setCallback(this);
-        this.mediaCodec.configure(mediaFormat, surface, null, 0);
+        this.mediaCodec.configure(mediaFormat, getOutSurface(), null, 0);
         Looper looper = Looper.myLooper();
         this.handler = new Handler(looper == null ? Looper.getMainLooper() : looper);
         this.resumeBuffer = new ResumeBuffer();
-        this.outSurface = surface;
     }
 
     public synchronized void start() {
@@ -164,19 +184,38 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         mediaCodec.release();
         resumeBuffer.clean();
         handler.removeCallbacksAndMessages(null);
+        if (holderSurface != null) {
+            holderSurface.release();
+            holderSurface = null;
+        }
     }
 
     public synchronized void setOutputSurface(Surface surface) {
-        if (isRelease()) {
+        if (isRelease() || outSurface == surface) {
             return;
         }
-        mediaCodec.setOutputSurface(surface);
+        if (!outSurfaceMode) {
+            throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
+        }
         outSurface = surface;
+        mediaCodec.setOutputSurface(getOutSurface());
     }
 
 
-    public synchronized Surface getOutSurface() {
+    synchronized Surface getOutSurface() {
+        if (outSurfaceMode){
+            if (!isValidSurface()) {
+                if (holderSurface == null) {
+                    holderSurface = new HolderSurface();
+                }
+                return holderSurface.getSurface();
+            }
+        }
         return outSurface;
+    }
+
+    synchronized boolean isValidSurface() {
+        return outSurface != null && outSurface.isValid();
     }
 
     private void resumeBuffer() {
@@ -250,7 +289,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         asyncCallback.onOutputFormatChanged(codec, format);
     }
 
-    private MediaCodec createMediaCodec(MediaFormat mediaFormat) {
+    private @NonNull MediaCodec createMediaCodec(MediaFormat mediaFormat) {
         MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
         Integer frameRate = null;
         if (mediaFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
@@ -269,9 +308,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 return MediaCodec.createDecoderByType(mimeType);
             }
         } catch (IOException e) {
-            ExceptionUtil.throwRuntime(e);
+            throw ExceptionUtil.throwRuntime(e);
         }
-        return null;
     }
 
 
@@ -317,6 +355,59 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 asyncCallback.onOutputBufferAvailable(mediaCodec, outputBufferInfo.first, outputBufferInfo.second);
             }
             clean();
+        }
+
+    }
+
+    static final class HolderSurface {
+
+        private static GLEnvThreadManager ENV_THREAD_MANAGER;
+        private static int THREAD_HOLDER_COUNT;
+
+        private final GLTextureSurface textureSurface;
+        private boolean release;
+
+
+        public HolderSurface() {
+            synchronized (SurfaceHolder.class) {
+                if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
+                    ENV_THREAD_MANAGER = GLEnvThreadManager.create();
+                }
+                this.textureSurface = ENV_THREAD_MANAGER.submitSync(new Callable<GLTextureSurface>() {
+                    @Override
+                    public GLTextureSurface call() {
+                        return new GLTextureSurface(GLESUtil.createExternalTextureId());
+                    }
+                });
+                THREAD_HOLDER_COUNT++;
+            }
+        }
+
+        public synchronized Surface getSurface() {
+            return textureSurface;
+        }
+
+
+        public synchronized void release() {
+            if (release) {
+                return;
+            }
+            release = true;
+            textureSurface.release();
+            synchronized (SurfaceHolder.class) {
+                if (ENV_THREAD_MANAGER == null) return;
+                THREAD_HOLDER_COUNT--;
+                if (THREAD_HOLDER_COUNT == 0) {
+                    ENV_THREAD_MANAGER.release();
+                } else {
+                    ENV_THREAD_MANAGER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            GLESUtil.delTextureId(textureSurface.getTextureId());
+                        }
+                    });
+                }
+            }
         }
 
     }

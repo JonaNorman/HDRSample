@@ -1,9 +1,9 @@
 package com.norman.android.hdrsample.player.extract;
 
-public interface AndroidVideoExtractor extends AndroidExtractor {
+public interface VideoExtractor extends Extractor {
 
-    static AndroidVideoExtractor create() {
-        return new AndroidVideoExtractorImpl();
+    static VideoExtractor create() {
+        return new VideoExtractorImpl();
     }
 
     int getWidth();

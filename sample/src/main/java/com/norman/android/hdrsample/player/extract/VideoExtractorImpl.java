@@ -11,7 +11,7 @@ import com.norman.android.hdrsample.util.ExceptionUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-class AndroidVideoExtractorImpl implements AndroidVideoExtractor {
+class VideoExtractorImpl implements VideoExtractor {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
     private String mimeType;
@@ -46,7 +46,7 @@ class AndroidVideoExtractorImpl implements AndroidVideoExtractor {
                     fileSourceDescriptor.getStartOffset(),
                     fileSourceDescriptor.getLength());
         } catch (IOException e) {
-            ExceptionUtil.throwRuntime(e);
+            throw  ExceptionUtil.throwRuntime(e);
         } finally {
             if (fileSourceDescriptor != null) {
                 fileSourceDescriptor.close();

@@ -3,7 +3,6 @@ package com.norman.android.hdrsample.player;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Pair;
 
 import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
@@ -14,7 +13,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-abstract class AbstractPlayerImpl implements Player {
+abstract class BasePlayer implements Player {
 
     private static final int PLAY_UNINIT = 0;
     private static final int PLAY_PREPARE = 1;
@@ -24,7 +23,7 @@ abstract class AbstractPlayerImpl implements Player {
     private static final int PLAY_STOP = 5;
     private static final int PLAY_RELEASE = 6;
 
-    private final List<Pair<Runnable, Boolean>> pendRunnableList = Collections.synchronizedList(new ArrayList<>());
+    private final List<Runnable> pendRunnableList = Collections.synchronizedList(new ArrayList<>());
 
     private final String threadName;
 
@@ -36,7 +35,7 @@ abstract class AbstractPlayerImpl implements Player {
 
 
 
-    public AbstractPlayerImpl(String threadName) {
+    public BasePlayer(String threadName) {
         this.threadName = threadName;
     }
 
@@ -51,21 +50,12 @@ abstract class AbstractPlayerImpl implements Player {
         post(new Runnable() {
             @Override
             public void run() {
-                Iterator<Pair<Runnable, Boolean>> iterator = pendRunnableList.iterator();
-                while (iterator.hasNext()) {
-                    Pair<Runnable, Boolean> pair = iterator.next();
-                    if (pair.second) {
-                        iterator.remove();
-                        pair.first.run();
-                    }
-                }
                 onPlayPrepare();
+                Iterator<Runnable> iterator = pendRunnableList.iterator();
                 while (iterator.hasNext()) {
-                    Pair<Runnable, Boolean> pair = iterator.next();
-                    if (!pair.second) {
-                        iterator.remove();
-                        pair.first.run();
-                    }
+                    Runnable runnable = iterator.next();
+                    iterator.remove();
+                    runnable.run();
                 }
             }
         });
@@ -126,13 +116,9 @@ abstract class AbstractPlayerImpl implements Player {
 
 
     public synchronized void post(Runnable runnable) {
-        post(runnable, false);
-    }
-
-    public synchronized void post(Runnable runnable, boolean ifPrepare) {
         if (isRelease()) return;
         if (messageHandler == null) {
-            pendRunnableList.add(new Pair<>(runnable, ifPrepare));
+            pendRunnableList.add(runnable);
             return;
         }
         messageHandler.post(runnable);
@@ -225,9 +211,6 @@ abstract class AbstractPlayerImpl implements Player {
             this.callback = callback;
         }
 
-        public void callPrepare() {
-            executeCallback(callback -> callback.onPlayPrepare());
-        }
         public void callProcess(float timeSecond) {
             executeCallback(callback -> callback.onPlayProcess(timeSecond));
         }

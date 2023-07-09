@@ -7,9 +7,9 @@ import androidx.annotation.NonNull;
 
 import java.nio.ByteBuffer;
 
-public interface AndroidDecoder  {
+public interface Decoder {
 
-    void configure(AndroidDecoder.Configuration configuration);
+    void configure(Decoder.Configuration configuration);
 
     void start();
 
@@ -33,7 +33,7 @@ public interface AndroidDecoder  {
 
     boolean isPause();
 
-    class Configuration {
+     class Configuration {
         public final MediaFormat mediaFormat;
         public final CallBack callBack;
 

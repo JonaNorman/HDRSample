@@ -87,7 +87,7 @@ class MessageThread extends android.os.HandlerThread {
                 @Override
                 protected void setException(Throwable t) {
                     set(null);
-                    ExceptionUtil.throwRuntime(t);
+                    throw   ExceptionUtil.throwRuntime(t);
                 }
             };
         }

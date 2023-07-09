@@ -5,8 +5,8 @@ import android.media.MediaFormat;
 import android.os.Handler;
 import android.util.Log;
 
-import com.norman.android.hdrsample.player.decode.AndroidDecoder;
-import com.norman.android.hdrsample.player.extract.AndroidExtractor;
+import com.norman.android.hdrsample.player.decode.Decoder;
+import com.norman.android.hdrsample.player.extract.Extractor;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.ExceptionUtil;
@@ -14,20 +14,20 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
-abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
+abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BasePlayer implements Player {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
 
     private static final int MAX_FRAME_JANK_MS = 50;
 
-    private final AbstractPlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
+    private final BasePlayer.CallBackHandler callBackHandler = new CallBackHandler();
 
     private final TimeSyncer timeSyncer = new TimeSyncer();
 
     private Long seekTimeUs;
 
-    private AndroidExtractor androidExtractor;
-    private AndroidDecoder androidDecoder;
+    private E extractor;
+    private D decoder;
 
     private FileSource fileSource;
 
@@ -38,10 +38,10 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
     private volatile boolean hasEnd;
 
 
-    public AndroidPlayerImpl(AndroidDecoder decoder, AndroidExtractor androidExtractor, String threadName) {
+    public DecodePlayer(D decoder, E extractor, String threadName) {
         super(threadName);
-        this.androidExtractor = androidExtractor;
-        this.androidDecoder = decoder;
+        this.extractor = extractor;
+        this.decoder = decoder;
     }
 
     @Override
@@ -80,7 +80,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
                 synchronized (frameWaiter) {
                     frameWaiter.wait(waitTime);
                 }
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
 
             }
             long remainTime = waitTime - (System.currentTimeMillis() - startTime);
@@ -116,47 +116,46 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
 
     protected void onPlayPrepare() {
-        androidExtractor.setSource(fileSource);
-        if (!androidExtractor.isAvailable()) {
+        extractor.setSource(fileSource);
+        if (!extractor.isAvailable()) {
             throw new RuntimeException("file can not play");
         }
         MediaFormat mediaFormat = new MediaFormat();
-        MediaFormatUtil.setString(mediaFormat, MediaFormat.KEY_MIME, androidExtractor.getMimeType());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, androidExtractor.getMaxInputSize());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_PROFILE, androidExtractor.getProfile());
-        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, androidExtractor.getProfileLevel());
-        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, androidExtractor.getCsd0Buffer());
-        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, androidExtractor.getCsd1Buffer());
-        onInputFormatPrepare(androidExtractor, mediaFormat);
-        onDecoderConfigure(androidDecoder, mediaFormat);
-        callBackHandler.callPrepare();
+        MediaFormatUtil.setString(mediaFormat, MediaFormat.KEY_MIME, extractor.getMimeType());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, extractor.getMaxInputSize());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_PROFILE, extractor.getProfile());
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, extractor.getProfileLevel());
+        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, extractor.getCsd0Buffer());
+        MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, extractor.getCsd1Buffer());
+        onInputFormatPrepare(extractor,decoder, mediaFormat);
+        decoder.configure(new Decoder.Configuration(mediaFormat, new DecoderCallBack()));
     }
 
     protected void onPlayStart() {
-        androidDecoder.start();
+        decoder.start();
     }
 
     protected void onPlaySeek(float timeSecond) {
-        androidDecoder.flush();
+        decoder.flush();
         timeSyncer.flush();
         seekTimeUs = TimeUtil.secondToMicro(timeSecond);
-        androidExtractor.seekPreSync(seekTimeUs);
+        extractor.seekPreSync(seekTimeUs);
         hasEnd = false;
     }
 
     protected void onPlayResume() {
-        androidDecoder.resume();
+        decoder.resume();
     }
 
     protected void onPlayPause() {
-        androidDecoder.pause();
+        decoder.pause();
         timeSyncer.flush();
     }
 
 
     protected void onPlayStop() {
-        androidDecoder.stop();
-        androidExtractor.seekPreSync(0);
+        decoder.stop();
+        extractor.seekPreSync(0);
         timeSyncer.reset();
         hasEnd = false;
         seekTimeUs = null;
@@ -164,16 +163,8 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
 
     protected void onPlayRelease() {
-        androidExtractor.release();
-        androidDecoder.release();
-    }
-
-    public AndroidDecoder getAndroidDecoder() {
-        return androidDecoder;
-    }
-
-    public AndroidExtractor getAndroidExtractor() {
-        return androidExtractor;
+        extractor.release();
+        decoder.release();
     }
 
     @Override
@@ -182,14 +173,14 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         callBackHandler.callError(exception);
     }
 
-    class VideoDecoderCallBack implements AndroidDecoder.CallBack {
+    class DecoderCallBack implements Decoder.CallBack {
 
 
         @Override
         public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer inputBuffer) {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            androidExtractor.readSampleBuffer(inputBuffer, bufferInfo);
-            androidExtractor.advance();
+            extractor.readSampleBuffer(inputBuffer, bufferInfo);
+            extractor.advance();
             return bufferInfo;
         }
 
@@ -214,7 +205,7 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
         }
 
         @Override
-        public void onOutputBufferRelease(long presentationTimeUs, boolean render) {
+        public void onOutputBufferRelease(long presentationTimeUs,boolean render) {
             long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
             if (sleepTime > 0) {
                 try {
@@ -223,16 +214,15 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
                 }
             }
             float timeSecond = TimeUtil.microToSecond(presentationTimeUs);
-            if (onOutputBufferProcess(timeSecond, render)) {
-                callBackHandler.callProcess(timeSecond);
-                notifyFrameWaiter();
-            }
+            DecodePlayer.this.onOutputBufferRelease(timeSecond,render);
+            callBackHandler.callProcess(timeSecond);
+            notifyFrameWaiter();
         }
 
 
         @Override
         public void onDecodeError(Exception exception) {
-            ExceptionUtil.throwRuntime(exception);
+            throw   ExceptionUtil.throwRuntime(exception);
         }
 
         @Override
@@ -247,19 +237,18 @@ abstract class AndroidPlayerImpl extends AbstractPlayerImpl implements Player {
 
         @Override
         public void onOutputFormatChanged(MediaFormat format) {
-            AndroidPlayerImpl.this.onOutputFormatChanged(format);
+            DecodePlayer.this.onOutputFormatChanged(format);
         }
     }
 
-    protected abstract void onInputFormatPrepare(AndroidExtractor extractor, MediaFormat inputFormat);
+    protected abstract void onInputFormatPrepare(E extractor,D decoder, MediaFormat inputFormat);
 
-    protected abstract void onDecoderConfigure(AndroidDecoder decoder, MediaFormat inputFormat);
 
     protected abstract void onOutputFormatChanged(MediaFormat outputFormat);
 
 
     protected abstract boolean onOutputBufferRender(float timeSecond, ByteBuffer buffer);
 
-    protected abstract boolean onOutputBufferProcess(float timeSecond, boolean render);
+    protected abstract void onOutputBufferRelease(float timeSecond,boolean render);
 
 }
