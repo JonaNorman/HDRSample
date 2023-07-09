@@ -40,4 +40,14 @@ public class SurfaceVideoOutput extends VideoOutput {
             videoDecoder.setOutputSurface(surface);
         }
     }
+
+    @Override
+    protected void onPrepare() {
+
+    }
+
+    @Override
+    protected void onRelease() {
+
+    }
 }

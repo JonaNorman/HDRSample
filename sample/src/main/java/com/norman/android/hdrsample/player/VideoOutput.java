@@ -29,22 +29,20 @@ public abstract class VideoOutput {
         }
     }
 
-    protected  void onPrepare(){
 
-    }
-
-    protected  void onRelease(){
-
-    }
 
 
     public abstract void setOutputSurface(Surface surface);
+
+    protected  abstract void onPrepare();
+
+    protected  abstract void onRelease();
 
     protected abstract void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat);
 
     protected abstract void onDecoderStop();
 
-    protected void onOutputFormatChanged(MediaFormat outputFormat) {
+    protected  void onOutputFormatChanged(MediaFormat outputFormat){
 
     }
 
