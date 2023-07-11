@@ -49,115 +49,68 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
             return -1;
         }
 
-        if ((o1.isWindowSurface() == false ||
-                o1.isPBufferSurface() == false) && (o2.isWindowSurface() == true &&
-                o2.isPBufferSurface() == true)) {
+        if ((!o1.isWindowSurface() ||
+                !o1.isPBufferSurface()) && (o2.isWindowSurface() &&
+                o2.isPBufferSurface())) {
             return 1;
         }
 
-        if ((o1.isRenderGL20() == false ||
-                o1.isRenderGL30() == false) && (o2.isRenderGL20() == true &&
-                o2.isConformantGL30() == true)) {
+        if ((!o1.isRenderGL20() ||
+                !o1.isRenderGL30()) && (o2.isRenderGL20() &&
+                o2.isConformantGL30())) {
             return 1;
         }
         if (o1.getAlphaMaskSize() > o2.getAlphaMaskSize()) {
             return 1;
         }
 
-        if (o1.isSlow() == true && o2.isSlow() == false) {
+        if (o1.isSlow() && !o2.isSlow()) {
             return 1;
         }
-        if (o1.isRecordable() == false && o2.isRecordable() == true) {
+        if (!o1.isRecordable() && o2.isRecordable()) {
             return 1;
         }
-        if (o1.isTransparent() == true && o2.isTransparent() == false) {
+        if (o1.isTransparent() && !o2.isTransparent()) {
             return 1;
         }
-        if (o1.isLuminanceColor() == true && o2.isLuminanceColor() == false) {
+        if (o1.isLuminanceColor() && !o2.isLuminanceColor()) {
             return 1;
         }
         return o1.getConfigId() - o2.getConfigId();
     };
-    private int alphaSize = 8;
-    private int blueSize = 8;
-    private int greenSize = 8;
-    private int redSize = 8;
-    private int depthSize;
-    private int stencilSize;
-    private int samples;
-    private int sampleBuffers;
-    private boolean windowSurface;
-    private boolean pbufferSurface;
-    private Boolean renderGL10;
-    private Boolean renderGL20;
-    private Boolean renderGL30 = true;
-    private Boolean recordable;
+    private final int alphaSize;
+    private final int blueSize;
+    private final int greenSize;
+    private final int redSize;
+    private final int depthSize;
+    private final int stencilSize;
+    private final int samples;
+    private final int sampleBuffers;
+    private final boolean windowSurface;
+    private final boolean pbufferSurface;
+    private final Boolean renderGL10;
+    private final Boolean renderGL20;
+    private final Boolean renderGL30;
+    private final Boolean recordable;
 
 
-    public EnvConfigSimpleChooserImpl() {
-        this.windowSurface = true;
-        this.pbufferSurface = true;
+    public EnvConfigSimpleChooserImpl(GLEnvConfigSimpleChooser.Builder builder) {
+        alphaSize = builder.alphaSize;
+        blueSize = builder.blueSize;
+        greenSize = builder.greenSize;
+        redSize = builder.redSize;
+        depthSize = builder.depthSize;
+        stencilSize = builder.stencilSize;
+        samples =builder.samples;
+        sampleBuffers = builder.sampleBuffers;
+        windowSurface = builder.windowSurface;
+        pbufferSurface = builder.pbufferSurface;
+        renderGL10 = builder.renderGL10;
+        renderGL20 = builder.renderGL20;
+        renderGL30 = builder.renderGL30;
+        recordable = builder.recordable;
     }
 
-    @Override
-    public void setAlphaSize(int alphaSize) {
-        this.alphaSize = alphaSize;
-    }
-
-    @Override
-    public void setBlueSize(int blueSize) {
-        this.blueSize = blueSize;
-    }
-
-    @Override
-    public void setGreenSize(int greenSize) {
-        this.greenSize = greenSize;
-    }
-
-    @Override
-    public void setRedSize(int redSize) {
-        this.redSize = redSize;
-    }
-
-    @Override
-    public void setDepthSize(int depthSize) {
-        this.depthSize = depthSize;
-    }
-
-    @Override
-    public void setStencilSize(int stencilSize) {
-        this.stencilSize = stencilSize;
-    }
-
-    @Override
-    public void setSamples(int samples) {
-        this.samples = samples;
-    }
-
-    @Override
-    public void setSampleBuffers(int sampleBuffers) {
-        this.sampleBuffers = sampleBuffers;
-    }
-
-    @Override
-    public void setRenderGL10(Boolean renderGL10) {
-        this.renderGL10 = renderGL10;
-    }
-
-    @Override
-    public void setRenderGL20(Boolean renderGL20) {
-        this.renderGL20 = renderGL20;
-    }
-
-    @Override
-    public void setRenderGL30(Boolean renderGL30) {
-        this.renderGL30 = renderGL30;
-    }
-
-    @Override
-    public void setRecordable(Boolean recordable) {
-        this.recordable = recordable;
-    }
 
     @Override
     public final GLEnvConfig chooseConfig(GLEnvConfig[] configs) {

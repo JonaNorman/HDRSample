@@ -68,7 +68,7 @@ public interface GLEnvContext {
         EGLContext shareContext;
 
         @OpenGLESVersion
-        int version = OPENGL_ES_VERSION_2;
+        int version = OPENGL_ES_VERSION_3;
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);

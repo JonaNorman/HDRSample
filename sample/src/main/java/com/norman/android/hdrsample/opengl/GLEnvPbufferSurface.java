@@ -4,10 +4,8 @@ package com.norman.android.hdrsample.opengl;
 public interface GLEnvPbufferSurface extends GLEnvSurface {
 
      static GLEnvPbufferSurface create(GLEnvContext envContext, int width, int height){
-         GLEnvPbufferSurface envSurface = new GLEnvPbufferSurface
-                 .Builder(envContext, width, height)
+         return new Builder(envContext, width, height)
                  .build();
-        return envSurface;
      }
 
     class Builder {
