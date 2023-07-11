@@ -15,6 +15,12 @@ class EnvAttribArrayImpl implements GLEnvAttribArray {
     }
 
     @Override
+    public int getAttrib(int key) {
+        Integer value = attributeArr.get(key);
+        return value != null ? value : 0;
+    }
+
+    @Override
     public int[] getAttribArray() {
         if (update) {
             int length = attributeArr.size() * 2 + 1;

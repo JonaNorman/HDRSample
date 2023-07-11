@@ -54,7 +54,7 @@ public interface GLEnvContext {
         return builder.build();
     }
 
-    static GLEnvContext create(@OpenGLESVersion int version,GLEnvConfigChooser configChooser) {
+    static GLEnvContext create(@OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
         GLEnvContext.Builder builder = new GLEnvContext.Builder(configChooser);
         builder.setClientVersion(version);
         return builder.build();
@@ -69,6 +69,7 @@ public interface GLEnvContext {
 
         @OpenGLESVersion
         int version = OPENGL_ES_VERSION_3;
+        GLEnvContextAttribArray contextAttribArray = new EnvContextAttribArrayImpl();
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);
@@ -96,13 +97,15 @@ public interface GLEnvContext {
 
 
         public void setClientVersion(@OpenGLESVersion int version) {
-            this.version = version;
+            contextAttribArray.setClientVersion(version);
+        }
+
+        public void setContextAttrib(int key, int value) {
+            contextAttribArray.setAttrib(key, value);
         }
 
         public GLEnvContext build() {
-            GLEnvContextAttribArray attrs = new EnvContextAttribArrayImpl();
-            attrs.setClientVersion(version);
-            return new EnvContextImpl(envDisplay, envConfig, attrs, shareContext);
+            return new EnvContextImpl(envDisplay, envConfig, contextAttribArray, shareContext);
         }
     }
 

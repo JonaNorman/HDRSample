@@ -23,8 +23,7 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         GLEnvDisplay envDisplay;
         GLEnvConfig envConfig;
         Surface surface;
-
-        Integer colorSpace;
+        GLEnvWindowSurfaceAttribArray windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
 
 
         public Builder(GLEnvContext envContext, Surface surface) {
@@ -43,15 +42,14 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         }
 
         public void setColorSpace(@ColorSpace int colorSpace) {
-            this.colorSpace = colorSpace;
+            windowSurfaceAttrib.setColorSpace(colorSpace);
         }
 
+        public void setSurfaceAttrib(int key, int value) {
+            windowSurfaceAttrib.setAttrib(key, value);
+        }
 
         public GLEnvWindowSurface build() {
-            GLEnvWindowSurfaceAttribArray windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
-            if (colorSpace != null) {
-                windowSurfaceAttrib.setColorSpace(colorSpace);
-            }
             return new EnvWindowSurfaceImpl(envDisplay, envConfig, surface, windowSurfaceAttrib);
         }
 

@@ -12,10 +12,8 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         GLEnvDisplay envDisplay;
         GLEnvConfig envConfig;
 
-        int width;
-        int height;
 
-        Integer colorSpace;
+        GLEnvPbufferSurfaceAttribArray surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
 
 
         public Builder(GLEnvContext envContext, int width, int height) {
@@ -26,8 +24,9 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, int width, int height) {
             this.envDisplay = envDisplay;
             this.envConfig = envConfig;
-            this.width = width;
-            this.height = height;
+            setWidth(width);
+            setHeight(height);
+
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfigChooser envConfigChooser, int width, int height) {
@@ -35,24 +34,21 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         }
 
         public void setWidth(int width) {
-            this.width = width;
+            surfaceAttrib.setWidth(width);
         }
 
         public void setHeight(int height) {
-            this.height = height;
+            surfaceAttrib.setHeight(height);
         }
 
         public void setColorSpace(@ColorSpace int colorSpace) {
-            this.colorSpace = colorSpace;
+            surfaceAttrib.setColorSpace(colorSpace);
         }
 
+        public void setSurfaceAttrib(int key, int value) {
+            surfaceAttrib.setAttrib(key, value);
+        }
         public GLEnvPbufferSurface build() {
-            GLEnvPbufferSurfaceAttribArray surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
-            surfaceAttrib.setWidth(width);
-            surfaceAttrib.setHeight(height);
-            if (colorSpace != null) {
-                surfaceAttrib.setColorSpace(colorSpace);
-            }
             return new EnvPbufferSurfaceImpl(envDisplay, envConfig, surfaceAttrib);
         }
 

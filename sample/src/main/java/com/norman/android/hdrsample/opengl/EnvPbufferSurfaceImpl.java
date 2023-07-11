@@ -15,11 +15,16 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
 
     private boolean release;
 
+    private int width;
+    private int height;
+
 
     public EnvPbufferSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, GLEnvPbufferSurfaceAttribArray surfaceAttrib) {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
         this.surfaceAttrib = surfaceAttrib;
+        width = surfaceAttrib.getWidth();
+        height = surfaceAttrib.getHeight();
         eglSurface = EGL14.eglCreatePbufferSurface(
                 envDisplay.getEGLDisplay(),
                 envConfig.getEGLConfig(),
@@ -27,6 +32,7 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
         if (eglSurface == null || eglSurface == EGL14.EGL_NO_SURFACE) {
             GLEnvException.checkError();
         }
+
     }
 
 
@@ -48,12 +54,12 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
 
     @Override
     public int getHeight() {
-        return surfaceAttrib.getHeight();
+        return height;
     }
 
     @Override
     public int getWidth() {
-        return surfaceAttrib.getWidth();
+        return width;
     }
 
     @Override
