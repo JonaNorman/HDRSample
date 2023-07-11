@@ -100,7 +100,7 @@ public interface GLEnvContext {
         }
 
         public GLEnvContext build() {
-            GLEnvContextAttrs attrs = new EnvContextAttrsImpl();
+            GLEnvContextAttribArray attrs = new EnvContextAttribArrayImpl();
             attrs.setClientVersion(version);
             return new EnvContextImpl(envDisplay, envConfig, attrs, shareContext);
         }

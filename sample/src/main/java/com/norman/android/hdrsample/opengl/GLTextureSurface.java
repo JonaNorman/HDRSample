@@ -165,6 +165,4 @@ public class GLTextureSurface extends Surface {
     public interface OnFrameAvailableListener {
         void onFrameAvailable(GLTextureSurface surface);
     }
-
-    ;
 }

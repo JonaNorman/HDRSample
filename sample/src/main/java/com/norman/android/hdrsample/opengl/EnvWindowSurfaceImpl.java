@@ -17,7 +17,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     private final int[] surfaceSize = new int[2];
     private boolean release;
 
-    public EnvWindowSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, Surface surface, GLEnvWindowSurfaceAttrs windowSurfaceAttrib) {
+    public EnvWindowSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, Surface surface, GLEnvWindowSurfaceAttribArray windowSurfaceAttrib) {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
         this.surface = surface;

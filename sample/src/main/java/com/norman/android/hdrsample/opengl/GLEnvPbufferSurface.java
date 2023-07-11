@@ -49,7 +49,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         }
 
         public GLEnvPbufferSurface build() {
-            GLEnvPbufferSurfaceAttrib surfaceAttrib = new EnvPbufferSurfaceAttrsImpl();
+            GLEnvPbufferSurfaceAttribArray surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
             surfaceAttrib.setWidth(width);
             surfaceAttrib.setHeight(height);
             if (colorSpace != null) {

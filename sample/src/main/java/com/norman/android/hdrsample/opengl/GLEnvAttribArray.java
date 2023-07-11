@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.opengl;
 
-interface GLEnvAttrs {
+interface GLEnvAttribArray {
     int[] getAttribArray();
 
     void setAttrib(int key, int value);

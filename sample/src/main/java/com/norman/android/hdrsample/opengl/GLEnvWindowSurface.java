@@ -48,7 +48,7 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
 
 
         public GLEnvWindowSurface build() {
-            GLEnvWindowSurfaceAttrs windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
+            GLEnvWindowSurfaceAttribArray windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
             if (colorSpace != null) {
                 windowSurfaceAttrib.setColorSpace(colorSpace);
             }

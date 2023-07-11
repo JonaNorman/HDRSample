@@ -1,5 +1,5 @@
 package com.norman.android.hdrsample.opengl;
 
-interface GLEnvContextAttrs extends GLEnvAttrs {
+interface GLEnvContextAttribArray extends GLEnvAttribArray {
     void setClientVersion(@GLEnvContext.OpenGLESVersion int version);
 }

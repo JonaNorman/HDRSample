@@ -11,12 +11,12 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
 
     private final GLEnvConfig envConfig;
 
-    private final GLEnvPbufferSurfaceAttrib surfaceAttrib;
+    private final GLEnvPbufferSurfaceAttribArray surfaceAttrib;
 
     private boolean release;
 
 
-    public EnvPbufferSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, GLEnvPbufferSurfaceAttrib surfaceAttrib) {
+    public EnvPbufferSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, GLEnvPbufferSurfaceAttribArray surfaceAttrib) {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
         this.surfaceAttrib = surfaceAttrib;

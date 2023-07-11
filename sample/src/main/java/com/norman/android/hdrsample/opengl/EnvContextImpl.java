@@ -11,7 +11,7 @@ class EnvContextImpl implements GLEnvContext {
     GLEnvConfig envConfig;
     boolean release;
 
-    public EnvContextImpl(GLEnvDisplay display, GLEnvConfig config, GLEnvContextAttrs contextAttrib, EGLContext context) {
+    public EnvContextImpl(GLEnvDisplay display, GLEnvConfig config, GLEnvContextAttribArray contextAttrib, EGLContext context) {
         envDisplay = display;
         envConfig = config;
         eglContext = EGL14.eglCreateContext(

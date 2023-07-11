@@ -25,8 +25,7 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
     void setRenderGL30(Boolean renderGL30);
 
     void setRecordable(Boolean recordable);
-
-
+    
      static GLEnvConfigSimpleChooser create() {
         return new EnvConfigSimpleChooserImpl();
     }

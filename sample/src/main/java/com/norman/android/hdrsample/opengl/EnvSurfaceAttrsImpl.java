@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.opengl;
 
 import android.util.SparseArray;
 
-class EnvSurfaceAttrsImpl extends EnvAttrsImpl implements GLEnvSurfaceAttrs {
+class EnvSurfaceAttrsImpl extends EnvAttribArrayImpl implements GLEnvSurfaceAttribArray {
 
     private static final int EGL_GL_COLORSPACE_KHR = 0x309D;
     private static final int EGL_GL_COLORSPACE_SRGB_KHR = 0x3089;

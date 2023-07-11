@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.opengl;
 
-interface GLEnvSurfaceAttrs extends GLEnvAttrs {
+interface GLEnvSurfaceAttribArray extends GLEnvAttribArray {
 
 
     void setColorSpace(@GLEnvSurface.ColorSpace int colorSpace);

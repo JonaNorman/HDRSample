@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGL14;
 
-class EnvContextAttrsImpl extends EnvAttrsImpl implements GLEnvContextAttrs {
+class EnvContextAttribArrayImpl extends EnvAttribArrayImpl implements GLEnvContextAttribArray {
 
     @Override
     public void setClientVersion(@GLEnvContext.OpenGLESVersion int version) {

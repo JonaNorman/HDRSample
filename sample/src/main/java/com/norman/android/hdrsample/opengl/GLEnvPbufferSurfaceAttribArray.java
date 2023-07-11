@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.opengl;
 
-interface GLEnvPbufferSurfaceAttrib extends GLEnvSurfaceAttrs {
+interface GLEnvPbufferSurfaceAttribArray extends GLEnvSurfaceAttribArray {
 
     void setWidth(int width);
 

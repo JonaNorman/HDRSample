@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGL14;
 
-class EnvPbufferSurfaceAttrsImpl extends EnvSurfaceAttrsImpl implements GLEnvPbufferSurfaceAttrib {
+class EnvPbufferSurfaceAttribArrayImpl extends EnvSurfaceAttrsImpl implements GLEnvPbufferSurfaceAttribArray {
 
     int width;
     int height;

@@ -3,7 +3,7 @@ package com.norman.android.hdrsample.opengl;
 import android.opengl.EGL14;
 import android.util.SparseArray;
 
-class EnvAttrsImpl implements GLEnvAttrs {
+class EnvAttribArrayImpl implements GLEnvAttribArray {
     private final SparseArray<Integer> attributeArr = new SparseArray<>();
     private boolean update = true;
     private int[] attrib;

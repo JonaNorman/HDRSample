@@ -2,6 +2,8 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.Matrix;
 
+import androidx.annotation.NonNull;
+
 public class GLMatrix implements Cloneable {
 
     private static final int MATRIX_LENGTH = 16;
@@ -262,10 +264,10 @@ public class GLMatrix implements Cloneable {
         multiplyMV(resultPoint, currentMatrix, point);
     }
 
+    @NonNull
     @Override
     public GLMatrix clone() {
-        GLMatrix matrix4 = new GLMatrix(currentMatrix);
-        return matrix4;
+        return new GLMatrix(currentMatrix);
     }
 
     void multiplyMM(float[] result, float[] left, float[] right) {
