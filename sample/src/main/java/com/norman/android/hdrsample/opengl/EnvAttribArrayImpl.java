@@ -3,8 +3,10 @@ package com.norman.android.hdrsample.opengl;
 import android.opengl.EGL14;
 import android.util.SparseArray;
 
-class EnvAttribArrayImpl implements GLEnvAttribArray {
-    private final SparseArray<Integer> attributeArr = new SparseArray<>();
+import androidx.annotation.NonNull;
+
+class EnvAttribArrayImpl implements GLEnvAttribArray ,Cloneable {
+    private  SparseArray<Integer> attributeArr = new SparseArray<>();
     private boolean update = true;
     private int[] attrib;
 
@@ -33,5 +35,19 @@ class EnvAttribArrayImpl implements GLEnvAttribArray {
             update = false;
         }
         return attrib;
+    }
+
+    @NonNull
+    @Override
+    public EnvAttribArrayImpl clone() {
+        EnvAttribArrayImpl clone;
+        try {
+            clone = (EnvAttribArrayImpl) super.clone();
+            clone.attributeArr = attributeArr.clone();
+            clone.update = true;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError(e); // Cannot happen as we implement Cloneable.
+        }
+        return clone;
     }
 }

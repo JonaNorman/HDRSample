@@ -2,6 +2,8 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGL14;
 
+import androidx.annotation.NonNull;
+
 class EnvPbufferSurfaceAttribArrayImpl extends EnvSurfaceAttrsImpl implements GLEnvPbufferSurfaceAttribArray {
 
 
@@ -23,4 +25,9 @@ class EnvPbufferSurfaceAttribArrayImpl extends EnvSurfaceAttrsImpl implements GL
         return getAttrib(EGL14.EGL_HEIGHT);
     }
 
+    @NonNull
+    @Override
+    public EnvPbufferSurfaceAttribArrayImpl clone() {
+        return (EnvPbufferSurfaceAttribArrayImpl) super.clone();
+    }
 }

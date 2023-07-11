@@ -13,7 +13,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         GLEnvConfig envConfig;
 
 
-        GLEnvPbufferSurfaceAttribArray surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
+        EnvPbufferSurfaceAttribArrayImpl surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
 
 
         public Builder(GLEnvContext envContext, int width, int height) {
@@ -49,7 +49,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
             surfaceAttrib.setAttrib(key, value);
         }
         public GLEnvPbufferSurface build() {
-            return new EnvPbufferSurfaceImpl(envDisplay, envConfig, surfaceAttrib);
+            return new EnvPbufferSurfaceImpl(envDisplay, envConfig, surfaceAttrib.clone());
         }
 
     }

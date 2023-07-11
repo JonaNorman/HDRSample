@@ -23,7 +23,7 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         GLEnvDisplay envDisplay;
         GLEnvConfig envConfig;
         Surface surface;
-        GLEnvWindowSurfaceAttribArray windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
+        EnvWindowSurfaceAttribImpl windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
 
 
         public Builder(GLEnvContext envContext, Surface surface) {
@@ -50,7 +50,7 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         }
 
         public GLEnvWindowSurface build() {
-            return new EnvWindowSurfaceImpl(envDisplay, envConfig, surface, windowSurfaceAttrib);
+            return new EnvWindowSurfaceImpl(envDisplay, envConfig, surface, windowSurfaceAttrib.clone());
         }
 
     }

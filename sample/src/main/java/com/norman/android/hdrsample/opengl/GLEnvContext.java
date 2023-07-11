@@ -69,7 +69,7 @@ public interface GLEnvContext {
 
         @OpenGLESVersion
         int version = OPENGL_ES_VERSION_3;
-        GLEnvContextAttribArray contextAttribArray = new EnvContextAttribArrayImpl();
+        EnvContextAttribArrayImpl contextAttribArray = new EnvContextAttribArrayImpl();
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);
@@ -105,7 +105,7 @@ public interface GLEnvContext {
         }
 
         public GLEnvContext build() {
-            return new EnvContextImpl(envDisplay, envConfig, contextAttribArray, shareContext);
+            return new EnvContextImpl(envDisplay, envConfig, (GLEnvContextAttribArray) contextAttribArray.clone(), shareContext);
         }
     }
 
