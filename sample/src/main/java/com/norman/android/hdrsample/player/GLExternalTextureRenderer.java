@@ -2,18 +2,18 @@ package com.norman.android.hdrsample.player;
 
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
-import android.opengl.GLES30;
 
+import com.norman.android.hdrsample.opengl.GLMatrix;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.FloatBuffer;
 
-class GLVideoTextureRenderer extends GLVideoOutput.TextureRenderer {
+class GLExternalTextureRenderer extends GLRenderer {
 
     private static final int VERTEX_LENGTH = 2;
 
-    private static final float POSITION_COORDINATES[] = {
+    private static final float[] POSITION_COORDINATES = {
             -1.0f, -1.0f,//left bottom
             1.0f, -1.0f,//right bottom
             -1.0f, 1.0f,//left top
@@ -21,7 +21,7 @@ class GLVideoTextureRenderer extends GLVideoOutput.TextureRenderer {
     };
 
 
-    private static final float TEXTURE_COORDINATES[] = {
+    private static final float[] TEXTURE_COORDINATES = {
             0.0f, 0.0f,//left bottom
             1.0f, 0.0f,//right bottom
             0.0f, 1.0f,//left top
@@ -40,7 +40,7 @@ class GLVideoTextureRenderer extends GLVideoOutput.TextureRenderer {
             "    gl_FragColor = textureColor;\n" +
             "}";
 
-    private static final String VERTEX_SHADER =  "precision mediump float;\n" +
+    private static final String VERTEX_SHADER = "precision mediump float;\n" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
             "uniform mat4 textureMatrix;\n" +
@@ -54,10 +54,8 @@ class GLVideoTextureRenderer extends GLVideoOutput.TextureRenderer {
             "}";
 
 
-
-
-    private FloatBuffer textureCoordinateBuffer;
-    private FloatBuffer positionCoordinateBuffer;
+    private final FloatBuffer textureCoordinateBuffer;
+    private final FloatBuffer positionCoordinateBuffer;
 
     private int positionCoordinateAttribute;
     private int textureCoordinateAttribute;
@@ -66,49 +64,49 @@ class GLVideoTextureRenderer extends GLVideoOutput.TextureRenderer {
 
     private int programId;
 
-    private boolean hasLocation;
+
+    private int textureId;
+
+    private final GLMatrix textureMatrix = new GLMatrix();
 
 
-    public GLVideoTextureRenderer() {
+    public GLExternalTextureRenderer() {
         positionCoordinateBuffer = BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
         textureCoordinateBuffer = BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
     }
 
 
     @Override
-    protected void onCreate(GLVideoOutput.TextureInfo textureInfo, GLVideoOutput.SurfaceInfo surfaceInfo) {
+    public void onCreate() {
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
+        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
+        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
+        textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
+        textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
+    }
+
+    public void setTextureId(int textureId) {
+        this.textureId = textureId;
+    }
+
+
+    public GLMatrix getTextureMatrix() {
+        return textureMatrix;
     }
 
     @Override
-    protected void onClean() {
-        GLESUtil.delProgramId(programId);
-        hasLocation = false;
-    }
-
-    @Override
-    protected void onRender(GLVideoOutput.TextureInfo textureInfo, GLVideoOutput.SurfaceInfo surfaceInfo) {
+    void onRender() {
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
         GLES20.glUseProgram(programId);
-        GLES20.glViewport(0, 0, surfaceInfo.width, surfaceInfo.height);
-        GLES30.glClearColor(0.0f, 0.f, 0.f, 1.0f);
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
-        if (!hasLocation) {
-            hasLocation = true;
-            positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-            textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
-            textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-            textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
-        }
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureInfo.textureId);
+        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         GLES20.glUniform1i(textureUnitUniform, 0);
-        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureInfo.textureMatrix.get(), 0);
+        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);

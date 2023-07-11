@@ -85,6 +85,7 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
             for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
                 videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
             }
+            videoOutput.onVideoSizeChange(videoWidth,videoHeight);
         }
     }
 
@@ -100,12 +101,13 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
             width = cropRight - cropLeft + 1;
             height = cropBottom - cropTop + 1;
         }
+        videoOutput.onOutputFormatChanged(outputFormat);
         if (setVideoSize(width, height)) {
             for (VideoSizeChangeListener videoSizeChangedListener : videoSizeChangedListeners) {
                 videoSizeChangedListener.onVideoSizeChange(videoWidth, videoHeight);
             }
+            videoOutput.onVideoSizeChange(videoWidth,videoHeight);
         }
-        videoOutput.onOutputFormatChanged(outputFormat);
     }
 
     @Override

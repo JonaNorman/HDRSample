@@ -13,6 +13,10 @@ public abstract class VideoOutput {
 
     private boolean release;
 
+    private int width;
+
+    private int height;
+
 
     synchronized void prepare() {
         if (prepare) return;
@@ -52,6 +56,20 @@ public abstract class VideoOutput {
 
     protected  void onOutputFormatChanged(MediaFormat outputFormat){
 
+    }
+
+
+    protected void onVideoSizeChange(int width,int height){
+        this.width =width;
+        this.height = height;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getWidth() {
+        return width;
     }
 
     protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {

@@ -1,18 +1,17 @@
 package com.norman.android.hdrsample.todo;
 
-import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 import android.util.Log;
 
-import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.GLVideoTransform;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
-public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
+public class CubeLutVideoTransform extends GLVideoTransform{
 
     private static final int VERTEX_LENGTH = 2;
 
@@ -35,10 +34,9 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
             "in vec4 position;\n" +
             "in vec4 inputTextureCoordinate;\n" +
             "out vec2 textureCoordinate;\n" +
-            "uniform mat4 textureMatrix;\n" +
             "void main() {\n" +
             "    gl_Position =position;\n" +
-            "    textureCoordinate =(textureMatrix*inputTextureCoordinate).xy;\n" +
+            "    textureCoordinate =(inputTextureCoordinate).xy;\n" +
             "}";
 
 
@@ -49,7 +47,7 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
             "in  vec2 textureCoordinate;\n" +
             "out vec4 outColor;\n" +
             "\n" +
-            "uniform samplerExternalOES inputImageTexture;\n" +
+            "uniform sampler2D inputImageTexture;\n" +
             "uniform sampler3D cubeLutTexture;\n" +
             "uniform float cubeLutSize;\n" +
             "uniform bool cubeLutEnable;\n" +
@@ -87,7 +85,6 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
     private int positionCoordinateAttribute;
     private int textureCoordinateAttribute;
     private int textureUnitUniform;
-    private int textureMatrixUniform;
 
     private int cubeLutTextureUniform;
 
@@ -100,31 +97,18 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
     private boolean hasLocation;
 
 
-    public CubeLutTextureRenderer() {
+    public CubeLutVideoTransform() {
         positionCoordinateBuffer = BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
         textureCoordinateBuffer = BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
     }
 
-
     @Override
-    protected void onCreate(GLVideoOutput.TextureInfo textureInfo, GLVideoOutput.SurfaceInfo surfaceInfo) {
+    protected void onStart() {
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
     @Override
-    protected void onClean() {
-        GLESUtil.delProgramId(programId);
-        GLESUtil.delTextureId(lutTextureId);
-        currentCube = null;
-        hasLocation = false;
-        lutTextureId = 0;
-        lutSize = 0;
-        lutEnable = false;
-    }
-
-    @Override
-    protected void onRender(GLVideoOutput.TextureInfo textureInfo, GLVideoOutput.SurfaceInfo surfaceInfo) {
-        GLESUtil.checkGLError();
+    protected void onTransform() {
         if (pendCube != currentCube) {
             currentCube = pendCube;
             GLESUtil.delTextureId(lutTextureId);
@@ -151,12 +135,6 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
         textureCoordinateBuffer.clear();
         GLES20.glUseProgram(programId);
         GLESUtil.checkGLError();
-        GLES20.glViewport(0, 0, surfaceInfo.width, surfaceInfo.height);
-        GLESUtil.checkGLError();
-        GLES30.glClearColor(0.0f, 0.f, 0.f, 1.0f);
-        GLESUtil.checkGLError();
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
-        GLESUtil.checkGLError();
         if (!hasLocation) {
             hasLocation = true;
             positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
@@ -164,8 +142,6 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
             textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
             GLESUtil.checkGLError();
             textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-            GLESUtil.checkGLError();
-            textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
             GLESUtil.checkGLError();
             cubeLutTextureUniform = GLES20.glGetUniformLocation(programId, "cubeLutTexture");
             GLESUtil.checkGLError();
@@ -184,7 +160,7 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
         GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLESUtil.checkGLError();
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureInfo.textureId);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getInputTextureId());
         GLESUtil.checkGLError();
         GLES20.glUniform1i(textureUnitUniform, 0);
         GLESUtil.checkGLError();
@@ -199,8 +175,6 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
         GLESUtil.checkGLError();
         GLES30.glUniform1i(cubeLutEnableUniform, lutEnable?1:0);
         GLESUtil.checkGLError();
-        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureInfo.textureMatrix.get(), 0);
-        GLESUtil.checkGLError();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLESUtil.checkGLError();
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
@@ -210,11 +184,13 @@ public class CubeLutTextureRenderer extends GLVideoOutput.TextureRenderer {
         GLES20.glUseProgram(0);
         GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
     }
+
+
 
 
     public void setCubeLutForAsset(String asset) {
