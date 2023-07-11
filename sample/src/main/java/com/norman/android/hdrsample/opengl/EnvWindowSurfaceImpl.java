@@ -36,6 +36,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     @Override
     public final int getWidth() {
         if (!isRelease()) {
+            checkValid();
             boolean querySurface = EGL14.eglQuerySurface(envDisplay.getEGLDisplay(), eglSurface, EGL14.EGL_WIDTH, surfaceSize, 0);
             if (!querySurface) {
                 GLEnvException.checkError();
@@ -47,6 +48,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     @Override
     public final int getHeight() {
         if (!isRelease()) {
+            checkValid();
             boolean querySurface = EGL14.eglQuerySurface(envDisplay.getEGLDisplay(), eglSurface, EGL14.EGL_HEIGHT, surfaceSize, 1);
             if (!querySurface) {
                 GLEnvException.checkError();
@@ -96,6 +98,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     @Override
     public void setPresentationTime(long presentationNs) {
         if (isRelease()) return;
+        checkValid();
         boolean presentationTimeANDROID = EGLExt.eglPresentationTimeANDROID(envDisplay.getEGLDisplay(), eglSurface, presentationNs);
         if (!presentationTimeANDROID) {
             GLEnvException.checkError();
@@ -106,6 +109,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     @Override
     public void swapBuffers() {
         if (isRelease()) return;
+        checkValid();
         boolean swapBuffers = EGL14.eglSwapBuffers(envDisplay.getEGLDisplay(), eglSurface);
         if (!swapBuffers) {
             GLEnvException.checkError();
@@ -115,5 +119,13 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     @Override
     public Surface getSurface() {
         return surface;
+    }
+
+
+    private void checkValid(){
+        if (isRelease() ||isValid()){
+            return;
+        }
+        throw new IllegalStateException("Surface is no longer available, please check Surface");
     }
 }
