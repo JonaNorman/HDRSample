@@ -26,7 +26,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     private FileSource fileSource;
 
-    private final Object frameWaiter = new Object();
+    private final Object nextFrameWaiter = new Object();
 
     private volatile boolean repeat = true;
 
@@ -61,22 +61,22 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     @Override
     public synchronized void release() {
         super.release();
-        notifyFrameWaiter();
+        notifyNextFrame();
     }
 
     @Override
-    public void waitFrame() {
-        waitFrame(0);
+    public void waitForNextFrame() {
+        waitForNextFrame(0);
     }
 
     @Override
-    public void waitFrame(float second) {
+    public void waitForNextFrame(float second) {
         long waitTime = TimeUtil.secondToMill(second);
         long startTime = System.currentTimeMillis();
         while (isPlaying() && !hasEnd) {
             try {
-                synchronized (frameWaiter) {
-                    frameWaiter.wait(waitTime);
+                synchronized (nextFrameWaiter) {
+                    nextFrameWaiter.wait(waitTime);
                 }
             } catch (InterruptedException ignored) {
 
@@ -89,9 +89,9 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         }
     }
 
-    private void notifyFrameWaiter() {
-        synchronized (frameWaiter) {
-            frameWaiter.notifyAll();
+    private void notifyNextFrame() {
+        synchronized (nextFrameWaiter) {
+            nextFrameWaiter.notifyAll();
         }
     }
 
@@ -187,7 +187,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
             DecodePlayer.this.onOutputBufferRelease(presentationTimeUs);
             currentTime = TimeUtil.microToSecond(presentationTimeUs);
             callBackHandler.callProcess(currentTime);
-            notifyFrameWaiter();
+            notifyNextFrame();
         }
 
 
@@ -200,7 +200,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         public void onOutputBufferEndOfStream() {
             callBackHandler.callEnd();
             hasEnd = true;
-            notifyFrameWaiter();
+            notifyNextFrame();
             if (repeat) {
                 seek(0);
             }

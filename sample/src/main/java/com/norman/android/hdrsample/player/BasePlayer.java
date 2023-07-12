@@ -2,11 +2,9 @@ package com.norman.android.hdrsample.player;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 
 import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
-import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -250,41 +248,4 @@ abstract class BasePlayer implements Player {
         }
     }
 
-    static class TimeSyncer {
-        private long firstSystemTimeUs;
-        private long firstPlayTimeUs;
-
-        private long currentTimeUs;
-
-
-        public synchronized void flush() {
-            firstSystemTimeUs = 0;
-            firstPlayTimeUs = 0;
-        }
-
-        public synchronized void reset() {
-            firstSystemTimeUs = 0;
-            firstPlayTimeUs = 0;
-            currentTimeUs = 0;
-        }
-
-        public synchronized long getCurrentTimeUs() {
-            return currentTimeUs;
-        }
-
-
-        public synchronized long sync(long timeUs) {
-            currentTimeUs = timeUs;
-            long currentSystemUs = TimeUtil.nanoToMicro(SystemClock.elapsedRealtimeNanos());
-            if (firstSystemTimeUs == 0) {
-                firstSystemTimeUs = currentSystemUs;
-                firstPlayTimeUs = timeUs;
-                return 0;
-            } else {
-                long timeCost = currentSystemUs - firstSystemTimeUs;
-                long sleepTime = timeUs - firstPlayTimeUs - timeCost;
-                return sleepTime;
-            }
-        }
-    }
 }

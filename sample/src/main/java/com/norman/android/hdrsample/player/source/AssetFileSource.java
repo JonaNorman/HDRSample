@@ -32,7 +32,7 @@ public class AssetFileSource implements FileSource {
     }
 
 
-    class AssetFileSourceDescriptor implements Descriptor {
+    static class AssetFileSourceDescriptor implements Descriptor {
 
         AssetFileDescriptor assetFileDescriptor;
         boolean closed;

@@ -37,9 +37,9 @@ public interface Player {
 
     void setCallback(Callback callback, Handler handler);
 
-    void waitFrame();
+    void waitForNextFrame();
 
-    void waitFrame(float second);
+    void waitForNextFrame(float second);
 
 
 

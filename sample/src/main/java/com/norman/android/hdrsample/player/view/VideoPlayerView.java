@@ -258,7 +258,7 @@ public class VideoPlayerView extends FrameLayout implements VideoView {
 
 
         public void waitFrame() {
-            videoPlayer.waitFrame(WAIT_FRAME_DURATION);
+            videoPlayer.waitForNextFrame(WAIT_FRAME_DURATION);
         }
 
         public synchronized void setSurface(Surface surface) {

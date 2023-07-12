@@ -2,6 +2,7 @@ package com.norman.android.hdrsample.player;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.os.SystemClock;
 import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
@@ -184,5 +185,43 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
     public void removeSizeChangeListener(VideoSizeChangeListener changeListener) {
         if (!videoSizeChangedListeners.contains(changeListener)) return;
         videoSizeChangedListeners.remove(changeListener);
+    }
+
+    static class TimeSyncer {
+        private long firstSystemTimeUs;
+        private long firstPlayTimeUs;
+
+        private long currentTimeUs;
+
+
+        public synchronized void flush() {
+            firstSystemTimeUs = 0;
+            firstPlayTimeUs = 0;
+        }
+
+        public synchronized void reset() {
+            firstSystemTimeUs = 0;
+            firstPlayTimeUs = 0;
+            currentTimeUs = 0;
+        }
+
+        public synchronized long getCurrentTimeUs() {
+            return currentTimeUs;
+        }
+
+
+        public synchronized long sync(long timeUs) {
+            currentTimeUs = timeUs;
+            long currentSystemUs = TimeUtil.nanoToMicro(SystemClock.elapsedRealtimeNanos());
+            if (firstSystemTimeUs == 0) {
+                firstSystemTimeUs = currentSystemUs;
+                firstPlayTimeUs = timeUs;
+                return 0;
+            } else {
+                long timeCost = currentSystemUs - firstSystemTimeUs;
+                long sleepTime = timeUs - firstPlayTimeUs - timeCost;
+                return sleepTime;
+            }
+        }
     }
 }
