@@ -63,7 +63,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (outputBuffer == null) return;
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
-            boolean render = outputBuffer.hasRemaining();
+            boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs>=0;
             if (outSurfaceMode) {
                 render = render && isValidSurface();
             }
