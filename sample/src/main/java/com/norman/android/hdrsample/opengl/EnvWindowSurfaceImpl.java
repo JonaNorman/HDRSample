@@ -14,6 +14,8 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     private final GLEnvDisplay envDisplay;
     private final GLEnvConfig envConfig;
 
+    private final GLEnvWindowSurfaceAttribArray windowSurfaceAttribArray;
+
     private final int[] surfaceSize = new int[2];
     private boolean release;
 
@@ -21,6 +23,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
         this.surface = surface;
+        this.windowSurfaceAttribArray = windowSurfaceAttrib;
         eglSurface = EGL14.eglCreateWindowSurface(
                 envDisplay.getEGLDisplay(),
                 envConfig.getEGLConfig(),

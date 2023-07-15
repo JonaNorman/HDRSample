@@ -1,13 +1,30 @@
 package com.norman.android.hdrsample.player;
 
+import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
+import androidx.annotation.IntDef;
+
+import com.norman.android.hdrsample.opengl.GLMatrix;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.FloatBuffer;
 
 class GLTextureRenderer extends GLRenderer {
+
+
+    public static final int TYPE_TEXTURE_2D = 1;
+
+    public static final int TYPE_TEXTURE_EXTERNAL_OES = 2;
+
+    @IntDef({TYPE_TEXTURE_2D, TYPE_TEXTURE_EXTERNAL_OES})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface TextureType {
+    }
+
 
     private static final int VERTEX_LENGTH = 2;
 
@@ -26,29 +43,43 @@ class GLTextureRenderer extends GLRenderer {
             1.0f, 1.0f,//right  top
     };
 
-
-    private static final String FRAGMENT_SHADER =
+    private static final String FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
             "precision mediump float;\n" +
-                    "varying highp vec2 textureCoordinate;\n" +
-                    "uniform sampler2D  inputImageTexture;\n" +
-                    "\n" +
-                    "void main()\n" +
-                    "{\n" +
-                    "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-                    "    gl_FragColor = textureColor;\n" +
-                    "}";
+            "varying highp vec2 textureCoordinate;\n" +
+            "uniform sampler2D inputImageTexture;\n" +
+            "\n" +
+            "void main()\n" +
+            "{\n" +
+            "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+            "    gl_FragColor = textureColor;\n" +
+            "}";
+
+    private static final String EXTERNAL_OES_FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
+            "precision mediump float;\n" +
+            "varying highp vec2 textureCoordinate;\n" +
+            "uniform samplerExternalOES inputImageTexture;\n" +
+            "\n" +
+            "void main()\n" +
+            "{\n" +
+            "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
+            "    gl_FragColor = textureColor;\n" +
+            "}";
+
+
 
     private static final String VERTEX_SHADER = "precision mediump float;\n" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
+            "uniform mat4 textureMatrix;\n" +
             "\n" +
             "varying vec2 textureCoordinate;\n" +
             "\n" +
             "void main()\n" +
             "{\n" +
             "    gl_Position = position;\n" +
-            "    textureCoordinate = (inputTextureCoordinate).xy;\n" +
+            "    textureCoordinate = (textureMatrix*inputTextureCoordinate).xy;\n" +
             "}";
+
 
 
     private final FloatBuffer textureCoordinateBuffer;
@@ -57,14 +88,20 @@ class GLTextureRenderer extends GLRenderer {
     private int positionCoordinateAttribute;
     private int textureCoordinateAttribute;
     private int textureUnitUniform;
+    private int textureMatrixUniform;
 
     private int programId;
 
 
     private int textureId;
 
+    private final int textureType;
 
-    public GLTextureRenderer() {
+    private final GLMatrix textureMatrix = new GLMatrix();
+
+
+    public GLTextureRenderer(@TextureType int textureType) {
+        this.textureType = textureType;
         positionCoordinateBuffer = BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
         textureCoordinateBuffer = BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
     }
@@ -72,15 +109,26 @@ class GLTextureRenderer extends GLRenderer {
 
     @Override
     public void onCreate() {
-        this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
+        this.programId = GLESUtil.createProgramId(VERTEX_SHADER, textureType == TYPE_TEXTURE_2D?FRAGMENT_SHADER:EXTERNAL_OES_FRAGMENT_SHADER);
         positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
         textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
         textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
+        textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
     }
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
     }
+
+
+    public GLMatrix getTextureMatrix() {
+        return textureMatrix;
+    }
+
+    public float[] getTextureMatrixValue(){
+        return textureMatrix.get();
+    }
+
 
     @Override
     void onRender() {
@@ -92,12 +140,22 @@ class GLTextureRenderer extends GLRenderer {
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        bindTexture(textureId);
         GLES20.glUniform1i(textureUnitUniform, 0);
+        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glUseProgram(0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        bindTexture(0);
+    }
+
+
+    void bindTexture(int textureId) {
+        if (textureType == TYPE_TEXTURE_EXTERNAL_OES) {
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
+        } else {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        }
     }
 }

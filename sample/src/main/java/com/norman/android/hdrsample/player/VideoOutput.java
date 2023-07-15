@@ -33,6 +33,12 @@ public abstract class VideoOutput {
         }
     }
 
+    synchronized void stop() {
+        if (release || !prepare) return;
+        onDecoderStop();
+    }
+
+
 
 
 

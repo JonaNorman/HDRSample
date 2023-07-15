@@ -21,8 +21,7 @@ public class GLEnvException extends RuntimeException {
                 break;
             }
             String message = getMessage(error);
-            GLEnvException exception = new GLEnvException(error, message);
-            throw exception;
+            throw new GLEnvException(error, message);
         }
     }
 

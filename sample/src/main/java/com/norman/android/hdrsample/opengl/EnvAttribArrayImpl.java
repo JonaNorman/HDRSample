@@ -46,7 +46,7 @@ class EnvAttribArrayImpl implements GLEnvAttribArray ,Cloneable {
             clone.attributeArr = attributeArr.clone();
             clone.update = true;
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError(e); // Cannot happen as we implement Cloneable.
+            throw new AssertionError(e);
         }
         return clone;
     }

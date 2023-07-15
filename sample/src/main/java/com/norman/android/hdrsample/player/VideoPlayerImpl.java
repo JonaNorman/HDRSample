@@ -71,6 +71,7 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         super.onPlayStop();
         timeSyncer.reset();
         seekTimeUs = null;
+        videoOutput.stop();
     }
 
     @Override

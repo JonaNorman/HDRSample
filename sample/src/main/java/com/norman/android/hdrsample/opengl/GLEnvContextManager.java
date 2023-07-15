@@ -44,12 +44,7 @@ public interface GLEnvContextManager {
 
     class Builder {
 
-        GLEnvDisplay envDisplay;
-        GLEnvConfig envConfig;
-        EGLContext shareContext;
-
-        @GLEnvContext.OpenGLESVersion
-        int version = GLEnvContext.OPENGL_ES_VERSION_3;
+        final GLEnvContext.Builder envContextBuilder;
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);
@@ -64,26 +59,23 @@ public interface GLEnvContextManager {
         }
 
         public Builder(GLEnvConfigChooser configChooser, EGLContext shareContext) {
-            this.envDisplay = GLEnvDisplay.createDisplay();
-            this.envConfig = envDisplay.chooseConfig(configChooser);
-            this.shareContext = shareContext;
+            envContextBuilder = new GLEnvContext.Builder(configChooser, shareContext);
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext shareContext) {
-            this.envDisplay = envDisplay;
-            this.envConfig = envConfig;
-            this.shareContext = shareContext;
+            envContextBuilder = new GLEnvContext.Builder(envDisplay, envConfig, shareContext);
         }
 
 
         public void setClientVersion(@GLEnvContext.OpenGLESVersion int version) {
-            this.version = version;
+            envContextBuilder.setClientVersion(version);
+        }
+        public void setContextAttrib(int key, int value) {
+            envContextBuilder.setContextAttrib(key,value);
         }
 
         public GLEnvContextManager build() {
-            GLEnvContext.Builder builder = new GLEnvContext.Builder(envDisplay, envConfig, shareContext);
-            builder.setClientVersion(version);
-            return new EnvContextManagerImpl(builder.build());
+            return new EnvContextManagerImpl(envContextBuilder.build());
         }
     }
 }

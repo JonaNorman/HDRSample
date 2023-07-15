@@ -5,6 +5,8 @@ abstract class GLRenderTarget {
      int renderWidth;
      int renderHeight;
 
+     boolean rendering;
+
     void setRenderSize(int renderWidth, int renderHeight) {
         if (renderWidth != this.renderWidth || this.renderHeight != renderHeight) {
             this.renderWidth = renderWidth;
@@ -14,11 +16,27 @@ abstract class GLRenderTarget {
     }
 
     void startRender() {
+        rendering = true;
         onRenderStart();
     }
 
     void finishRender() {
         onRenderFinish();
+        rendering = false;
+    }
+
+    boolean isRendering() {
+        return rendering;
+    }
+
+    void cleanRender(){
+        if (isRendering()){
+            onRenderClean();
+        }else {
+            startRender();
+            onRenderClean();
+            finishRender();
+        }
     }
 
 
@@ -27,4 +45,6 @@ abstract class GLRenderTarget {
     abstract void onRenderStart();
 
     abstract void onRenderFinish();
+
+    abstract void onRenderClean();
 }

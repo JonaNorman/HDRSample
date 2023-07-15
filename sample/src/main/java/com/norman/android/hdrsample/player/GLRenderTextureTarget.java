@@ -35,12 +35,16 @@ class GLRenderTextureTarget extends GLRenderTarget {
     void onRenderStart() {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId);
         GLES30.glViewport(0, 0, renderWidth, renderHeight);
-        GLES30.glClearColor(0.0f, 0.f, 0.f, 0.0f);
-        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
 
     @Override
     void onRenderFinish() {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
+
+    @Override
+    void onRenderClean() {
+        GLES30.glClearColor(0.0f, 0.f, 0.f, 0.0f);
+        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
 }

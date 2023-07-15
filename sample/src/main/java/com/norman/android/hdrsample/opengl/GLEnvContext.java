@@ -67,9 +67,7 @@ public interface GLEnvContext {
         GLEnvConfig envConfig;
         EGLContext shareContext;
 
-        @OpenGLESVersion
-        int version = OPENGL_ES_VERSION_3;
-        EnvContextAttribArrayImpl contextAttribArray = new EnvContextAttribArrayImpl();
+        final EnvContextAttribArrayImpl contextAttribArray = new EnvContextAttribArrayImpl();
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);
@@ -87,12 +85,14 @@ public interface GLEnvContext {
             this.envDisplay = GLEnvDisplay.createDisplay();
             this.envConfig = envDisplay.chooseConfig(configChooser);
             this.shareContext = shareContext;
+            setClientVersion(OPENGL_ES_VERSION_3);
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext eglContext) {
             this.envDisplay = envDisplay;
             this.envConfig = envConfig;
             this.shareContext = eglContext;
+            setClientVersion(OPENGL_ES_VERSION_3);
         }
 
 

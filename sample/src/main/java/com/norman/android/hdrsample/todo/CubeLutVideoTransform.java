@@ -103,12 +103,13 @@ public class CubeLutVideoTransform extends GLVideoTransform{
     }
 
     @Override
-    protected void onStart() {
+    protected void onCreate() {
         this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
     }
 
     @Override
     protected void onTransform() {
+        clean();
         if (pendCube != currentCube) {
             currentCube = pendCube;
             GLESUtil.delTextureId(lutTextureId);
@@ -188,6 +189,7 @@ public class CubeLutVideoTransform extends GLVideoTransform{
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
+        success();
     }
 
 

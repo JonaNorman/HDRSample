@@ -1,7 +1,5 @@
 package com.norman.android.hdrsample.opengl;
 
-import android.opengl.EGLContext;
-
 import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
 
@@ -11,21 +9,13 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
     private MessageHandler messageHandler;
     private GLEnvContextManager contextManager;
 
-    private GLEnvDisplay envDisplay;
-    private GLEnvConfig envConfig;
-    private EGLContext eglContext;
-
-    private @GLEnvContext.OpenGLESVersion int version;
 
     private Future<GLEnvContext> envContextFuture;
 
     private volatile ErrorCallback errorCallback;
 
-    public EnvThreadManagerImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext eglContext, @GLEnvContext.OpenGLESVersion int version) {
-        this.envDisplay = envDisplay;
-        this.envConfig = envConfig;
-        this.eglContext = eglContext;
-        this.version = version;
+    public EnvThreadManagerImpl(GLEnvContextManager envContextManager) {
+        this.contextManager = envContextManager;
         messageHandler = MessageHandler.obtain(this);
         envContextFuture = submit(() -> contextManager.getEnvContext());
     }
@@ -102,9 +92,6 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
 
     @Override
     public void onHandlerStart() {
-        GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder(envDisplay, envConfig, eglContext);
-        builder.setClientVersion(version);
-        contextManager = builder.build();
         contextManager.attach();
     }
 }

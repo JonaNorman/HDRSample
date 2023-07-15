@@ -29,6 +29,11 @@ public abstract class GLVideoTransform  extends GLRenderer {
     }
 
 
+    protected final void clean(){
+         outputTarget.cleanRender();
+    }
+
+
     void renderToTarget(GLRenderTextureTarget inputTarget,GLRenderTarget renderTarget) {
         this.inputTarget = inputTarget;
         super.renderToTarget(renderTarget);
@@ -50,13 +55,5 @@ public abstract class GLVideoTransform  extends GLRenderer {
         onTransform();
     }
 
-    @Override
-    void onCreate() {
-        onStart();
-    }
-
     protected abstract void onTransform();
-
-
-    protected abstract void onStart();
 }

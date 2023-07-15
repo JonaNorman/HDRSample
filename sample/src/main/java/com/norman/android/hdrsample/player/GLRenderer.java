@@ -16,7 +16,8 @@ abstract class GLRenderer {
         renderTarget.finishRender();
     }
 
-    abstract void onCreate();
+
+    protected abstract void onCreate();
 
 
     abstract void onRender();
