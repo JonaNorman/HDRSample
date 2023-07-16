@@ -29,12 +29,12 @@ abstract class GLRenderTarget {
         return rendering;
     }
 
-    void cleanRender(){
+    void clearColor(){
         if (isRendering()){
-            onRenderClean();
+            onRenderClearColor();
         }else {
             startRender();
-            onRenderClean();
+            onRenderClearColor();
             finishRender();
         }
     }
@@ -46,5 +46,5 @@ abstract class GLRenderTarget {
 
     abstract void onRenderFinish();
 
-    abstract void onRenderClean();
+    abstract void onRenderClearColor();
 }

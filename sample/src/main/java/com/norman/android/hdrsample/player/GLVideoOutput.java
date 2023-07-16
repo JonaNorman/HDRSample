@@ -93,6 +93,7 @@ public class GLVideoOutput extends VideoOutput {
         textureSurface.getTransformMatrix(textureSurfaceRenderer.getTextureMatrixValue());
         envContext.makeCurrent(windowSurface);
         screenTarget.setRenderSize(windowSurface.getWidth(),windowSurface.getHeight());
+        screenTarget.clearColor();
         if (transformList.isEmpty()){
             textureSurfaceRenderer.renderToTarget(screenTarget);
         }else {

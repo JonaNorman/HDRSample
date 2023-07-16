@@ -29,8 +29,8 @@ public abstract class GLVideoTransform  extends GLRenderer {
     }
 
 
-    protected final void clean(){
-         outputTarget.cleanRender();
+    protected final void clearColor(){
+         outputTarget.clearColor();
     }
 
 

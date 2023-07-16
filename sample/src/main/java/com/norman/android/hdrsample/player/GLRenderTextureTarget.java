@@ -43,7 +43,7 @@ class GLRenderTextureTarget extends GLRenderTarget {
     }
 
     @Override
-    void onRenderClean() {
+    void onRenderClearColor() {
         GLES30.glClearColor(0.0f, 0.f, 0.f, 0.0f);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
     }
