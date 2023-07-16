@@ -253,6 +253,9 @@ public class CubeLut3D {
                             matchBuffer.put(readByte);
                         }
                     }
+                    if (readByte == BYTE_LINE) {
+                        matchStateNewLine = MATCH_RUNNING;
+                    }
                 }
             }
 

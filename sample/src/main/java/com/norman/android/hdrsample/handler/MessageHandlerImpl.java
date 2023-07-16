@@ -3,6 +3,7 @@ package com.norman.android.hdrsample.handler;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -21,6 +22,7 @@ class MessageHandlerImpl implements MessageHandler {
     private final MessageThread.ErrorCallback errorCallback = new MessageThread.ErrorCallback() {
         @Override
         public void onThreadError(Exception exception) {
+            Log.e("aaaa",Log.getStackTraceString(exception));
             if (lifeCycleCallback != null) {
                 lifeCycleCallback.onHandlerError(exception);
             }
