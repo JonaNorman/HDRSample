@@ -133,6 +133,13 @@ public class CubeLutVideoTransform extends GLVideoTransform {
                 lutSize = currentCube.size;
                 lutEnable = true;
             }
+        }else if (future == null && currentCube !=  null){
+            currentCube = null;
+            GLESUtil.delTextureId(lutTextureId);
+            GLESUtil.checkGLError();
+            lutTextureId = 0;
+            lutSize = 0;
+            lutEnable = false;
         }
         if (!lutEnable) {
             return;
@@ -183,6 +190,10 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
 
     public void setCubeLutForAsset(String asset) {
+        if (asset == null){
+            lut3DFuture = null;
+            return;
+        }
         MessageHandler messageHandler = MessageHandler.obtain();
         lut3DFuture = messageHandler.submit(() -> CubeLut3D.createForAsset(asset));
         messageHandler.finishSafe();

@@ -5,7 +5,6 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +15,7 @@ import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.view.VideoPlayerView;
 import com.norman.android.hdrsample.todo.CubeLutVideoTransform;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +26,14 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
     CubeLutVideoTransform videoTransform;
 
     AlertDialog cubeLutDialog;
+
+    boolean loadLutSuccess;
+
+    List<String>  lutPathList = new ArrayList<>();
+
+    List<String> lutNameList = new ArrayList<>();
+
+    int selectLutPosition;
 
 
     @Override
@@ -68,10 +76,40 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
             }
             return;
         }
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(HDRPlayActivity.this);
-        builderSingle.setTitle("select cubeLut3D");
-        AssetManager assetManager = getResources().getAssets();
+        loadLutList();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Buy Now")
+                //.setMessage("You can buy our products without registration too. Enjoy the shopping")
+                .setSingleChoiceItems(lutNameList.toArray(new String[0]), selectLutPosition, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selectLutPosition = which;
+                        String strName = lutPathList.get(which);
+                        videoTransform.setCubeLutForAsset(strName);
+                        dialog.dismiss();
+                        cubeLutDialog = null;
+                    }
+                });
+        cubeLutDialog =   builder.show();
 
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.ButtonCubeLut){
+            showCubeLutDialog();
+        }
+    }
+
+
+    private void loadLutList(){
+        if (loadLutSuccess){
+            return;
+        }
+        loadLutSuccess = true;
+        AssetManager assetManager = getResources().getAssets();
         LinkedList<String> pathList = new LinkedList<>();
         pathList.add("lut/pq2sdr");
         List<String> fileList = new ArrayList<>();
@@ -90,43 +128,22 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
                     pathList.add(path+"/"+name);
                 }
             }
-
         }
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(HDRPlayActivity.this, android.R.layout.select_dialog_singlechoice);
-        arrayAdapter.addAll(fileList);
-        builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+
+        List<String> nameList = new ArrayList<>();
+        for (String path : fileList) {
+            String fileName = new File(path).getName();
+            int pos = fileName.lastIndexOf(".");
+            if (pos > 0) {
+                fileName = fileName.substring(0, pos);
             }
-        });
-
-        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String strName = arrayAdapter.getItem(which);
-                AlertDialog.Builder builderInner = new AlertDialog.Builder(HDRPlayActivity.this);
-                builderInner.setMessage(strName);
-                builderInner.setTitle("Your Selected Item is");
-                builderInner.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,int which) {
-                        videoTransform.setCubeLutForAsset(strName);
-                        dialog.dismiss();
-                    }
-                });
-                builderInner.show();
-            }
-        });
-        cubeLutDialog =  builderSingle.show();
-
-    }
-
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.ButtonCubeLut){
-            showCubeLutDialog();
+            nameList.add(fileName);
         }
+        fileList.add(0,null);
+        nameList.add(0,"无");
+        lutNameList = nameList;
+        lutPathList = fileList;
+
+
     }
 }
