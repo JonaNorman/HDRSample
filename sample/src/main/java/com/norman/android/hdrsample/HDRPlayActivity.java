@@ -2,6 +2,7 @@ package com.norman.android.hdrsample;
 
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
+import android.media.MediaFormat;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.view.VideoPlayerView;
@@ -35,6 +37,15 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 
     int selectLutPosition;
 
+    VideoOutput.OnOutputFormatChangeCallback outputFormatChangeCallback = new VideoOutput.OnOutputFormatChangeCallback() {
+        @Override
+        public void onOutputFormatChange(VideoOutput videoOutput,MediaFormat outputFormat) {
+
+
+
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +58,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         videoOutput.addVideoTransform(videoTransform);
+        videoOutput.addOnOutputFormatChangeCallback(outputFormatChangeCallback);
         surfaceView.setVideoPlayer(videoPlayer);
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
     }
