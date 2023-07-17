@@ -108,6 +108,22 @@ public class MediaFormatUtil {
                 || colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010;
     }
 
+    public static boolean isYuv420(MediaFormat mediaFormat){
+        if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
+            return false;
+        }
+        int colorFormat = getInteger(mediaFormat, MediaFormat.KEY_COLOR_FORMAT);
+        if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar) {//YV21  Y+U+V
+            return true;
+        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar) {  //YV12 Y+V+U
+            return true;
+        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {//NV12  Y+UV
+            return true;
+        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar) {//NV21 Y+VU
+            return true;
+        } else return isYuv420P10(mediaFormat);
+    }
+
 
     public static boolean isHdrProfile(MediaFormat mediaFormat) {
         if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_PROFILE)) {
