@@ -25,7 +25,6 @@ class GLTextureRenderer extends GLRenderer {
     @interface TextureType {
     }
 
-
     private static final int VERTEX_LENGTH = 2;
 
     private static final float[] POSITION_COORDINATES = {
@@ -66,7 +65,6 @@ class GLTextureRenderer extends GLRenderer {
             "}";
 
 
-
     private static final String VERTEX_SHADER = "precision mediump float;\n" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
@@ -79,7 +77,6 @@ class GLTextureRenderer extends GLRenderer {
             "    gl_Position = position;\n" +
             "    textureCoordinate = (textureMatrix*inputTextureCoordinate).xy;\n" +
             "}";
-
 
 
     private final FloatBuffer textureCoordinateBuffer;
@@ -109,12 +106,18 @@ class GLTextureRenderer extends GLRenderer {
 
     @Override
     public void onCreate() {
-        this.programId = GLESUtil.createProgramId(VERTEX_SHADER, textureType == TYPE_TEXTURE_2D?FRAGMENT_SHADER:EXTERNAL_OES_FRAGMENT_SHADER);
+        this.programId = onCreateProgram();
         positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
         textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
         textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
         textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
+
     }
+
+    int onCreateProgram() {
+        return GLESUtil.createProgramId(VERTEX_SHADER, textureType == TYPE_TEXTURE_2D ? FRAGMENT_SHADER : EXTERNAL_OES_FRAGMENT_SHADER);
+    }
+
 
     public void setTextureId(int textureId) {
         this.textureId = textureId;
@@ -125,7 +128,7 @@ class GLTextureRenderer extends GLRenderer {
         return textureMatrix;
     }
 
-    public float[] getTextureMatrixValue(){
+    public float[] getTextureMatrixValue() {
         return textureMatrix.get();
     }
 
@@ -143,11 +146,16 @@ class GLTextureRenderer extends GLRenderer {
         bindTexture(textureId);
         GLES20.glUniform1i(textureUnitUniform, 0);
         GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
+        onDraw();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glUseProgram(0);
         bindTexture(0);
+    }
+
+    void onDraw() {
+
     }
 
 

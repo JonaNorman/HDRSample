@@ -25,9 +25,13 @@ public class GLVideoOutput extends VideoOutput {
 
     private final PlayerSurface playerSurface = new PlayerSurface();
 
-    private final GLTextureRenderer textureSurfaceRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_EXTERNAL_OES);
+    private final GLTextureRenderer externalTextureRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_EXTERNAL_OES);
+
+    private final GLTextureY2YRenderer y2YTextureRenderer = new GLTextureY2YRenderer();
 
     private final GLTextureRenderer outputTextureRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_2D);
+
+    private GLTextureRenderer textureSurfaceRenderer = externalTextureRenderer;
 
     private final List<GLVideoTransform> transformList = new ArrayList<>();
 
@@ -35,12 +39,12 @@ public class GLVideoOutput extends VideoOutput {
     private final GLRenderScreenTarget screenTarget = new GLRenderScreenTarget();
 
 
-    private  GLRenderTextureTarget frontTarget = new GLRenderTextureTarget();
+    private GLRenderTextureTarget frontTarget = new GLRenderTextureTarget();
 
-    private  GLRenderTextureTarget backTarget = new GLRenderTextureTarget();
+    private GLRenderTextureTarget backTarget = new GLRenderTextureTarget();
 
 
-    public static GLVideoOutput create(){
+    public static GLVideoOutput create() {
         return new GLVideoOutput();
     }
 
@@ -50,7 +54,9 @@ public class GLVideoOutput extends VideoOutput {
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
         textureSurface = new GLTextureSurface(GLESUtil.createExternalTextureId());
-        textureSurfaceRenderer.setTextureId(textureSurface.getTextureId());
+        externalTextureRenderer.setTextureId(textureSurface.getTextureId());
+        y2YTextureRenderer.setTextureId(textureSurface.getTextureId());
+
     }
 
     @Override
@@ -78,10 +84,33 @@ public class GLVideoOutput extends VideoOutput {
 
     }
 
-    public synchronized void addVideoTransform(GLVideoTransform videoTransform){
+    public synchronized void addVideoTransform(GLVideoTransform videoTransform) {
         transformList.add(videoTransform);
     }
 
+
+    @Override
+    protected void onOutputFormatChanged(MediaFormat outputFormat) {
+        super.onOutputFormatChanged(outputFormat);
+        int colorTransfer = getColorTransfer();
+        int colorStandard = getColorStandard();
+
+        boolean y2yEnable = false;
+
+        if ((colorTransfer == MediaFormat.COLOR_TRANSFER_HLG || colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084) &&
+                colorStandard == MediaFormat.COLOR_STANDARD_BT2020) {
+            if (GLTextureY2YRenderer.isContainY2YEXT()) {
+                y2yEnable = true;
+            }
+        }
+        if (y2yEnable) {
+            textureSurfaceRenderer = y2YTextureRenderer;
+            y2YTextureRenderer.setBitDepth(10);
+            y2YTextureRenderer.setColorRange(getColorRange());
+        } else {
+            textureSurfaceRenderer = externalTextureRenderer;
+        }
+    }
 
     @Override
     protected synchronized void onOutputBufferRelease(long presentationTimeUs) {
@@ -92,19 +121,19 @@ public class GLVideoOutput extends VideoOutput {
         textureSurface.updateTexImage();
         textureSurface.getTransformMatrix(textureSurfaceRenderer.getTextureMatrixValue());
         envContext.makeCurrent(windowSurface);
-        screenTarget.setRenderSize(windowSurface.getWidth(),windowSurface.getHeight());
+        screenTarget.setRenderSize(windowSurface.getWidth(), windowSurface.getHeight());
         screenTarget.clearColor();
-        if (transformList.isEmpty()){
+        if (transformList.isEmpty()) {
             textureSurfaceRenderer.renderToTarget(screenTarget);
-        }else {
-            frontTarget.setRenderSize(getWidth(),getHeight());
-            backTarget.setRenderSize(getWidth(),getHeight());
+        } else {
+            frontTarget.setRenderSize(getWidth(), getHeight());
+            backTarget.setRenderSize(getWidth(), getHeight());
             textureSurfaceRenderer.renderToTarget(frontTarget);
             for (GLVideoTransform videoTransform : transformList) {
-                videoTransform.renderToTarget(frontTarget,backTarget);
-                if (videoTransform.transformSuccess){
+                videoTransform.renderToTarget(frontTarget, backTarget);
+                if (videoTransform.transformSuccess) {
                     GLRenderTextureTarget temp = frontTarget;
-                    frontTarget  = backTarget;
+                    frontTarget = backTarget;
                     backTarget = temp;
                 }
             }
@@ -147,10 +176,10 @@ public class GLVideoOutput extends VideoOutput {
                 return null;
             }
             if (windowSurface == null) {
-                windowSurface = GLEnvWindowSurface.create(envContext,outputSurface);
+                windowSurface = GLEnvWindowSurface.create(envContext, outputSurface);
             } else if (outputSurface != windowSurface.getSurface()) {
                 windowSurface.release();
-                windowSurface = GLEnvWindowSurface.create(envContext,outputSurface);
+                windowSurface = GLEnvWindowSurface.create(envContext, outputSurface);
             }
             if (!windowSurface.isValid()) {
                 windowSurface.release();
