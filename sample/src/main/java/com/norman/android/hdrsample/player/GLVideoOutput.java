@@ -1,6 +1,5 @@
 package com.norman.android.hdrsample.player;
 
-import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.view.Surface;
 
@@ -10,8 +9,9 @@ import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.util.GLESUtil;
-import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.util.LogUtil;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,9 +74,10 @@ public class GLVideoOutput extends VideoOutput {
 
     @Override
     protected void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
+//        decoder.setOutputMode(VideoDecoder.BUFFER_MODE);
         decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
         decoder.setOutputSurface(textureSurface);
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+
     }
 
     @Override
@@ -110,6 +111,18 @@ public class GLVideoOutput extends VideoOutput {
         } else {
             textureSurfaceRenderer = externalTextureRenderer;
         }
+    }
+
+    int count = 0;
+    @Override
+    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
+        super.onOutputBufferAvailable(outputBuffer, presentationTimeUs);
+        if (count<1){
+            count++;
+            LogUtil.d("buffer ratio"+outputBuffer.remaining()*1.0f/getWidth()/getHeight());
+        }
+
+
     }
 
     @Override

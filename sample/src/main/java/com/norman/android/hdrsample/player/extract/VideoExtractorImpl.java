@@ -4,9 +4,9 @@ import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 
+import com.norman.android.hdrsample.exception.IORuntimeException;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
-import com.norman.android.hdrsample.util.ExceptionUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,7 +46,7 @@ class VideoExtractorImpl implements VideoExtractor {
                     fileSourceDescriptor.getStartOffset(),
                     fileSourceDescriptor.getLength());
         } catch (IOException e) {
-            throw  ExceptionUtil.throwRuntime(e);
+            throw  new IORuntimeException(e);
         } finally {
             if (fileSourceDescriptor != null) {
                 fileSourceDescriptor.close();

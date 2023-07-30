@@ -2,8 +2,8 @@ package com.norman.android.hdrsample.todo;
 
 import android.content.res.AssetFileDescriptor;
 
+import com.norman.android.hdrsample.exception.IORuntimeException;
 import com.norman.android.hdrsample.util.BufferUtil;
-import com.norman.android.hdrsample.util.ExceptionUtil;
 import com.norman.android.hdrsample.util.FileUtil;
 
 import java.io.FileInputStream;
@@ -261,7 +261,7 @@ public class CubeLut3D {
 
 
         } catch (IOException e) {
-            throw  ExceptionUtil.throwRuntime(e);
+            throw  new IORuntimeException(e);
         } finally {
             try {
                 if (inputStream != null) {

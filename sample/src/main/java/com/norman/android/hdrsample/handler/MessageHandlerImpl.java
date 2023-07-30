@@ -8,6 +8,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.norman.android.hdrsample.util.LogUtil;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +24,7 @@ class MessageHandlerImpl implements MessageHandler {
     private final MessageThread.ErrorCallback errorCallback = new MessageThread.ErrorCallback() {
         @Override
         public void onThreadError(Exception exception) {
-            Log.e("aaaa",Log.getStackTraceString(exception));
+            LogUtil.e(Log.getStackTraceString(exception));
             if (lifeCycleCallback != null) {
                 lifeCycleCallback.onHandlerError(exception);
             }

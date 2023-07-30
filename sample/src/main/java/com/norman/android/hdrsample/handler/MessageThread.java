@@ -3,7 +3,7 @@ package com.norman.android.hdrsample.handler;
 import android.os.Looper;
 import android.os.MessageQueue;
 
-import com.norman.android.hdrsample.util.ExceptionUtil;
+import com.norman.android.hdrsample.exception.RuntimeException;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -87,7 +87,7 @@ class MessageThread extends android.os.HandlerThread {
                 @Override
                 protected void setException(Throwable t) {
                     set(null);
-                    throw   ExceptionUtil.throwRuntime(t);
+                    throw new RuntimeException(t);
                 }
             };
         }

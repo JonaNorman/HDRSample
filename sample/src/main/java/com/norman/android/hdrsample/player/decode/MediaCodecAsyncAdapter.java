@@ -1,37 +1,38 @@
 package com.norman.android.hdrsample.player.decode;
 
 import android.media.MediaCodec;
-import android.media.MediaCodecList;
+import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Pair;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
 
+import com.norman.android.hdrsample.exception.IORuntimeException;
 import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
-import com.norman.android.hdrsample.util.ExceptionUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
-import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.util.LogUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
-    private  Handler handler;
-    private  MediaCodec mediaCodec;
-    private  CallBack callBack;
 
-    private  ResumeBuffer resumeBuffer;
+    private final MediaCodec mediaCodec;
 
-    private boolean inputEndStream;
+    private final OutputSurface outSurface;
+
+    private final String mimeType;
 
     private final MediaCodec.Callback asyncCallback = new MediaCodec.Callback() {
 
@@ -63,19 +64,18 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (outputBuffer == null) return;
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
-            boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs>=0;
+            boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs >= 0;
             if (outSurfaceMode) {
-                render = render && isValidSurface();
+                render = render && outSurface.isValid();
             }
             render = render && callBack.onOutputBufferAvailable(outputBuffer, info.presentationTimeUs);
             codec.releaseOutputBuffer(index, render);
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 callBack.onOutputBufferEndOfStream();
             } else {
-                if (!outSurfaceMode || render){
+                if (!outSurfaceMode || render) {
                     callBack.onOutputBufferRelease(info.presentationTimeUs);
                 }
-
             }
         }
 
@@ -89,50 +89,93 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             callBack.onOutputFormatChanged(format);
         }
     };
-    private boolean start;
-    private boolean pause;
-    private boolean release;
+
+    private boolean configured;
+    private boolean started;
+    private boolean paused;
+    private boolean released;
     private int flushNumber;
 
-    private Surface outSurface;
+    private boolean outSurfaceMode;
 
-    private HolderSurface holderSurface;
+    private Handler handler;
 
-    private final boolean outSurfaceMode;
+    private CallBack callBack;
+
+    private ResumeBuffer resumeBuffer;
+
+    private boolean inputEndStream;
 
 
-    public MediaCodecAsyncAdapter(MediaFormat mediaFormat,
-                                  CallBack callback) {
-        this.outSurfaceMode = false;
-        init(mediaFormat,callback);
+    public MediaCodecAsyncAdapter(String mimeType) {
+        try {
+            this.mimeType = mimeType;
+            if (TextUtils.isEmpty(mimeType)){
+                throw new NullPointerException("mimeType is null");
+            }
+            mediaCodec = MediaCodec.createDecoderByType(mimeType);
+            outSurface = new OutputSurface();
+
+            MediaCodecInfo mediaCodecInfo =  mediaCodec.getCodecInfo();
+            StringBuilder infoBuilder = new StringBuilder();
+            infoBuilder.append("mediacodec").append("\n");
+            infoBuilder.append("mimeType->").append(mimeType).append("\n");
+            infoBuilder.append("name->").append(mediaCodec.getName()).append("\n");
+            infoBuilder.append("supportedTypes->").append(Arrays.toString(mediaCodecInfo.getSupportedTypes()));
+            LogUtil.d(infoBuilder.toString());
+
+        } catch (IOException e) {
+            throw new IORuntimeException(e);
+        }
     }
 
-    public MediaCodecAsyncAdapter(MediaFormat mediaFormat,
-                                  Surface surface,
-                                  CallBack callback) {
-        this.outSurfaceMode = true;
-        this.outSurface = surface;
-        init(mediaFormat,callback);
-    }
-
-    void init(MediaFormat mediaFormat,
-              CallBack callback){
+    public synchronized void configure(MediaFormat mediaFormat,
+                                       boolean surfaceMode,
+                                       CallBack callback) {
+        if (isReleased() || isConfigured()) {
+            return;
+        }
+        this.outSurfaceMode = surfaceMode;
         this.callBack = callback;
-        this.mediaCodec = createMediaCodec(mediaFormat);
         this.mediaCodec.setCallback(this);
-        this.mediaCodec.configure(mediaFormat, getOutSurface(), null, 0);
+        this.mediaCodec.configure(mediaFormat, outSurfaceMode ? outSurface.getOutSurface() : null, null, 0);
         Looper looper = Looper.myLooper();
         this.handler = new Handler(looper == null ? Looper.getMainLooper() : looper);
         this.resumeBuffer = new ResumeBuffer();
+        this.configured = true;
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append("mediacodec configure").append("\n");
+        infoBuilder.append("mediaFormat->").append(mediaFormat.toString()).append("\n");
+        infoBuilder.append("surfaceMode->").append(surfaceMode?"true":false).append("\n");
+        LogUtil.d(infoBuilder.toString());
     }
 
+    public synchronized boolean isSupportFormat(int colorFormat) {
+        if (isReleased()) {
+            return false;
+        }
+        if (!isConfigured()) {
+            throw new RuntimeException("mediacodec has not been configured yet");
+        }
+        MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodec.getCodecInfo().getCapabilitiesForType(mimeType);
+        for (int format : codecCapabilities.colorFormats) {
+            if (format == colorFormat){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public synchronized void start() {
-        if (isRelease() ||
-                isStarted()) {
+        if (isReleased() || isStarted()) {
             return;
         }
+        if (!isConfigured()) {
+            throw new RuntimeException("mediacodec has not been configured yet");
+        }
         mediaCodec.start();
-        start = true;
+        started = true;
     }
 
 
@@ -140,14 +183,14 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         if (!isRunning()) {
             return;
         }
-        pause = true;
+        paused = true;
     }
 
     public synchronized void resume() {
         if (!isPaused()) {
             return;
         }
-        pause = false;
+        paused = false;
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -173,53 +216,36 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     private synchronized void finishFlush() {
         flushNumber--;
-        if (flushNumber <= 0 && !isRelease()) {
+        if (flushNumber <= 0 && !isReleased()) {
             inputEndStream = false;
             mediaCodec.start();
         }
     }
 
     public synchronized void release() {
-        if (isRelease()) {
+        if (isReleased()) {
             return;
         }
-        release = true;
+        released = true;
         mediaCodec.release();
         resumeBuffer.clean();
         handler.removeCallbacksAndMessages(null);
-        if (holderSurface != null) {
-            holderSurface.release();
-            holderSurface = null;
-        }
+        outSurface.release();
     }
 
     public synchronized void setOutputSurface(Surface surface) {
-        if (isRelease() || outSurface == surface) {
+        if (isReleased()) {
             return;
         }
-        if (!outSurfaceMode) {
-            throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
-        }
-        outSurface = surface;
-        mediaCodec.setOutputSurface(getOutSurface());
-    }
-
-
-    synchronized Surface getOutSurface() {
-        if (outSurfaceMode){
-            if (!isValidSurface()) {
-                if (holderSurface == null) {
-                    holderSurface = new HolderSurface();
-                }
-                return holderSurface.getSurface();
+        outSurface.setOutputSurface(surface);
+        if (isConfigured()) {
+            if (!outSurfaceMode) {
+                throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
             }
+            mediaCodec.setOutputSurface(outSurface.getOutSurface());
         }
-        return outSurface;
     }
 
-    synchronized boolean isValidSurface() {
-        return outSurface != null && outSurface.isValid();
-    }
 
     private void resumeBuffer() {
         if (isReleaseOrFlushing() || isPaused()) {
@@ -229,25 +255,29 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-    public synchronized boolean isRelease() {
-        return release;
+    public synchronized boolean isReleased() {
+        return released;
+    }
+
+    public synchronized boolean isConfigured() {
+        return !released && configured;
     }
 
     public synchronized boolean isStarted() {
-        return !release && start;
+        return !released && configured && started;
     }
 
     public synchronized boolean isRunning() {
-        return isStarted() && !pause;
+        return isStarted() && !paused;
     }
 
 
     public synchronized boolean isPaused() {
-        return isStarted() && pause;
+        return isStarted() && paused;
     }
 
     private synchronized boolean isReleaseOrFlushing() {
-        return isRelease() || flushNumber > 0;
+        return isReleased() || flushNumber > 0;
     }
 
 
@@ -285,34 +315,16 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
     @Override
+
     public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append("mediacodec onOutputFormatChanged").append("\n");
+        infoBuilder.append("mediaFormat->").append(format.toString()).append("\n");
+        LogUtil.d(infoBuilder.toString());
         if (isReleaseOrFlushing()) {
             return;
         }
         asyncCallback.onOutputFormatChanged(codec, format);
-    }
-
-    private @NonNull MediaCodec createMediaCodec(MediaFormat mediaFormat) {
-        MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
-        Integer frameRate = null;
-        if (mediaFormat.containsKey(MediaFormat.KEY_FRAME_RATE)) {
-            frameRate = mediaFormat.getInteger(MediaFormat.KEY_FRAME_RATE);
-            mediaFormat.setString(MediaFormat.KEY_FRAME_RATE, null);
-        }
-        String codecName = mediaCodecList.findDecoderForFormat(mediaFormat);
-        if (frameRate != null) {
-            mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, frameRate);
-        }
-        try {
-            if (codecName != null) {
-                return MediaCodec.createByCodecName(codecName);
-            } else {
-                String mimeType = MediaFormatUtil.getString(mediaFormat, MediaFormat.KEY_MIME);
-                return MediaCodec.createDecoderByType(mimeType);
-            }
-        } catch (IOException e) {
-            throw ExceptionUtil.throwRuntime(e);
-        }
     }
 
 
@@ -415,5 +427,44 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     }
 
+    static class OutputSurface {
+        private Surface outSurface;
 
+        private HolderSurface holderSurface;
+
+        private boolean released;
+
+        public synchronized boolean isReleased() {
+            return released;
+        }
+
+        public synchronized void release() {
+            if (isReleased()) {
+                return;
+            }
+            released = true;
+            if (holderSurface != null) {
+                holderSurface.release();
+                holderSurface = null;
+            }
+        }
+
+        public synchronized void setOutputSurface(Surface surface) {
+            outSurface = surface;
+        }
+
+        public synchronized boolean isValid() {
+            return !isReleased() && outSurface != null && outSurface.isValid();
+        }
+
+        public synchronized Surface getOutSurface() {
+            if (outSurface == null) {
+                if (holderSurface == null) {
+                    holderSurface = new HolderSurface();
+                }
+                return holderSurface.getSurface();
+            }
+            return outSurface;
+        }
+    }
 }

@@ -1,8 +1,12 @@
 package com.norman.android.hdrsample.player.decode;
 
 import android.media.MediaCodec;
+import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
+import android.os.Build;
 import android.view.Surface;
+
+import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
 
@@ -21,16 +25,24 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         if (outputMode == BUFFER_MODE && outputSurface != null){
             throw new IllegalArgumentException("in bufferMode can not setOutputSurface");
         }
-        if (outputMode == BUFFER_MODE){
-            mediaCodecAdapter = new MediaCodecAsyncAdapter(
-                    configuration.mediaFormat,
-                    new MediaCodecCallBackWrapper(configuration.callBack));
-        }else {
-            mediaCodecAdapter = new MediaCodecAsyncAdapter(
-                    configuration.mediaFormat,
-                    outputSurface,
-                    new MediaCodecCallBackWrapper(configuration.callBack));
+        String mimeType = MediaFormatUtil.getString(configuration.mediaFormat,MediaFormat.KEY_MIME);
+
+
+        mediaCodecAdapter  = new MediaCodecAsyncAdapter(mimeType);
+        mediaCodecAdapter.setOutputSurface(outputSurface);
+        MediaFormat inputFormat = configuration.mediaFormat;
+        if (!inputFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)){
+            if (outputMode == BUFFER_MODE){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && mediaCodecAdapter.isSupportFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
+                    MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010);
+                }else {
+                    MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT,  MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
+                }
+            }else {
+                MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT,  MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+            }
         }
+        mediaCodecAdapter.configure(configuration.mediaFormat,outputMode == SURFACE_MODE, new MediaCodecCallBackWrapper(configuration.callBack));
     }
 
 

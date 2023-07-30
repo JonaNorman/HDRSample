@@ -1,11 +1,9 @@
 package com.norman.android.hdrsample.player;
 
-import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
-import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 public class SurfaceVideoOutput extends VideoOutput {
     private Surface surface;
@@ -19,7 +17,6 @@ public class SurfaceVideoOutput extends VideoOutput {
     protected synchronized void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
         decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
         decoder.setOutputSurface(surface);
-        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         videoDecoder = decoder;
     }
 

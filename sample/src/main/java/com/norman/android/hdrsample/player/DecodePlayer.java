@@ -5,11 +5,11 @@ import android.media.MediaFormat;
 import android.os.Handler;
 import android.util.Log;
 
+import com.norman.android.hdrsample.exception.RuntimeException;
 import com.norman.android.hdrsample.player.decode.Decoder;
 import com.norman.android.hdrsample.player.extract.Extractor;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
-import com.norman.android.hdrsample.util.ExceptionUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
@@ -193,7 +193,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
         @Override
         public void onDecodeError(Exception exception) {
-            throw   ExceptionUtil.throwRuntime(exception);
+            throw new RuntimeException(exception);
         }
 
         @Override

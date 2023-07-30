@@ -55,6 +55,18 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         surfaceView = findViewById(R.id.VideoPlayerView);
         GLVideoOutput videoOutput = GLVideoOutput.create();
         videoPlayer = VideoPlayer.create(videoOutput);
+//        1.mp4
+//        2.mp4  //
+//        3.mp4
+//        4.mp4
+//        5.mp4
+//        6.mp4
+//        7.mp4
+//        bear-1280x720-hevc-10bit-hdr10.mp4
+//        google-bag-to-sky-hlg-hdr.mp4
+//        hdr10-video-with-sdr-container.mp4
+//        hlg-1080p.mp4
+
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         videoOutput.addVideoTransform(videoTransform);
