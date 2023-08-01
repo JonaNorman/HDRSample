@@ -8,7 +8,6 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 
 import androidx.annotation.NonNull;
 
@@ -23,15 +22,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
 
+    private final ResumeBuffer resumeBuffer = new ResumeBuffer();
     private final MediaCodec mediaCodec;
-
-    private final OutputSurface outSurface;
-
     private final String mimeType;
 
     private final MediaCodec.Callback asyncCallback = new MediaCodec.Callback() {
@@ -42,6 +38,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (inputEndStream) {
                 return;
             }
+
             ByteBuffer byteBuffer = codec.getInputBuffer(index);
             if (byteBuffer == null) return;
             byteBuffer.clear();
@@ -65,15 +62,17 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
             boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs >= 0;
-            if (outSurfaceMode) {
-                render = render && outSurface.isValid();
+            if (outSurfaceMode && render) {
+                synchronized (MediaCodecAsyncAdapter.this){
+                    render = outputSurface != null && outputSurface.isValid();
+                }
             }
             render = render && callBack.onOutputBufferAvailable(outputBuffer, info.presentationTimeUs);
             codec.releaseOutputBuffer(index, render);
             if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                 callBack.onOutputBufferEndOfStream();
             } else {
-                if (!outSurfaceMode || render) {
+                if (render) {
                     callBack.onOutputBufferRelease(info.presentationTimeUs);
                 }
             }
@@ -98,35 +97,34 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     private boolean outSurfaceMode;
 
+    private Surface outputSurface;
+
+    private HolderSurface holderSurface;
+
     private Handler handler;
 
     private CallBack callBack;
 
-    private ResumeBuffer resumeBuffer;
 
-    private boolean inputEndStream;
+    private  volatile boolean inputEndStream;
 
 
     public MediaCodecAsyncAdapter(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) {
+            throw new NullPointerException("mimeType is null");
+        }
+        this.mimeType = mimeType;
         try {
-            this.mimeType = mimeType;
-            if (TextUtils.isEmpty(mimeType)){
-                throw new NullPointerException("mimeType is null");
-            }
             mediaCodec = MediaCodec.createDecoderByType(mimeType);
-            outSurface = new OutputSurface();
-
-            MediaCodecInfo mediaCodecInfo =  mediaCodec.getCodecInfo();
-            StringBuilder infoBuilder = new StringBuilder();
-            infoBuilder.append("mediacodec").append("\n");
-            infoBuilder.append("mimeType->").append(mimeType).append("\n");
-            infoBuilder.append("name->").append(mediaCodec.getName()).append("\n");
-            infoBuilder.append("supportedTypes->").append(Arrays.toString(mediaCodecInfo.getSupportedTypes()));
-            LogUtil.d(infoBuilder.toString());
-
         } catch (IOException e) {
             throw new IORuntimeException(e);
         }
+        MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
+        String infoBuilder = "mediacodec" + "\n" +
+                "mimeType->" + mimeType + "\n" +
+                "name->" + mediaCodec.getName() + "\n" +
+                "supportedTypes->" + Arrays.toString(mediaCodecInfo.getSupportedTypes());
+        LogUtil.d(infoBuilder);
     }
 
     public synchronized void configure(MediaFormat mediaFormat,
@@ -138,19 +136,49 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         this.outSurfaceMode = surfaceMode;
         this.callBack = callback;
         this.mediaCodec.setCallback(this);
-        this.mediaCodec.configure(mediaFormat, outSurfaceMode ? outSurface.getOutSurface() : null, null, 0);
+        if (!outSurfaceMode && outputSurface != null){
+            throw new IllegalArgumentException("bufferMode can not setOutputSurface");
+        }
+        Surface surface =  outputSurface;
+        if (outSurfaceMode && surface == null){
+            if (holderSurface == null){
+                holderSurface = new HolderSurface();
+            }
+            surface = holderSurface;
+        }
+        this.mediaCodec.configure(mediaFormat, surface, null, 0);
         Looper looper = Looper.myLooper();
         this.handler = new Handler(looper == null ? Looper.getMainLooper() : looper);
-        this.resumeBuffer = new ResumeBuffer();
         this.configured = true;
-        StringBuilder infoBuilder = new StringBuilder();
-        infoBuilder.append("mediacodec configure").append("\n");
-        infoBuilder.append("mediaFormat->").append(mediaFormat.toString()).append("\n");
-        infoBuilder.append("surfaceMode->").append(surfaceMode?"true":false).append("\n");
-        LogUtil.d(infoBuilder.toString());
+        String infoBuilder = "mediacodec configure" + "\n" +
+                "mediaFormat->" + mediaFormat.toString() + "\n" +
+                "surfaceMode->" + (surfaceMode ? "true" : "false") + "\n";
+        LogUtil.d(infoBuilder);
     }
 
-    public synchronized boolean isSupportFormat(int colorFormat) {
+
+    public synchronized void  reset(){
+        if (isReleased() || !isConfigured()) {
+            return;
+        }
+        mediaCodec.setCallback(null);
+        mediaCodec.reset();
+        configured = false;
+        paused = false;
+        started = false;
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
+        flushNumber = 0;
+        outSurfaceMode = false;
+        inputEndStream = false;
+        resumeBuffer.clean();
+        if (holderSurface != null){
+            holderSurface.release();
+            holderSurface = null;
+        }
+    }
+
+    public synchronized boolean isSupportColorFormat(int colorFormat) {
         if (isReleased()) {
             return false;
         }
@@ -159,7 +187,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         }
         MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodec.getCodecInfo().getCapabilitiesForType(mimeType);
         for (int format : codecCapabilities.colorFormats) {
-            if (format == colorFormat){
+            if (format == colorFormat) {
                 return true;
             }
         }
@@ -216,7 +244,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     private synchronized void finishFlush() {
         flushNumber--;
-        if (flushNumber <= 0 && !isReleased()) {
+        if (flushNumber <= 0 && isConfigured()) {
             inputEndStream = false;
             mediaCodec.start();
         }
@@ -227,28 +255,41 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         released = true;
+        mediaCodec.setCallback(null);
         mediaCodec.release();
         resumeBuffer.clean();
-        handler.removeCallbacksAndMessages(null);
-        outSurface.release();
+        if (handler != null){
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
+        if (holderSurface != null){
+            holderSurface.release();
+            holderSurface= null;
+        }
     }
 
     public synchronized void setOutputSurface(Surface surface) {
         if (isReleased()) {
             return;
         }
-        outSurface.setOutputSurface(surface);
+        outputSurface = surface;
         if (isConfigured()) {
             if (!outSurfaceMode) {
                 throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
             }
-            mediaCodec.setOutputSurface(outSurface.getOutSurface());
+            if (surface == null){
+                if (holderSurface == null){
+                    holderSurface = new HolderSurface();
+                }
+                surface = holderSurface;
+            }
+            mediaCodec.setOutputSurface(surface);
         }
     }
 
 
     private void resumeBuffer() {
-        if (isReleaseOrFlushing() || isPaused()) {
+        if (isDirtyCallback() || isPaused()) {
             return;
         }
         resumeBuffer.resume();
@@ -276,14 +317,14 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         return isStarted() && paused;
     }
 
-    private synchronized boolean isReleaseOrFlushing() {
-        return isReleased() || flushNumber > 0;
+    private synchronized boolean isDirtyCallback() {
+        return flushNumber > 0 || !isStarted();
     }
 
 
     @Override
     public void onInputBufferAvailable(@NonNull MediaCodec codec, int index) {
-        if (isReleaseOrFlushing()) {
+        if (isDirtyCallback()) {
             return;
         }
         if (isRunning()) {
@@ -295,7 +336,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     @Override
     public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index, @NonNull MediaCodec.BufferInfo info) {
-        if (isReleaseOrFlushing()) {
+        if (isDirtyCallback()) {
             return;
         }
         if (isRunning()) {
@@ -307,7 +348,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     @Override
     public void onError(@NonNull MediaCodec codec, @NonNull MediaCodec.CodecException e) {
-        if (isReleaseOrFlushing()) {
+        if (isDirtyCallback()) {
             return;
         }
         release();
@@ -315,13 +356,11 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
     @Override
-
     public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
-        StringBuilder infoBuilder = new StringBuilder();
-        infoBuilder.append("mediacodec onOutputFormatChanged").append("\n");
-        infoBuilder.append("mediaFormat->").append(format.toString()).append("\n");
-        LogUtil.d(infoBuilder.toString());
-        if (isReleaseOrFlushing()) {
+        String infoBuilder = "mediacodec onOutputFormatChanged" + "\n" +
+                "mediaFormat->" + format + "\n";
+        LogUtil.d(infoBuilder);
+        if (isDirtyCallback()) {
             return;
         }
         asyncCallback.onOutputFormatChanged(codec, format);
@@ -374,42 +413,30 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     }
 
-    static final class HolderSurface {
+    static final class HolderSurface extends GLTextureSurface {
 
         private static GLEnvThreadManager ENV_THREAD_MANAGER;
         private static int THREAD_HOLDER_COUNT;
 
-        private final GLTextureSurface textureSurface;
-        private boolean release;
-
-
-        public HolderSurface() {
-            synchronized (SurfaceHolder.class) {
+        private static int obtainTextureId() {
+            synchronized (HolderSurface.class) {
                 if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
                     ENV_THREAD_MANAGER = GLEnvThreadManager.create();
                 }
-                this.textureSurface = ENV_THREAD_MANAGER.submitSync(new Callable<GLTextureSurface>() {
-                    @Override
-                    public GLTextureSurface call() {
-                        return new GLTextureSurface(GLESUtil.createExternalTextureId());
-                    }
-                });
+                int textureId = ENV_THREAD_MANAGER.submitSync(GLESUtil::createExternalTextureId);
                 THREAD_HOLDER_COUNT++;
+                return textureId;
             }
         }
 
-        public synchronized Surface getSurface() {
-            return textureSurface;
+        public HolderSurface() {
+            super(obtainTextureId());
         }
 
 
-        public synchronized void release() {
-            if (release) {
-                return;
-            }
-            release = true;
-            textureSurface.release();
-            synchronized (SurfaceHolder.class) {
+        @Override
+        protected void onRelease() {
+            synchronized (HolderSurface.class) {
                 if (ENV_THREAD_MANAGER == null) return;
                 THREAD_HOLDER_COUNT--;
                 if (THREAD_HOLDER_COUNT == 0) {
@@ -418,53 +445,13 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                     ENV_THREAD_MANAGER.post(new Runnable() {
                         @Override
                         public void run() {
-                            GLESUtil.delTextureId(textureSurface.getTextureId());
+                            GLESUtil.delTextureId(getTextureId());
                         }
                     });
                 }
             }
         }
-
     }
 
-    static class OutputSurface {
-        private Surface outSurface;
 
-        private HolderSurface holderSurface;
-
-        private boolean released;
-
-        public synchronized boolean isReleased() {
-            return released;
-        }
-
-        public synchronized void release() {
-            if (isReleased()) {
-                return;
-            }
-            released = true;
-            if (holderSurface != null) {
-                holderSurface.release();
-                holderSurface = null;
-            }
-        }
-
-        public synchronized void setOutputSurface(Surface surface) {
-            outSurface = surface;
-        }
-
-        public synchronized boolean isValid() {
-            return !isReleased() && outSurface != null && outSurface.isValid();
-        }
-
-        public synchronized Surface getOutSurface() {
-            if (outSurface == null) {
-                if (holderSurface == null) {
-                    holderSurface = new HolderSurface();
-                }
-                return holderSurface.getSurface();
-            }
-            return outSurface;
-        }
-    }
 }

@@ -11,6 +11,8 @@ public interface Decoder {
 
     void configure(Decoder.Configuration configuration);
 
+    void reset();
+
     void start();
 
     void pause();

@@ -24,6 +24,14 @@ abstract class DecoderImpl implements Decoder {
         onConfigure(configuration);
     }
 
+    @Override
+    public void reset() {
+        if (!isConfigured()) {
+            return;
+        }
+        state = DECODE_UNINIT;
+        onReset();
+    }
 
     @Override
     public synchronized void start() {
@@ -117,6 +125,8 @@ abstract class DecoderImpl implements Decoder {
     protected abstract void onConfigure(Decoder.Configuration configuration);
 
     protected abstract void onStart();
+
+    protected abstract void onReset();
 
     protected abstract void onPause();
 

@@ -22,18 +22,13 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
     @Override
     protected void onConfigure(Decoder.Configuration configuration) {
-        if (outputMode == BUFFER_MODE && outputSurface != null){
-            throw new IllegalArgumentException("in bufferMode can not setOutputSurface");
-        }
         String mimeType = MediaFormatUtil.getString(configuration.mediaFormat,MediaFormat.KEY_MIME);
-
-
         mediaCodecAdapter  = new MediaCodecAsyncAdapter(mimeType);
         mediaCodecAdapter.setOutputSurface(outputSurface);
         MediaFormat inputFormat = configuration.mediaFormat;
         if (!inputFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)){
             if (outputMode == BUFFER_MODE){
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && mediaCodecAdapter.isSupportFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && mediaCodecAdapter.isSupportColorFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
                     MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010);
                 }else {
                     MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_FORMAT,  MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
@@ -63,6 +58,11 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
     @Override
     protected void onStart() {
         mediaCodecAdapter.start();
+    }
+
+    @Override
+    protected void onReset() {
+        mediaCodecAdapter.reset();
     }
 
 

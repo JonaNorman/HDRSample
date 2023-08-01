@@ -63,13 +63,17 @@ public class GLTextureSurface extends Surface {
     }
 
     @Override
-    public synchronized void release() {
+    public final synchronized void release() {
         if (release) {
             return;
         }
         release = true;
         super.release();
         this.surfaceTexture.release();
+        onRelease();
+
+    }
+    protected void onRelease(){
 
     }
     public synchronized boolean isRelease(){
