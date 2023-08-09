@@ -125,6 +125,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, extractor.getProfileLevel());
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, extractor.getCsd0Buffer());
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, extractor.getCsd1Buffer());
+        decoder.create(extractor.getMimeType());
         onInputFormatPrepare(extractor,decoder, mediaFormat);
         decoder.configure(new Decoder.Configuration(mediaFormat, new DecoderCallBack()));
     }
@@ -149,7 +150,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
 
     protected void onPlayStop() {
-        decoder.stop();
+        decoder.destroy();
         extractor.seekPreSync(0);
         hasEnd = false;
     }

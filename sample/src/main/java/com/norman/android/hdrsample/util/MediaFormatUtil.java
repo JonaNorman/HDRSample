@@ -8,11 +8,6 @@ import java.nio.ByteBuffer;
 
 public class MediaFormatUtil {
 
-    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010 = 0x11F;
-    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010_UBWC = 0x124;
-    private static final int HAL_PIXEL_FORMAT_YCbCr_420_P010_VENUS = 0x7FA30C0A;
-
-    private static final int HAL_PIXEL_FORMAT_YCbCr_420_TP10_UBWC = 0x7FA30C09;
 
     public static int getInteger(MediaFormat mediaFormat, String name) {
         return getInteger(mediaFormat, name, 0);
@@ -90,52 +85,33 @@ public class MediaFormatUtil {
 
 
     public static void setByteBuffer(MediaFormat mediaFormat, String name, ByteBuffer buffer) {
-        if (mediaFormat == null || TextUtils.isEmpty(name)|| buffer == null) {
+        if (mediaFormat == null || TextUtils.isEmpty(name) || buffer == null) {
             return;
         }
         mediaFormat.setByteBuffer(name, buffer);
     }
 
-    public static boolean isYuv420P10(MediaFormat mediaFormat) {
-        if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
-            return false;
-        }
-        int colorFormat = getInteger(mediaFormat, MediaFormat.KEY_COLOR_FORMAT);
-        return colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010
-                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010_UBWC
-                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_P010_VENUS
-                || colorFormat == HAL_PIXEL_FORMAT_YCbCr_420_TP10_UBWC
-                || colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010;
-    }
-
-    public static boolean isYuv420(MediaFormat mediaFormat){
-        if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_COLOR_FORMAT)) {
-            return false;
-        }
-        int colorFormat = getInteger(mediaFormat, MediaFormat.KEY_COLOR_FORMAT);
-        if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Planar) {//YV21  Y+U+V
-            return true;
-        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedPlanar) {  //YV12 Y+V+U
-            return true;
-        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar) {//NV12  Y+UV
-            return true;
-        } else if (colorFormat == MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420PackedSemiPlanar) {//NV21 Y+VU
-            return true;
-        } else return isYuv420P10(mediaFormat);
-    }
-
-
-    public static boolean isHdrProfile(MediaFormat mediaFormat) {
-        if (mediaFormat == null || !mediaFormat.containsKey(MediaFormat.KEY_PROFILE)) {
-            return false;
-        }
+    public static boolean is10BitProfile(MediaFormat mediaFormat) {
         int profile = getInteger(mediaFormat, MediaFormat.KEY_PROFILE);
-        return profile == MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10 ||
-                profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10 ||
-                profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10 ||
-                profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus ||
-                profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10 ||
+        return profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10 |
                 profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10 ||
-                profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus;
+                profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus ||
+                profile == MediaCodecInfo.CodecProfileLevel.VP9Profile2 ||
+                profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3 ||
+                profile == MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus ||
+                profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus;
+    }
+
+    public static boolean isHdrColorTransfer(MediaFormat mediaFormat) {
+        int colorTransfer = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
+        return colorTransfer == MediaFormat.COLOR_TRANSFER_HLG || colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084;
+    }
+
+    public static boolean isHdrColorSpace(MediaFormat mediaFormat) {
+        int colorStandard = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
+        return colorStandard == MediaFormat.COLOR_STANDARD_BT2020;
+    }
+    public static boolean isHdrColor(MediaFormat mediaFormat) {
+        return isHdrColorSpace(mediaFormat) && isHdrColorTransfer(mediaFormat);
     }
 }

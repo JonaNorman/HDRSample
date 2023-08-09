@@ -4,20 +4,30 @@ package com.norman.android.hdrsample.player.decode;
 abstract class DecoderImpl implements Decoder {
 
     private static final int DECODE_UNINIT = 0;
-    private static final int DECODE_CONFIGURE = 1;
-    private static final int DECODE_START = 2;
-    private static final int DECODE_PAUSE = 3;
-    private static final int DECODE_RESUME = 4;
-    private static final int DECODE_STOP = 5;
-    private static final int DECODE_RELEASE = 6;
+    private static final int DECODE_CREATE = 1;
+    private static final int DECODE_CONFIGURE = 2;
+    private static final int DECODE_START = 3;
+    private static final int DECODE_PAUSE = 4;
+    private static final int DECODE_RESUME = 5;
+    private static final int DECODE_DESTROY = 6;
+    private static final int DECODE_RELEASE = 7;
 
     private int state = DECODE_UNINIT;
 
 
     @Override
-    public synchronized void configure(Decoder.Configuration configuration) {
+    public synchronized void create(String mimeType) {
         if (state != DECODE_UNINIT &&
-                state != DECODE_STOP) {
+                state != DECODE_DESTROY) {
+            return;
+        }
+        state = DECODE_CREATE;
+        onCreate(mimeType);
+    }
+
+    @Override
+    public synchronized void configure(Decoder.Configuration configuration) {
+        if (state != DECODE_CREATE) {
             return;
         }
         state = DECODE_CONFIGURE;
@@ -29,7 +39,7 @@ abstract class DecoderImpl implements Decoder {
         if (!isConfigured()) {
             return;
         }
-        state = DECODE_UNINIT;
+        state = DECODE_CREATE;
         onReset();
     }
 
@@ -72,12 +82,12 @@ abstract class DecoderImpl implements Decoder {
 
 
     @Override
-    public synchronized void stop() {
-        if (!isConfigured()) {
+    public synchronized void destroy() {
+        if (!isCreated()) {
             return;
         }
-        state = DECODE_STOP;
-        onStop();
+        state = DECODE_DESTROY;
+        onDestroy();
     }
 
 
@@ -107,6 +117,15 @@ abstract class DecoderImpl implements Decoder {
     }
 
     @Override
+    public synchronized boolean isCreated() {
+        return state == DECODE_CREATE
+                ||state == DECODE_CONFIGURE
+                || state == DECODE_START
+                || state == DECODE_PAUSE
+                || state == DECODE_RESUME;
+    }
+
+    @Override
     public synchronized boolean isConfigured() {
         return state == DECODE_CONFIGURE
                 || state == DECODE_START
@@ -122,6 +141,9 @@ abstract class DecoderImpl implements Decoder {
     }
 
 
+    protected abstract void onCreate(String mimeType);
+
+
     protected abstract void onConfigure(Decoder.Configuration configuration);
 
     protected abstract void onStart();
@@ -134,7 +156,7 @@ abstract class DecoderImpl implements Decoder {
 
     protected abstract void onFlush();
 
-    protected abstract void onStop();
+    protected abstract void onDestroy();
 
     protected abstract void onRelease();
 

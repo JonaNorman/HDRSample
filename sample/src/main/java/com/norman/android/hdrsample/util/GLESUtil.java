@@ -10,13 +10,51 @@ import android.opengl.GLES30;
 import android.opengl.GLException;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
-import android.util.Log;
 
+import java.nio.FloatBuffer;
 
 
 public class GLESUtil {
 
     private static final String TAG = "GLESUtil";
+
+    private static final float[] POSITION_COORDINATES = {
+            -1.0f, -1.0f,//left bottom
+            1.0f, -1.0f,//right bottom
+            -1.0f, 1.0f,//left top
+            1.0f, 1.0f,//right top
+    };
+
+    private static final float[] TEXTURE_COORDINATES = {
+            0.0f, 0.0f,//left bottom
+            1.0f, 0.0f,//right bottom
+            0.0f, 1.0f,//left top
+            1.0f, 1.0f,//right  top
+    };
+
+    private static final float[] TEXTURE_COORDINATES_UPSIDE_DOWN = {
+            0.0f, 1.0f,//left bottom
+            1.0f, 1.0f,//right bottom
+            0.0f, 0.0f,//left top
+            1.0f, 0.0f,//right  top
+    };
+
+
+    public static final int FLAT_VERTEX_LENGTH = 2;
+
+
+
+    public static FloatBuffer createPositionFlatBuffer(){
+         return BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
+    }
+
+    public static FloatBuffer createTextureFlatBuffer(){
+        return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
+    }
+
+    public static FloatBuffer createTextureFlatBufferUpsideDown(){
+        return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES_UPSIDE_DOWN);
+    }
 
     public static int createVertexShader(String shaderCode) {
         return compileShaderCode(GLES20.GL_VERTEX_SHADER, shaderCode);
@@ -35,7 +73,7 @@ public class GLESUtil {
             GLES20.glGetShaderiv(shaderObjectId, GLES20.GL_COMPILE_STATUS, status, 0);
             if (status[0] == 0) {
                 String error = GLES20.glGetShaderInfoLog(shaderObjectId);
-                Log.e(TAG, "compile shader fail\n " + error);
+                LogUtil.e(TAG, "can not compile shader: " + error);
                 GLES20.glDeleteShader(shaderObjectId);
                 return -1;
             }
@@ -54,6 +92,11 @@ public class GLESUtil {
         GLES20.glAttachShader(programId, vertexShaderId);
         GLES20.glAttachShader(programId, fragmentShaderId);
         GLES20.glLinkProgram(programId);
+        int[] linkStatus = new int[1];
+        GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linkStatus, 0);
+        if (linkStatus[0] != GLES20.GL_TRUE) {
+            LogUtil.e(TAG,"could not link program: "+GLES20.glGetProgramInfoLog(programId));
+        }
         deleteShaderId(vertexShaderId);
         deleteShaderId(fragmentShaderId);
         return programId;
@@ -79,6 +122,18 @@ public class GLESUtil {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        return texture[0];
+    }
+
+    public static int createNearestTextureId() {
+        int[] texture = new int[1];
+        GLES20.glGenTextures(1, texture, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture[0]);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+        GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);

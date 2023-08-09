@@ -8,6 +8,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 public interface VideoDecoder extends Decoder {
+
+    String KEY_YUV420_TYPE = "yuv420Type";
     int BUFFER_MODE = 1;
     int SURFACE_MODE = 2;
     @IntDef({BUFFER_MODE, SURFACE_MODE})
@@ -24,7 +26,8 @@ public interface VideoDecoder extends Decoder {
 
     void setOutputMode(@OutputMode int outputMode);
 
+    boolean isSupportYUV420P010BufferMode();
 
-
+    boolean isSupportColorFormat(int colorFormat);
 
 }

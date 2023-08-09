@@ -128,9 +128,6 @@ class GLTextureRenderer extends GLRenderer {
         return textureMatrix;
     }
 
-    public float[] getTextureMatrixValue() {
-        return textureMatrix.get();
-    }
 
 
     @Override

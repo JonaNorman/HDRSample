@@ -15,6 +15,7 @@ import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.view.VideoPlayerView;
+import com.norman.android.hdrsample.player.view.VideoView;
 import com.norman.android.hdrsample.todo.CubeLutVideoTransform;
 
 import java.io.File;
@@ -66,11 +67,14 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 //        google-bag-to-sky-hlg-hdr.mp4
 //        hdr10-video-with-sdr-container.mp4
 //        hlg-1080p.mp4
+//        video_1280x720_hevc_hdr10_static_3mbps.mp4
+//        video_h265_hdr10plus.mp4
 
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.addOnOutputFormatChangeCallback(outputFormatChangeCallback);
+        surfaceView.setViewType(VideoView.VIEW_TYPE_SURFACE_VIEW);
         surfaceView.setVideoPlayer(videoPlayer);
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
     }

@@ -9,6 +9,9 @@ import java.nio.ByteBuffer;
 
 public interface Decoder {
 
+
+    void create(String mimeType);
+
     void configure(Decoder.Configuration configuration);
 
     void reset();
@@ -21,9 +24,12 @@ public interface Decoder {
 
     void flush();
 
-    void stop();
+    void destroy();
 
     void release();
+
+
+    boolean isCreated();
 
     boolean isConfigured();
 
@@ -35,7 +41,8 @@ public interface Decoder {
 
     boolean isPause();
 
-     class Configuration {
+
+    class Configuration {
         public final MediaFormat mediaFormat;
         public final CallBack callBack;
 

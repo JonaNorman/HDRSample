@@ -1,7 +1,6 @@
 package com.norman.android.hdrsample.player;
 
 import android.media.MediaFormat;
-import android.os.Build;
 import android.os.SystemClock;
 import android.view.Surface;
 
@@ -76,11 +75,9 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
 
     @Override
     protected void onInputFormatPrepare(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, extractor.getColorStandard());
-            MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, extractor.getColorRange());
-            MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, extractor.getColorTransfer());
-        }
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, extractor.getColorStandard());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, extractor.getColorRange());
+        MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, extractor.getColorTransfer());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_WIDTH, extractor.getWidth());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_HEIGHT, extractor.getHeight());
         videoOutput.onDecoderPrepare(decoder, inputFormat);

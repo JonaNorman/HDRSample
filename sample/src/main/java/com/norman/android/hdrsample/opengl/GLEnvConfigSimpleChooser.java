@@ -20,7 +20,7 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
         boolean windowSurface = true;
         boolean pbufferSurface = true;
         Boolean renderGL10;
-        Boolean renderGL20;
+        Boolean renderGL20 = true;
         Boolean renderGL30 = true;
         Boolean recordable;
 

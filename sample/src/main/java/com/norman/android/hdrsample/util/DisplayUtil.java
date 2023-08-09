@@ -28,18 +28,12 @@ public class DisplayUtil {
     public static synchronized float getMaxLuminance() {
         if (MAX_SCREEN_LUMINANCE == null) {
             float maxScreenLuminance = 0;
-            try {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    Context context = AppUtil.getAppContext();
-                    WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-                    Display display = windowManager.getDefaultDisplay();
-                    Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
-                    maxScreenLuminance = Math.max(hdrCapabilities.getDesiredMaxAverageLuminance(), maxScreenLuminance);
-                    maxScreenLuminance = Math.max(hdrCapabilities.getDesiredMaxLuminance(), maxScreenLuminance);
-                }
-            } catch (Exception e) {
-
-            }
+            Context context = AppUtil.getAppContext();
+            WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            Display display = windowManager.getDefaultDisplay();
+            Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
+            maxScreenLuminance = Math.max(hdrCapabilities.getDesiredMaxAverageLuminance(), maxScreenLuminance);
+            maxScreenLuminance = Math.max(hdrCapabilities.getDesiredMaxLuminance(), maxScreenLuminance);
             if (maxScreenLuminance <= 0) {
                 MAX_SCREEN_LUMINANCE = DEFAULT_MAX_SCREEN_LUMINANCE;
             } else {
@@ -123,26 +117,24 @@ public class DisplayUtil {
         if (HDR_CAPABILITY_SCREEN != null) {
             return;
         }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            Context context = AppUtil.getAppContext();
-            WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
-            int[] hdrTypes = hdrCapabilities.getSupportedHdrTypes();
-            if (hdrTypes != null && hdrTypes.length > 0) {
-                for (int hdrType : hdrTypes) {
-                    if (hdrType == Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION) {
-                        HDR_CAPABILITY_DOLBY_VISION = true;
-                    } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HLG) {
-                        HDR_CAPABILITY_HLG = true;
-                    } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10) {
-                        HDR_CAPABILITY_HDR10 = true;
-                    } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS) {
-                        HDR_CAPABILITY_HDR10_PLUS = true;
-                    }
+        Context context = AppUtil.getAppContext();
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
+        int[] hdrTypes = hdrCapabilities.getSupportedHdrTypes();
+        if (hdrTypes != null && hdrTypes.length > 0) {
+            for (int hdrType : hdrTypes) {
+                if (hdrType == Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION) {
+                    HDR_CAPABILITY_DOLBY_VISION = true;
+                } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HLG) {
+                    HDR_CAPABILITY_HLG = true;
+                } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10) {
+                    HDR_CAPABILITY_HDR10 = true;
+                } else if (hdrType == Display.HdrCapabilities.HDR_TYPE_HDR10_PLUS) {
+                    HDR_CAPABILITY_HDR10_PLUS = true;
                 }
-                HDR_CAPABILITY_SCREEN = true;
             }
+            HDR_CAPABILITY_SCREEN = true;
         }
         if (HDR_CAPABILITY_SCREEN == null) {
             HDR_CAPABILITY_SCREEN = false;
