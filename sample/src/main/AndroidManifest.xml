@@ -11,21 +11,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.norman.android.hdrsample.MainActivity"
-            android:exported="true">
+
+        <activity
+            android:exported="true"
+            android:name=".HDRPlayActivity"
+            android:label="HDRSample">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.norman.android.hdrsample.HDRPlayActivity"
-            android:label="HDR播放">
-            <meta-data
-                android:name="example"
-                android:value="true" />
         </activity>
     </application>
 
