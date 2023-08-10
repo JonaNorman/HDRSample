@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.view.VideoPlayerView;
 import com.norman.android.hdrsample.player.view.VideoView;
-import com.norman.android.hdrsample.todo.CubeLutVideoTransform;
+import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 
 import java.io.File;
 import java.util.ArrayList;

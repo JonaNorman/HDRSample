@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.todo;
+package com.norman.android.hdrsample.transform;
 
 import android.media.MediaFormat;
 
