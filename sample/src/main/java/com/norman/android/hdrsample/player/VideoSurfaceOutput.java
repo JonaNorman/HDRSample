@@ -5,13 +5,13 @@ import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 
-public class SurfaceVideoOutput extends VideoOutput {
+public class VideoSurfaceOutput extends VideoOutput {
     private Surface surface;
     private VideoDecoder videoDecoder;
 
 
-    public static SurfaceVideoOutput create(){
-        return new SurfaceVideoOutput();
+    public static VideoSurfaceOutput create(){
+        return new VideoSurfaceOutput();
     }
     @Override
     protected synchronized void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {

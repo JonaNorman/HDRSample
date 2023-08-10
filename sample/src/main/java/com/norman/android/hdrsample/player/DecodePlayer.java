@@ -3,7 +3,6 @@ package com.norman.android.hdrsample.player;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.os.Handler;
-import android.util.Log;
 
 import com.norman.android.hdrsample.exception.RuntimeException;
 import com.norman.android.hdrsample.player.decode.Decoder;
@@ -65,13 +64,13 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     }
 
     @Override
-    public void waitForNextFrame() {
-        waitForNextFrame(0);
+    public void waitNextFrame() {
+        waitNextFrame(0);
     }
 
     @Override
-    public void waitForNextFrame(float second) {
-        long waitTime = TimeUtil.secondToMill(second);
+    public void waitNextFrame(float waitSecond) {
+        long waitTime = TimeUtil.secondToMill(waitSecond);
         long startTime = System.currentTimeMillis();
         while (isPlaying() && !hasEnd) {
             try {
@@ -118,6 +117,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         if (!extractor.isAvailable()) {
             throw new RuntimeException("file can not play");
         }
+        decoder.create(extractor.getMimeType());
         MediaFormat mediaFormat = new MediaFormat();
         MediaFormatUtil.setString(mediaFormat, MediaFormat.KEY_MIME, extractor.getMimeType());
         MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_MAX_INPUT_SIZE, extractor.getMaxInputSize());
@@ -125,8 +125,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_LEVEL, extractor.getProfileLevel());
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_0, extractor.getCsd0Buffer());
         MediaFormatUtil.setByteBuffer(mediaFormat, KEY_CSD_1, extractor.getCsd1Buffer());
-        decoder.create(extractor.getMimeType());
-        onInputFormatPrepare(extractor,decoder, mediaFormat);
+        onInputFormatConfigure(extractor,decoder, mediaFormat);
         decoder.configure(new Decoder.Configuration(mediaFormat, new DecoderCallBack()));
     }
 
@@ -163,7 +162,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     @Override
     protected void onPlayError(Exception exception) {
-        Log.e("AndroidPlayerImpl", Log.getStackTraceString(exception));
         callBackHandler.callError(exception);
     }
 
@@ -213,7 +211,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         }
     }
 
-    protected abstract void onInputFormatPrepare(E extractor,D decoder, MediaFormat inputFormat);
+    protected abstract void onInputFormatConfigure(E extractor, D decoder, MediaFormat inputFormat);
 
 
     protected abstract void onOutputFormatChanged(MediaFormat outputFormat);

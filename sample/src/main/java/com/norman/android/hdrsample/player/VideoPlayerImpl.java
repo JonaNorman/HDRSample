@@ -74,7 +74,7 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
     }
 
     @Override
-    protected void onInputFormatPrepare(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
+    protected void onInputFormatConfigure(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_STANDARD, extractor.getColorStandard());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_RANGE, extractor.getColorRange());
         MediaFormatUtil.setInteger(inputFormat, MediaFormat.KEY_COLOR_TRANSFER, extractor.getColorTransfer());
@@ -190,7 +190,6 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         private long firstSystemTimeUs;
         private long firstPlayTimeUs;
 
-        private long currentTimeUs;
 
 
         public synchronized void flush() {
@@ -201,16 +200,10 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         public synchronized void reset() {
             firstSystemTimeUs = 0;
             firstPlayTimeUs = 0;
-            currentTimeUs = 0;
-        }
-
-        public synchronized long getCurrentTimeUs() {
-            return currentTimeUs;
         }
 
 
         public synchronized long sync(long timeUs) {
-            currentTimeUs = timeUs;
             long currentSystemUs = TimeUtil.nanoToMicro(SystemClock.elapsedRealtimeNanos());
             if (firstSystemTimeUs == 0) {
                 firstSystemTimeUs = currentSystemUs;

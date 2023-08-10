@@ -10,7 +10,7 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.VideoGLOutput;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
@@ -54,7 +54,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
         surfaceView = findViewById(R.id.VideoPlayerView);
-        GLVideoOutput videoOutput = GLVideoOutput.create();
+        VideoGLOutput videoOutput = VideoGLOutput.create();
         videoPlayer = VideoPlayer.create(videoOutput);
 //        1.mp4
 //        2.mp4  //

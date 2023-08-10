@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class GLVideoOutput extends VideoOutput {
+public class VideoGLOutput extends VideoOutput {
 
     private static final String KEY_CROP_LEFT = "crop-left";
     private static final String KEY_CROP_RIGHT = "crop-right";
@@ -66,8 +66,8 @@ public class GLVideoOutput extends VideoOutput {
     private boolean hdrColor;
 
 
-    public static GLVideoOutput create() {
-        return new GLVideoOutput();
+    public static VideoGLOutput create() {
+        return new VideoGLOutput();
     }
 
     @Override
