@@ -100,7 +100,7 @@ public class GLVideoOutput extends VideoOutput {
     @Override
     protected void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
-        if (profile10Bit && decoder.isSupportYUV420P010BufferMode()) {
+        if (profile10Bit && decoder.isSupportYUV42010BitBufferMode()) {
             bufferMode = true;
             decoder.setOutputMode(VideoDecoder.BUFFER_MODE);
         } else {

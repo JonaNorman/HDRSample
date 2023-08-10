@@ -119,7 +119,7 @@ public class ColorFormatUtil {
         }
     }
 
-    public static boolean isYUV420P010(String codecName, int colorFormat) {
+    public static boolean isYUV42010Bit(String codecName, int colorFormat) {
         ColorFormatList yuv420List = findYUV420List(codecName);
         if (yuv420List == null) {
             return false;

@@ -26,7 +26,7 @@ public interface VideoDecoder extends Decoder {
 
     void setOutputMode(@OutputMode int outputMode);
 
-    boolean isSupportYUV420P010BufferMode();
+    boolean isSupportYUV42010BitBufferMode();
 
     boolean isSupportColorFormat(int colorFormat);
 

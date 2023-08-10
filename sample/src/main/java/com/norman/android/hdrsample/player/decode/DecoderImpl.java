@@ -3,7 +3,7 @@ package com.norman.android.hdrsample.player.decode;
 
 abstract class DecoderImpl implements Decoder {
 
-    private static final int DECODE_UNINIT = 0;
+    private static final int DECODE_UNINITIALIZED = 0;
     private static final int DECODE_CREATE = 1;
     private static final int DECODE_CONFIGURE = 2;
     private static final int DECODE_START = 3;
@@ -12,12 +12,12 @@ abstract class DecoderImpl implements Decoder {
     private static final int DECODE_DESTROY = 6;
     private static final int DECODE_RELEASE = 7;
 
-    private int state = DECODE_UNINIT;
+    private int state = DECODE_UNINITIALIZED;
 
 
     @Override
     public synchronized void create(String mimeType) {
-        if (state != DECODE_UNINIT &&
+        if (state != DECODE_UNINITIALIZED &&
                 state != DECODE_DESTROY) {
             return;
         }
@@ -64,7 +64,7 @@ abstract class DecoderImpl implements Decoder {
 
     @Override
     public synchronized void resume() {
-        if (!isPause()) {
+        if (!isPaused()) {
             return;
         }
         state = DECODE_RESUME;
@@ -112,7 +112,7 @@ abstract class DecoderImpl implements Decoder {
     }
 
     @Override
-    public synchronized boolean isPause() {
+    public synchronized boolean isPaused() {
         return state == DECODE_PAUSE;
     }
 

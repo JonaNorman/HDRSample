@@ -64,14 +64,14 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
     }
 
     @Override
-    public boolean isSupportYUV420P010BufferMode() {
+    public boolean isSupportYUV42010BitBufferMode() {
         if (isRelease()){
             return  false;
         }
         if (!isCreated()) {
             throw new RuntimeException("videoDecoder has not been created");
         }
-        return mediaCodecAdapter.isSupportYUV420P010();
+        return mediaCodecAdapter.isSupportYUV42010Bit();
     }
 
     @Override

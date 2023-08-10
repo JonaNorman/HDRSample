@@ -39,7 +39,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             if (inputEndStream) {
                 return;
             }
-
             ByteBuffer byteBuffer = codec.getInputBuffer(index);
             if (byteBuffer == null) return;
             byteBuffer.clear();
@@ -122,7 +121,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             throw new IORuntimeException(e);
         }
         MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
-        String infoBuilder = "mediacodec" + "\n" +
+        String infoBuilder = "mediacodec create" + "\n" +
                 "mimeType->" + mimeType + "\n" +
                 "name->" + mediaCodec.getName() + "\n" +
                 "supportedTypes->" + Arrays.toString(mediaCodecInfo.getSupportedTypes());
@@ -201,14 +200,14 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-    public synchronized boolean isSupportYUV420P010() {
+    public synchronized boolean isSupportYUV42010Bit() {
         if (isReleased()) {
             return false;
         }
         MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
         MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodecInfo.getCapabilitiesForType(mimeType);
         for (int colorFormat : codecCapabilities.colorFormats) {
-           if (ColorFormatUtil.isYUV420P010(mediaCodecInfo.getName(),colorFormat)){
+           if (ColorFormatUtil.isYUV42010Bit(mediaCodecInfo.getName(),colorFormat)){
                return true;
            }
         }
@@ -404,6 +403,9 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         void onMediaCodecError(Exception exception);
     }
 
+    /**
+     * 恢复暂停时候解码出来的Buffer
+     */
     class ResumeBuffer {
 
         private final List<Integer> inputBufferList = new ArrayList<>();
@@ -435,6 +437,9 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     }
 
+    /**
+     * 用Surface模式解码如果刚开始不设置Surface会报错，建立一个占位的Surface解决这个问题
+     */
     static final class HolderSurface extends GLTextureSurface {
 
         private static GLEnvThreadManager ENV_THREAD_MANAGER;

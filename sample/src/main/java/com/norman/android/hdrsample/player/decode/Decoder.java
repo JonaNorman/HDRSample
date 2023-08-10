@@ -39,7 +39,7 @@ public interface Decoder {
 
     boolean isRelease();
 
-    boolean isPause();
+    boolean isPaused();
 
 
     class Configuration {
