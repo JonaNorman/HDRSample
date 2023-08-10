@@ -106,8 +106,8 @@ public class GLVideoOutput extends VideoOutput {
         } else {
             bufferMode = false;
             decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
-            decoder.setOutputSurface(videoSurface);
             videoSurface = new GLTextureSurface(GLESUtil.createExternalTextureId());
+            decoder.setOutputSurface(videoSurface);
             externalTextureRenderer.setTextureId(videoSurface.getTextureId());
             y2yExtTextureRenderer.setTextureId(videoSurface.getTextureId());
         }
