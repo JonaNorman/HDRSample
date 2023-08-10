@@ -88,7 +88,7 @@ abstract class BasePlayer implements Player {
 
     @Override
     public synchronized void stop() {
-        if (!isPrepare()) {
+        if (!isPrepared()) {
             return;
         }
         state = PLAY_STOP;
@@ -125,7 +125,7 @@ abstract class BasePlayer implements Player {
     private synchronized void prepareHandler() {
         if (messageHandler != null) return;
         if (stopFuture != null) {
-            stopFuture.get();
+            stopFuture.get();//等待上一次播放停止，不等待的话，Surface被两个GLWindowSurface占有会崩溃
             stopFuture = null;
         }
         messageHandler = MessageHandler.obtain(threadName, new MessageHandler.LifeCycleCallback() {
@@ -151,7 +151,7 @@ abstract class BasePlayer implements Player {
 
 
     @Override
-    public synchronized boolean isPrepare() {
+    public synchronized boolean isPrepared() {
         return state != PLAY_UNINIT &&
                 state != PLAY_STOP &&
                 state != PLAY_RELEASE;

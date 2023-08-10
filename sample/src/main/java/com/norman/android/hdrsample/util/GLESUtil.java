@@ -43,15 +43,25 @@ public class GLESUtil {
     public static final int FLAT_VERTEX_LENGTH = 2;
 
 
-
+    /**
+     * 创建平面的顶点坐标
+     * @return
+     */
     public static FloatBuffer createPositionFlatBuffer(){
          return BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
     }
-
+    /**
+     * 创建纹理坐标
+     * @return
+     */
     public static FloatBuffer createTextureFlatBuffer(){
         return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
     }
 
+    /**
+     * 创建上下颠倒的纹理矩阵，因为纹理坐标是从下方开始的，颠倒以后就是正的
+     * @return
+     */
     public static FloatBuffer createTextureFlatBufferUpsideDown(){
         return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES_UPSIDE_DOWN);
     }

@@ -19,11 +19,10 @@ public class BufferUtil {
 
 
     public static FloatBuffer createDirectFloatBuffer(int size) {
-        FloatBuffer buffer = ByteBuffer
+        return ByteBuffer
                 .allocateDirect(size * FLOAT_SIZE)
                 .order(ByteOrder.nativeOrder())
                 .asFloatBuffer();
-        return buffer;
     }
 
     public static ByteBuffer growCapacity(ByteBuffer byteBuffer) {

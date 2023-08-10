@@ -91,6 +91,11 @@ public class MediaFormatUtil {
         mediaFormat.setByteBuffer(name, buffer);
     }
 
+    /**
+     * 根据profile判断视频是否是10位
+     * @param mediaFormat
+     * @return
+     */
     public static boolean is10BitProfile(MediaFormat mediaFormat) {
         int profile = getInteger(mediaFormat, MediaFormat.KEY_PROFILE);
         return profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10 |
@@ -102,15 +107,30 @@ public class MediaFormatUtil {
                 profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus;
     }
 
+    /**
+     * 判断视频是否具有HDR的传递函数
+     * @param mediaFormat
+     * @return
+     */
     public static boolean isHdrColorTransfer(MediaFormat mediaFormat) {
         int colorTransfer = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
         return colorTransfer == MediaFormat.COLOR_TRANSFER_HLG || colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084;
     }
-
+    /**
+     * 判断视频是否具有HDR的色彩空间
+     * @param mediaFormat
+     * @return
+     */
     public static boolean isHdrColorSpace(MediaFormat mediaFormat) {
         int colorStandard = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
         return colorStandard == MediaFormat.COLOR_STANDARD_BT2020;
     }
+
+    /**
+     * 判断视频是否是HDR色彩
+     * @param mediaFormat
+     * @return
+     */
     public static boolean isHdrColor(MediaFormat mediaFormat) {
         return isHdrColorSpace(mediaFormat) && isHdrColorTransfer(mediaFormat);
     }

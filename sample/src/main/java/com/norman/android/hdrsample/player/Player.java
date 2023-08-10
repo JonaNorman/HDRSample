@@ -29,7 +29,7 @@ public interface Player {
 
     boolean isRelease();
 
-    boolean isPrepare();
+    boolean isPrepared();
 
     float getCurrentTime();
 
