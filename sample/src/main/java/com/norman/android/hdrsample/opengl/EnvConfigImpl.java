@@ -6,6 +6,8 @@ import android.opengl.EGLDisplay;
 import android.opengl.EGLExt;
 
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,47 +15,48 @@ class EnvConfigImpl implements GLEnvConfig {
 
 
     List<ConfigValue> configValueList = new ArrayList<>();
-    ConfigValue bufferSize = new ConfigValue(EGL14.EGL_BUFFER_SIZE);
-    ConfigValue alphaSize = new ConfigValue(EGL14.EGL_ALPHA_SIZE);
-    ConfigValue blueSize = new ConfigValue(EGL14.EGL_BLUE_SIZE);
-    ConfigValue greenSize = new ConfigValue(EGL14.EGL_GREEN_SIZE);
-    ConfigValue redSize = new ConfigValue(EGL14.EGL_RED_SIZE);
-    ConfigValue depthSize = new ConfigValue(EGL14.EGL_DEPTH_SIZE);
-    ConfigValue stencilSize = new ConfigValue(EGL14.EGL_STENCIL_SIZE);
-    ConfigBoolValue slowCaveat = new ConfigBoolValue(EGL14.EGL_CONFIG_CAVEAT, EGL14.EGL_SLOW_CONFIG);
-    ConfigValue configId = new ConfigValue(EGL14.EGL_CONFIG_ID);
-    ConfigValue level = new ConfigValue(EGL14.EGL_LEVEL);
-    ConfigValue maxPbufferHeight = new ConfigValue(EGL14.EGL_MAX_PBUFFER_HEIGHT);
-    ConfigValue maxPbufferPixels = new ConfigValue(EGL14.EGL_MAX_PBUFFER_PIXELS);
-    ConfigValue maxPbufferWidth = new ConfigValue(EGL14.EGL_MAX_PBUFFER_WIDTH);
-    ConfigBoolValue nativeRenderable = new ConfigBoolValue(EGL14.EGL_NATIVE_RENDERABLE, EGL14.EGL_TRUE);
-    ConfigValue nativeVisualId = new ConfigValue(EGL14.EGL_NATIVE_VISUAL_ID);
-    ConfigValue nativeVisualType = new ConfigValue(EGL14.EGL_NATIVE_VISUAL_TYPE);
-    ConfigValue samples = new ConfigValue(EGL14.EGL_SAMPLES);
-    ConfigValue sampleBuffers = new ConfigValue(EGL14.EGL_SAMPLE_BUFFERS);
-    ConfigBoolValue windowSurfaceType = new ConfigBoolValue(EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT);
-    ConfigBoolValue pbufferSurfaceType = new ConfigBoolValue(EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT);
-    ConfigBoolValue transparentType = new ConfigBoolValue(EGL14.EGL_TRANSPARENT_TYPE, EGL14.EGL_TRANSPARENT_RGB);
-    ConfigValue transparentRedValue = new ConfigValue(EGL14.EGL_TRANSPARENT_RED_VALUE);
-    ConfigValue transparentGreenValue = new ConfigValue(EGL14.EGL_TRANSPARENT_GREEN_VALUE);
-    ConfigValue transparentBlueValue = new ConfigValue(EGL14.EGL_TRANSPARENT_BLUE_VALUE);
-    ConfigBoolValue bindToTextureRgb = new ConfigBoolValue(EGL14.EGL_BIND_TO_TEXTURE_RGB, EGL14.EGL_TRUE);
-    ConfigBoolValue bindToTextureRgba = new ConfigBoolValue(EGL14.EGL_BIND_TO_TEXTURE_RGBA, EGL14.EGL_TRUE);
-    ConfigValue minSwapInterval = new ConfigValue(EGL14.EGL_MIN_SWAP_INTERVAL);
-    ConfigValue maxSwapInterval = new ConfigValue(EGL14.EGL_MAX_SWAP_INTERVAL);
-    ConfigValue luminanceSize = new ConfigValue(EGL14.EGL_LUMINANCE_SIZE);
-    ConfigValue alphaMaskSize = new ConfigValue(EGL14.EGL_ALPHA_MASK_SIZE);
-    ConfigBoolValue colorRgbBufferType = new ConfigBoolValue(EGL14.EGL_COLOR_BUFFER_TYPE, EGL14.EGL_RGB_BUFFER);
-    ConfigBoolValue colorLuminanceBufferType = new ConfigBoolValue(EGL14.EGL_COLOR_BUFFER_TYPE, EGL14.EGL_LUMINANCE_BUFFER);
+    ConfigValue bufferSize = new ConfigValue("bufferSize",EGL14.EGL_BUFFER_SIZE);
+    ConfigValue alphaSize = new ConfigValue("alphaSize",EGL14.EGL_ALPHA_SIZE);
+    ConfigValue blueSize = new ConfigValue("blueSize",EGL14.EGL_BLUE_SIZE);
+    ConfigValue greenSize = new ConfigValue("greenSize",EGL14.EGL_GREEN_SIZE);
+    ConfigValue redSize = new ConfigValue("redSize",EGL14.EGL_RED_SIZE);
+    ConfigValue depthSize = new ConfigValue("depthSize",EGL14.EGL_DEPTH_SIZE);
+    ConfigValue stencilSize = new ConfigValue("stencilSize",EGL14.EGL_STENCIL_SIZE);
+    ConfigBoolValue slowCaveat = new ConfigBoolValue("slowCaveat",EGL14.EGL_CONFIG_CAVEAT, EGL14.EGL_SLOW_CONFIG);
+    ConfigValue configId = new ConfigValue("configId",EGL14.EGL_CONFIG_ID);
+    ConfigValue level = new ConfigValue("level",EGL14.EGL_LEVEL);
+    ConfigValue maxPbufferHeight = new ConfigValue("maxPbufferHeight",EGL14.EGL_MAX_PBUFFER_HEIGHT);
 
-    ConfigBoolValue renderable30Type = new ConfigBoolValue(EGL14.EGL_RENDERABLE_TYPE, EGLExt.EGL_OPENGL_ES3_BIT_KHR);
-    ConfigBoolValue renderable20Type = new ConfigBoolValue(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT);
-    ConfigBoolValue renderable10Type = new ConfigBoolValue(EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES_BIT);
-    ConfigBoolValue conFormant30 = new ConfigBoolValue(EGL14.EGL_CONFORMANT, EGLExt.EGL_OPENGL_ES3_BIT_KHR);
-    ConfigBoolValue conFormant20 = new ConfigBoolValue(EGL14.EGL_CONFORMANT, EGL14.EGL_OPENGL_ES2_BIT);
-    ConfigBoolValue conFormant10 = new ConfigBoolValue(EGL14.EGL_CONFORMANT, EGL14.EGL_OPENGL_ES_BIT);
+    ConfigValue maxPbufferPixels = new ConfigValue("maxPbufferPixels",EGL14.EGL_MAX_PBUFFER_PIXELS);
+    ConfigValue maxPbufferWidth = new ConfigValue("maxPbufferWidth",EGL14.EGL_MAX_PBUFFER_WIDTH);
+    ConfigBoolValue nativeRenderable = new ConfigBoolValue("nativeRenderable",EGL14.EGL_NATIVE_RENDERABLE, EGL14.EGL_TRUE);
+    ConfigValue nativeVisualId = new ConfigValue("nativeVisualId",EGL14.EGL_NATIVE_VISUAL_ID);
+    ConfigValue nativeVisualType = new ConfigValue("nativeVisualType",EGL14.EGL_NATIVE_VISUAL_TYPE);
+    ConfigValue samples = new ConfigValue("samples",EGL14.EGL_SAMPLES);
+    ConfigValue sampleBuffers = new ConfigValue("sampleBuffers",EGL14.EGL_SAMPLE_BUFFERS);
+    ConfigBoolValue windowSurfaceType = new ConfigBoolValue("windowSurfaceType",EGL14.EGL_SURFACE_TYPE, EGL14.EGL_WINDOW_BIT);
+    ConfigBoolValue pbufferSurfaceType = new ConfigBoolValue("pbufferSurfaceType",EGL14.EGL_SURFACE_TYPE, EGL14.EGL_PBUFFER_BIT);
+    ConfigBoolValue transparentType = new ConfigBoolValue("transparentType",EGL14.EGL_TRANSPARENT_TYPE, EGL14.EGL_TRANSPARENT_RGB);
+    ConfigValue transparentRedValue = new ConfigValue("transparentRedValue",EGL14.EGL_TRANSPARENT_RED_VALUE);
+    ConfigValue transparentGreenValue = new ConfigValue("transparentGreenValue",EGL14.EGL_TRANSPARENT_GREEN_VALUE);
+    ConfigValue transparentBlueValue = new ConfigValue("transparentBlueValue",EGL14.EGL_TRANSPARENT_BLUE_VALUE);
+    ConfigBoolValue bindToTextureRgb = new ConfigBoolValue("bindToTextureRgb",EGL14.EGL_BIND_TO_TEXTURE_RGB, EGL14.EGL_TRUE);
+    ConfigBoolValue bindToTextureRgba = new ConfigBoolValue("bindToTextureRgba",EGL14.EGL_BIND_TO_TEXTURE_RGBA, EGL14.EGL_TRUE);
+    ConfigValue minSwapInterval = new ConfigValue("minSwapInterval",EGL14.EGL_MIN_SWAP_INTERVAL);
+    ConfigValue maxSwapInterval = new ConfigValue("maxSwapInterval",EGL14.EGL_MAX_SWAP_INTERVAL);
+    ConfigValue luminanceSize = new ConfigValue("luminanceSize",EGL14.EGL_LUMINANCE_SIZE);
+    ConfigValue alphaMaskSize = new ConfigValue("alphaMaskSize",EGL14.EGL_ALPHA_MASK_SIZE);
+    ConfigBoolValue colorRgbBufferType = new ConfigBoolValue("colorRgbBufferType",EGL14.EGL_COLOR_BUFFER_TYPE, EGL14.EGL_RGB_BUFFER);
+    ConfigBoolValue colorLuminanceBufferType = new ConfigBoolValue("colorLuminanceBufferType",EGL14.EGL_COLOR_BUFFER_TYPE, EGL14.EGL_LUMINANCE_BUFFER);
 
-    ConfigBoolValue recordableAndroid = new ConfigBoolValue(EGLExt.EGL_RECORDABLE_ANDROID, EGL14.EGL_TRUE);
+    ConfigBoolValue renderable30Type = new ConfigBoolValue("renderable30Type",EGL14.EGL_RENDERABLE_TYPE, EGLExt.EGL_OPENGL_ES3_BIT_KHR);
+    ConfigBoolValue renderable20Type = new ConfigBoolValue("renderable20Type",EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT);
+    ConfigBoolValue renderable10Type = new ConfigBoolValue("renderable10Type",EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES_BIT);
+    ConfigBoolValue conFormant30 = new ConfigBoolValue("conFormant30",EGL14.EGL_CONFORMANT, EGLExt.EGL_OPENGL_ES3_BIT_KHR);
+    ConfigBoolValue conFormant20 = new ConfigBoolValue("conFormant20",EGL14.EGL_CONFORMANT, EGL14.EGL_OPENGL_ES2_BIT);
+    ConfigBoolValue conFormant10 = new ConfigBoolValue("conFormant10",EGL14.EGL_CONFORMANT, EGL14.EGL_OPENGL_ES_BIT);
+
+    ConfigBoolValue recordableAndroid = new ConfigBoolValue("recordableAndroid",EGLExt.EGL_RECORDABLE_ANDROID, EGL14.EGL_TRUE);
 
     private final EGLConfig eglConfig;
 
@@ -311,11 +314,25 @@ class EnvConfigImpl implements GLEnvConfig {
     }
 
 
+    @NonNull
+    @Override
+    public String toString() {
+        StringBuilder stringBuffer = new StringBuilder();
+        for (ConfigValue configValue : configValueList) {
+            stringBuffer.append(configValue).append("\n");
+        }
+        return "EnvConfig-->\n" +
+                stringBuffer;
+    }
+
     class ConfigValue {
+
+         final String name;
         private final int key;
         int value;
 
-        public ConfigValue(int key) {
+        public ConfigValue(String name,int key) {
+            this.name = name;
             this.key = key;
             configValueList.add(this);
         }
@@ -323,14 +340,23 @@ class EnvConfigImpl implements GLEnvConfig {
         public void setValue(int value) {
             this.value = value;
         }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "[" +
+                    "name='" + name + '\'' +
+                    ", value=" + value +
+                    ']';
+        }
     }
 
     class ConfigBoolValue extends ConfigValue {
         boolean hasValue;
         final int flag;
 
-        public ConfigBoolValue(int key, int flag) {
-            super(key);
+        public ConfigBoolValue(String name,int key, int flag) {
+            super(name,key);
             this.flag = flag;
         }
 
@@ -338,6 +364,15 @@ class EnvConfigImpl implements GLEnvConfig {
         public void setValue(int value) {
             super.setValue(value);
             hasValue = (value & flag) != 0;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return "[" +
+                    "name='" + name + '\'' +
+                    ", value=" + hasValue +
+                    ']';
         }
     }
 

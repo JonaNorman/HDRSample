@@ -1,5 +1,7 @@
 package com.norman.android.hdrsample.opengl;
 
+import com.norman.android.hdrsample.util.LogUtil;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -133,7 +135,13 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
             }
         }
         findConfigs.sort(CONFIG_COMPARATOR);
-        return findConfigs.size() > 0 ? findConfigs.get(0) : null;
+        GLEnvConfig envConfig = findConfigs.size() > 0 ? findConfigs.get(0) : null;
+        if (envConfig == null){
+            LogUtil.w("chooseConfig is null");
+        }else {
+            LogUtil.d("chooseConfig is "+envConfig);
+        }
+        return envConfig;
     }
 
 }
