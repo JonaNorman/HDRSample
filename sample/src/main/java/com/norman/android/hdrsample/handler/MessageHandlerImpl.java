@@ -13,6 +13,9 @@ import com.norman.android.hdrsample.util.LogUtil;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * MessageHandler的真正实现
+ */
 class MessageHandlerImpl implements MessageHandler {
 
     private final Object lock = new Object();

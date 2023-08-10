@@ -1,7 +1,6 @@
 package com.norman.android.hdrsample.opengl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -57,7 +56,7 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
 
         if ((!o1.isRenderGL20() ||
                 !o1.isRenderGL30()) && (o2.isRenderGL20() &&
-                o2.isConformantGL30())) {
+                o2.isRenderGL30())) {
             return 1;
         }
         if (o1.getAlphaMaskSize() > o2.getAlphaMaskSize()) {
@@ -133,7 +132,7 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
                 findConfigs.add(config);
             }
         }
-        Collections.sort(findConfigs, CONFIG_COMPARATOR);
+        findConfigs.sort(CONFIG_COMPARATOR);
         return findConfigs.size() > 0 ? findConfigs.get(0) : null;
     }
 

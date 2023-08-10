@@ -30,6 +30,10 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
             this(envContext.getEnvDisplay(), envContext.getEnvConfig(), surface);
         }
 
+        public Builder(GLEnvContext envContext,GLEnvConfig envConfig, Surface surface) {
+            this(envContext.getEnvDisplay(), envConfig, surface);
+        }
+
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, Surface surface) {
             this.envDisplay = envDisplay;

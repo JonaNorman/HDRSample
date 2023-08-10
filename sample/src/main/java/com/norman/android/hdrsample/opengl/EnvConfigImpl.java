@@ -55,16 +55,15 @@ class EnvConfigImpl implements GLEnvConfig {
 
     ConfigBoolValue recordableAndroid = new ConfigBoolValue(EGLExt.EGL_RECORDABLE_ANDROID, EGL14.EGL_TRUE);
 
-    private final int[] temp = new int[1];
-
     private final EGLConfig eglConfig;
 
 
     public EnvConfigImpl(EGLDisplay display, EGLConfig config) {
         eglConfig = config;
         for (ConfigValue configValue : configValueList) {
-            if (EGL14.eglGetConfigAttrib(display, config, configValue.key, temp, 0)) {
-                configValue.setValue(temp[0]);
+            int[] value = new int[1];
+            if (EGL14.eglGetConfigAttrib(display, config, configValue.key, value, 0)) {
+                configValue.setValue(value[0]);
             } else {
                GLEnvException.clearError();
             }
@@ -313,7 +312,7 @@ class EnvConfigImpl implements GLEnvConfig {
 
 
     class ConfigValue {
-        private int key;
+        private final int key;
         int value;
 
         public ConfigValue(int key) {
@@ -328,7 +327,7 @@ class EnvConfigImpl implements GLEnvConfig {
 
     class ConfigBoolValue extends ConfigValue {
         boolean hasValue;
-        int flag;
+        final int flag;
 
         public ConfigBoolValue(int key, int flag) {
             super(key);

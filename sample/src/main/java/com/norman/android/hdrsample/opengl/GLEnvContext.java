@@ -105,7 +105,7 @@ public interface GLEnvContext {
         }
 
         public GLEnvContext build() {
-            return new EnvContextImpl(envDisplay, envConfig, (GLEnvContextAttribArray) contextAttribArray.clone(), shareContext);
+            return new EnvContextImpl(envDisplay, envConfig,contextAttribArray.clone(), shareContext);
         }
     }
 

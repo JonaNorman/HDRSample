@@ -4,6 +4,9 @@ import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.view.Surface;
 
+/**
+ * 关联纹理的Surface
+ */
 public class GLTextureSurface extends Surface {
 
     private final SurfaceTexturePlus surfaceTexture;
@@ -80,6 +83,9 @@ public class GLTextureSurface extends Surface {
         return  release;
     }
 
+    /**
+     * SurfaceTexture的加强版，支持获取getTextureId和isAttached状态判断
+     */
     static class SurfaceTexturePlus extends SurfaceTexture {
         boolean release = false;
         boolean finalize = false;
@@ -121,28 +127,31 @@ public class GLTextureSurface extends Surface {
             return textureId;
         }
 
+        @Override
         public void setOnFrameAvailableListener(SurfaceTexture.OnFrameAvailableListener listener) {
             if (isRelease()) return;
             super.setOnFrameAvailableListener(listener, null);
         }
 
+        @Override
         public void setOnFrameAvailableListener(final SurfaceTexture.OnFrameAvailableListener listener, Handler handler) {
             if (isRelease()) return;
             super.setOnFrameAvailableListener(listener, handler);
         }
 
-
+        @Override
         public void setDefaultBufferSize(int width, int height) {
             if (isRelease()) return;
             super.setDefaultBufferSize(width, height);
         }
 
+        @Override
         public void updateTexImage() {
             if (isRelease() || !isAttached()) return;
             super.updateTexImage();
         }
 
-
+        @Override
         public void getTransformMatrix(float[] mtx) {
             if (isRelease()) return;
             super.getTransformMatrix(mtx);

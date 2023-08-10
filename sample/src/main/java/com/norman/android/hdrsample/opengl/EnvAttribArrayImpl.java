@@ -1,12 +1,12 @@
 package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGL14;
-import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 
 class EnvAttribArrayImpl implements GLEnvAttribArray ,Cloneable {
-    private  SparseArray<Integer> attributeArr = new SparseArray<>();
+    private  SparseIntArray attributeArr = new SparseIntArray();
     private boolean update = true;
     private int[] attrib;
 
@@ -18,8 +18,7 @@ class EnvAttribArrayImpl implements GLEnvAttribArray ,Cloneable {
 
     @Override
     public int getAttrib(int key) {
-        Integer value = attributeArr.get(key);
-        return value != null ? value : 0;
+        return attributeArr.get(key);
     }
 
     @Override

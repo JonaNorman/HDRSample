@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/***
+ * MessageHandler运行的复用线程池
+ */
 public class MessageThreadPool {
 
     private final static String DEFAULT_POOL_NAME = "MessageThreadPool";

@@ -6,7 +6,9 @@ import android.os.Message;
 import androidx.annotation.RequiresApi;
 
 import java.util.concurrent.Callable;
-
+/**
+ *  支持提交Callable、等待的Handler
+ */
 public interface MessageHandler {
    
 
@@ -81,15 +83,26 @@ public interface MessageHandler {
     boolean isFinish();
 
     interface LifeCycleCallback {
-    
-        default void onHandlerStart() {
+
+        /**
+         * 在第一个消息处理时被调用
+         */
+        default void onHandlerStart() {//
     
         }
-    
-        default void onHandlerFinish() {
+
+        /**
+         * 在finish和错误异常时被调用
+         */
+        default void onHandlerFinish() {//
     
         }
-    
+
+
+        /**
+         * 在异常时被调用
+         * @param exception
+         */
         default void onHandlerError(Exception exception) {
     
         }

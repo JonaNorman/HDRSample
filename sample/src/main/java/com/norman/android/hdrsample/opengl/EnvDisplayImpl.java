@@ -41,6 +41,7 @@ class EnvDisplayImpl implements GLEnvDisplay {
         if (!EGL14.eglInitialize(eglDisplay, majorVersion, 0, minorVersion, 0)) {
             GLEnvException.checkError();
         }
+        //获取Config最大数量
         int[] configNum = {1};
         while (true) {
             EGLConfig[] configs = new EGLConfig[configNum[0] * 2];
@@ -51,6 +52,7 @@ class EnvDisplayImpl implements GLEnvDisplay {
                 break;
             }
         }
+        //获取所有Config
         int maxConfigNum = configNum[0];
         EGLConfig[] eglConfigs = new EGLConfig[maxConfigNum];
         if (!EGL14.eglGetConfigs(eglDisplay, eglConfigs, 0, maxConfigNum, configNum, 0)) {

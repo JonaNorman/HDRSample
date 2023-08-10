@@ -12,6 +12,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 给Handler新增wait、future方法需要在线程中处理，防止一直等待
+ */
 class MessageThread extends android.os.HandlerThread {
 
     final List<Future> futureList = new CopyOnWriteArrayList<>();
