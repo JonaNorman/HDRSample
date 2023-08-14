@@ -3,14 +3,14 @@ package com.norman.android.hdrsample.player;
 import android.media.MediaFormat;
 import android.view.Surface;
 
-import androidx.annotation.CallSuper;
-
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class VideoOutput {
 
@@ -22,20 +22,38 @@ public abstract class VideoOutput {
     private static final String KEY_CROP_BOTTOM = "crop-bottom";
 
 
-    private int width;
+    private final List<OutputFormatSubscriber> outputFormatSubscribers = new ArrayList<>();
 
-    private int height;
+    private final List<OutputSizeSubscriber> outputSizeSubscribers = new ArrayList<>();
 
-    private int colorStandard;
-    private int colorRange;
-    private int colorTransfer;
+    protected final Object outputFormatSync = new Object();
+
+    protected final Object sizeSync = new Object();
+
+
     private VideoPlayer videoPlayer;
 
-    VideoDecoder videoDecoder;
+    protected VideoDecoder videoDecoder;
 
-    VideoExtractor videoExtractor;
+    protected VideoExtractor videoExtractor;
 
-   volatile int frameIndex;
+
+    protected int width;
+
+    protected int height;
+
+    protected int cropLeft;
+    protected int cropRight;
+    protected int cropTop;
+    protected int cropBottom;
+
+    protected int colorStandard;
+    protected int colorRange;
+    protected int colorTransfer;
+
+    volatile int frameIndex;
+
+    MediaFormat outputFormat;
 
 
     public abstract void setOutputSurface(Surface surface);
@@ -44,7 +62,7 @@ public abstract class VideoOutput {
     public abstract void setOutputVideoView(VideoView view);
 
 
-    protected void onDecoderPrepare(VideoPlayer videoPlayer, VideoExtractor videoExtractor, VideoDecoder videoDecoder, MediaFormat inputFormat) {
+    final void onDecoderPrepare(VideoPlayer videoPlayer, VideoExtractor videoExtractor, VideoDecoder videoDecoder, MediaFormat inputFormat) {
         this.videoPlayer = videoPlayer;
         this.videoDecoder = videoDecoder;
         this.videoExtractor = videoExtractor;
@@ -57,73 +75,167 @@ public abstract class VideoOutput {
         inputFormat.setInteger(MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
         inputFormat.setInteger(MediaFormat.KEY_WIDTH, width);
         inputFormat.setInteger(MediaFormat.KEY_HEIGHT, height);
-    }
-
-    @CallSuper
-    protected void onDecodeStart() {
-
-    }
-
-    @CallSuper
-    protected void onDecodePause() {
-        ignoreWaitFrame();
-    }
-
-    @CallSuper
-    protected void onDecodeResume() {
-
+        onOutputPrepare(inputFormat);
     }
 
 
-    @CallSuper
-    protected void onDecodeStop() {
+    final void onDecodeStart() {
+        onOutputStart();
+    }
+
+
+    final void onDecodePause() {
+        notifyNextFrame();
+        onOutputPause();
+    }
+
+
+    final void onDecodeResume() {
+        onOutputResume();
+    }
+
+
+    final void onDecodeStop() {
         videoDecoder = null;
         videoExtractor = null;
         videoPlayer = null;
-        ignoreWaitFrame();
+        frameIndex = 0;
+        synchronized (sizeSync) {
+            width = 0;
+            height = 0;
+        }
+        synchronized (outputFormatSync) {
+            outputFormat = null;
+        }
+        notifyNextFrame();
+        onOutputStop();
     }
 
+    final void onDecodeBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
+        onOutputBufferAvailable(outputBuffer, presentationTimeUs);
+    }
 
-    protected void onOutputFormatChanged(MediaFormat outputFormat) {
-
+    final void onDecodeMediaFormatChanged(MediaFormat outputFormat) {
         int width = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_WIDTH);
         int height = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_HEIGHT);
-        int cropLeft = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_LEFT);
-        int cropRight = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_RIGHT);
-        int cropTop = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_TOP);
-        int cropBottom = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_BOTTOM);
-        if (cropRight > 0 && cropBottom > 0) {
-            width = cropRight - cropLeft + 1;
-            height = cropBottom - cropTop + 1;
+        cropLeft = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_LEFT);
+        cropRight = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_RIGHT);
+        cropTop = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_TOP);
+        cropBottom = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_BOTTOM);
+        if (width<=0|| height<=0){
+            width = this.width;
+            height = this.height;
         }
-        if (width > 0 && height > 0) {
-            setVideoSize(width, height);
+        if (cropRight == 0 || cropBottom == 0) {
+            cropRight = width;
+            cropBottom = height;
+        } else {
+            cropRight = cropRight + 1;
+            cropBottom = cropBottom + 1;
+            width = cropRight - cropLeft;
+            height = cropBottom - cropTop;
+        }
+        setVideoSize(width, height);
+        synchronized (outputFormatSync) {
+            this.outputFormat = outputFormat;
+            onOutputFormatChanged(outputFormat);
+            for (OutputFormatSubscriber outputFormatSubscriber : outputFormatSubscribers) {
+                outputFormatSubscriber.onOutputFormatChange(outputFormat);
+            }
         }
     }
 
-    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
-
-    }
-
-
-    protected void onOutputBufferRender(long presentationTimeUs) {
-        frameIndex = frameIndex+1;
-        notifyNextFrame();
-    }
-
-
-    protected void onVideoSizeChange(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
-
-    void setVideoSize(int width, int height) {
+    private void setVideoSize(int width, int height) {
         int oldWidth = this.width;
         int oldHeight = this.height;
         this.width = width;
         this.height = height;
         if (oldWidth != width || oldHeight != height) {
             onVideoSizeChange(width, height);
+        }
+    }
+
+    final void onVideoSizeChange(int width, int height) {
+        synchronized (sizeSync) {
+            this.width = width;
+            this.height = height;
+            for (OutputSizeSubscriber outputSizeSubscriber : outputSizeSubscribers) {
+                outputSizeSubscriber.onOutputSizeChange(width, height);
+            }
+        }
+    }
+
+    final void onDecodeBufferRender(long presentationTimeUs) {
+        onOutputBufferRender(presentationTimeUs);
+        frameIndex = frameIndex + 1;
+        notifyNextFrame();
+    }
+
+
+    protected void onOutputPrepare(MediaFormat inputFormat) {
+
+    }
+
+    protected void onOutputStart() {
+
+    }
+
+    protected void onOutputPause() {
+
+    }
+
+    protected void onOutputResume() {
+
+    }
+
+    protected void onOutputStop() {
+
+    }
+
+    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
+
+    }
+
+    protected void onOutputFormatChanged(MediaFormat outputFormat) {
+
+    }
+
+    protected void onOutputBufferRender(long presentationTimeUs) {
+
+    }
+
+    public void subscribe(OutputFormatSubscriber outputFormatSubscriber) {
+        synchronized (outputFormatSync) {
+            if (!outputFormatSubscribers.contains(outputFormatSubscriber)) {
+                if (outputFormat != null) {
+                    outputFormatSubscriber.onOutputFormatChange(outputFormat);
+                }
+                outputFormatSubscribers.add(outputFormatSubscriber);
+            }
+        }
+    }
+
+    public void unsubscribe(OutputFormatSubscriber outputFormatSubscriber) {
+        synchronized (outputFormatSync) {
+            outputFormatSubscribers.remove(outputFormatSubscriber);
+        }
+    }
+
+
+    public void subscribe(OutputSizeSubscriber outputSizeSubscriber) {
+        synchronized (sizeSync) {
+            if (!outputSizeSubscribers.contains(outputSizeSubscriber)) {
+                if (width > 0 && height > 0) {
+                    outputSizeSubscriber.onOutputSizeChange(width, height);
+                }
+                outputSizeSubscribers.add(outputSizeSubscriber);
+            }
+        }
+    }
+
+    public void unsubscribe(OutputSizeSubscriber outputSizeSubscriber) {
+        synchronized (sizeSync) {
+            outputSizeSubscribers.remove(outputSizeSubscriber);
         }
     }
 
@@ -136,7 +248,7 @@ public abstract class VideoOutput {
         long waitTime = TimeUtil.secondToMill(waitSecond);
         long startTime = System.currentTimeMillis();
         int oldFrameIndex = frameIndex;
-        while (videoPlayer != null && videoPlayer.isPlaying() && oldFrameIndex !=frameIndex) {
+        while (videoPlayer != null && videoPlayer.isPlaying() && oldFrameIndex != frameIndex) {
             try {
                 synchronized (nextFrameWaiter) {
                     nextFrameWaiter.wait(waitTime);
@@ -158,29 +270,11 @@ public abstract class VideoOutput {
         }
     }
 
-    private void ignoreWaitFrame() {
-        synchronized (nextFrameWaiter) {
-            nextFrameWaiter.notifyAll();
-        }
+    interface OutputFormatSubscriber {
+        void onOutputFormatChange(MediaFormat outputFormat);
     }
 
-    public int getHeight() {
-        return height;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public int getColorStandard() {
-        return colorStandard;
-    }
-
-    public int getColorRange() {
-        return colorRange;
-    }
-
-    public int getColorTransfer() {
-        return colorTransfer;
+    interface OutputSizeSubscriber {
+        void onOutputSizeChange(int width, int height);
     }
 }

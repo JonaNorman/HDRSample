@@ -7,7 +7,7 @@ import androidx.annotation.RequiresApi;
 
 import java.util.concurrent.Callable;
 /**
- *  支持提交Callable、等待的Handler
+ *  在Handler的基础上支持execute、submit及其同步方法
  */
 public interface MessageHandler {
    
@@ -56,9 +56,9 @@ public interface MessageHandler {
     @RequiresApi(api = Build.VERSION_CODES.Q)
     boolean hasCallbacks(Runnable r);
 
-    boolean postSync(Runnable runnable);
+    boolean executeSync(Runnable runnable);
 
-    boolean postSync(Runnable runnable, long timeout);
+    boolean executeSync(Runnable runnable, long timeout);
 
     boolean isCurrentThread();
 

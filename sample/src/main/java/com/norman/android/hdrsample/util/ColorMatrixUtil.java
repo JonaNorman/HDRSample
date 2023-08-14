@@ -9,6 +9,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
+/***
+ * 根据颜色的位数和范围查找YUV转RGB矩阵，想知道值是怎么算出来的可以看
+ * <a href="https://juejin.cn/post/7207637337572606007">YUV转RGB矩阵推导</a>
+ *
+ */
 public class ColorMatrixUtil {
 
     public static final int COLOR_RANGE_LIMITED = MediaFormat.COLOR_RANGE_LIMITED;
@@ -70,6 +75,13 @@ public class ColorMatrixUtil {
     }
 
 
+    /**
+     * 查找YUV转RGB矩阵，仅支持8位、10位、12位
+     * 注意转换前后的YUV、RGB都是归一化的，如果输入数据是量化的请提前归一化
+     * @param bitDepth 位深
+     * @param colorRange 范围
+     * @return
+     */
     public static float[] getYuvToRgbMatrix(int bitDepth,@ColorRange int colorRange){
         ColorMatrix colorMatrix = YUV_TO_RGB_MATRIX_MAP.get(bitDepth);
         if(colorMatrix == null){

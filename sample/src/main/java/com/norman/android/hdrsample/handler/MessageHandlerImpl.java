@@ -259,13 +259,19 @@ class MessageHandlerImpl implements MessageHandler {
         return handler.hasCallbacks(r);
     }
 
+    /**
+     * 同步执行
+     * @param runnable
+     * @return
+     */
     @Override
-    public boolean postSync(Runnable runnable) {
-        return postSync(runnable, 0);
+    public boolean executeSync(Runnable runnable) {
+        return executeSync(runnable, 0);
     }
 
+
     @Override
-    public boolean postSync(Runnable runnable, long timeout) {
+    public boolean executeSync(Runnable runnable, long timeout) {
         if (isFinish()) {
             return false;
         }
@@ -283,6 +289,10 @@ class MessageHandlerImpl implements MessageHandler {
         return result != null;
     }
 
+    /***
+     * 是否是当前线程
+     * @return
+     */
     @Override
     public boolean isCurrentThread() {
         return handler.getLooper().isCurrentThread();
@@ -313,7 +323,7 @@ class MessageHandlerImpl implements MessageHandler {
 
     @Override
     public boolean waitAllMessage() {
-        return postSync(() -> {});
+        return executeSync(() -> {});
     }
 
 

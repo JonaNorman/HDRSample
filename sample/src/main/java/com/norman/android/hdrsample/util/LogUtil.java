@@ -4,7 +4,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 public class LogUtil {
-    private final static String TAG = "HdrSampleLog";
+    private final static String LOG_NAME = "HdrSampleLog";
 
     public static void v(String name, String message) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -12,7 +12,7 @@ public class LogUtil {
             stringBuilder.append(name).append("\n");
         }
         stringBuilder.append(message);
-        Log.v(TAG, stringBuilder.toString());
+        Log.v(LOG_NAME, stringBuilder.toString());
     }
 
     public static void v(String message) {
@@ -29,7 +29,7 @@ public class LogUtil {
             stringBuilder.append(name).append("\n");
         }
         stringBuilder.append(message);
-        Log.d(TAG, stringBuilder.toString());
+        Log.d(LOG_NAME, stringBuilder.toString());
     }
 
     public static void w(String name, String message) {
@@ -38,7 +38,7 @@ public class LogUtil {
             stringBuilder.append(name).append("\n");
         }
         stringBuilder.append(message);
-        Log.w(TAG, stringBuilder.toString());
+        Log.w(LOG_NAME, stringBuilder.toString());
     }
 
     public static void w(String message) {
@@ -51,7 +51,7 @@ public class LogUtil {
             stringBuilder.append(name).append("\n");
         }
         stringBuilder.append(message);
-        Log.e(TAG, stringBuilder.toString());
+        Log.e(LOG_NAME, stringBuilder.toString());
     }
     public static void e(String message) {
         e(null,message);

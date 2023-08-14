@@ -11,9 +11,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-abstract class BasePlayer implements Player {
+abstract class PlayerImpl implements Player {
 
-    private static final int PLAY_UNINIT = 0;
+    private static final int PLAY_UNINITIALIZED = 0;
     private static final int PLAY_PREPARE = 1;
     private static final int PLAY_START = 2;
     private static final int PLAY_PAUSE = 3;
@@ -25,7 +25,7 @@ abstract class BasePlayer implements Player {
 
     private final String threadName;
 
-    private int state = PLAY_UNINIT;
+    private int state = PLAY_UNINITIALIZED;
 
     private Future stopFuture;
 
@@ -33,13 +33,13 @@ abstract class BasePlayer implements Player {
 
 
 
-    public BasePlayer(String threadName) {
+    public PlayerImpl(String threadName) {
         this.threadName = threadName;
     }
 
     @Override
     public final synchronized void prepare() {
-        if (state != PLAY_UNINIT
+        if (state != PLAY_UNINITIALIZED
                 && state != PLAY_STOP) {
             return;
         }
@@ -62,7 +62,7 @@ abstract class BasePlayer implements Player {
 
     @Override
     public synchronized void play() {
-        if (state == PLAY_UNINIT
+        if (state == PLAY_UNINITIALIZED
                 || state == PLAY_STOP) {
             prepare();
             state = PLAY_START;
@@ -152,7 +152,7 @@ abstract class BasePlayer implements Player {
 
     @Override
     public synchronized boolean isPrepared() {
-        return state != PLAY_UNINIT &&
+        return state != PLAY_UNINITIALIZED &&
                 state != PLAY_STOP &&
                 state != PLAY_RELEASE;
     }
@@ -224,7 +224,7 @@ abstract class BasePlayer implements Player {
             executeCallback(callback -> callback.onPlayError(exception));
         }
 
-        final synchronized void executeCallback(CallbackListener listener) {
+        final synchronized void executeCallback(CallbackExecutor listener) {
             synchronized (CallBackHandler.this) {
                 if (callback == null) {
                     return;
@@ -238,13 +238,13 @@ abstract class BasePlayer implements Player {
                             return;
                         }
                     }
-                    listener.onCallbackListen(callback);
+                    listener.onCallbackExecute(callback);
                 }
             });
         }
 
-        interface CallbackListener {
-            void onCallbackListen(Callback callback);
+        interface CallbackExecutor {
+            void onCallbackExecute(Callback callback);
         }
     }
 

@@ -10,6 +10,8 @@ import java.util.List;
 
 public class ColorFormatUtil {
 
+    //四种YUV420
+
     public static final int YV21 = 1;// Y+U+V
     public static final int YV12 = 2;//Y+V+U
     public static final int NV12 = 3;//Y+UV
@@ -20,6 +22,7 @@ public class ColorFormatUtil {
     public @interface YUV420Type {
     }
 
+    // 不同厂商支持的YUV420属性
     private static final ColorFormatList BROADCOM_YUV420_LIST = new ColorFormatList(
             new ColorFormat("OMX_COLOR_FormatYUV420_10PackedPlanar", 0x7F00000C),
             new ColorFormat("OMX_COLOR_FormatYUV420_16PackedPlanar", 0x7F00000A),
@@ -76,6 +79,12 @@ public class ColorFormatUtil {
             new ColorFormat("COLOR_FormatYUVP010", 0x36)
     );
 
+    /**
+     * 根据不同的解码器的名称找到对应的YUV420属性
+     *
+     * @param codecName
+     * @return
+     */
     static ColorFormatList findYUV420List(String codecName) {
         codecName = codecName.toLowerCase();
         if (codecName.contains("brcm")) {
@@ -98,6 +107,12 @@ public class ColorFormatUtil {
         }
     }
 
+    /**
+     * 根据解码器名称和colorFormat查找视频是哪种YUV420
+     * @param codecName
+     * @param colorFormat
+     * @return
+     */
     public static int getYUV420Type(String codecName, int colorFormat) {
         ColorFormatList yuv420List = findYUV420List(codecName);
         if (yuv420List == null) {
@@ -107,6 +122,7 @@ public class ColorFormatUtil {
         if (yuv420Format == null) {
             return 0;
         }
+        //根据YUV420的名称来查找是哪种YUV420
         String name = yuv420Format.name;
         if (name.contains("PackedSemiPlanar")) {
             return NV21;
@@ -119,7 +135,13 @@ public class ColorFormatUtil {
         }
     }
 
-    public static boolean isYUV42010Bit(String codecName, int colorFormat) {
+    /**
+     * 根据解码器名称和colorFormat查找解码是否支持10位YUV420，10位YUV420实际是16位存储的
+     * @param codecName
+     * @param colorFormat
+     * @return
+     */
+    public static boolean isSupport10BitYUV420(String codecName, int colorFormat) {
         ColorFormatList yuv420List = findYUV420List(codecName);
         if (yuv420List == null) {
             return false;
@@ -130,8 +152,9 @@ public class ColorFormatUtil {
         }
         String name = yuv420Format.name;
         if (name.contains("Compressed") || name.contains("MultiView") || name.contains("64x32")) {
-            return false;
+            return false;//根据上面的属性列表去除肯定不是10位的情况
         }
+        // 包含10、16、32的属性是支持10位YUV420的
         return name.contains("10") || name.contains("16") || name.contains("32");
     }
 

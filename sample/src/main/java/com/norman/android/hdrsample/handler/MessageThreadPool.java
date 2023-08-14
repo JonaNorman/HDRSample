@@ -23,9 +23,15 @@ public class MessageThreadPool {
 
     private final static Map<String, MessageThreadPool> POOL_MAP = new ConcurrentHashMap<>();
 
-
     public static final int CACHE_POOL_SIZE = 5;
+
+    /**
+     * 缓存时间
+     */
     public static final int CACHE_SECOND = 30;
+    /**
+     * 清理多余线程的轮询时间
+     */
     public static final int INTERVAL_SECOND = 5;
     private final List<MessageThread> threadCache = new ArrayList<>();
     private volatile int poolCacheSize = CACHE_POOL_SIZE;
@@ -38,14 +44,27 @@ public class MessageThreadPool {
     }
 
 
+    /****
+     * 缓存时间
+     * @param maxCacheTime 单位秒
+     */
     public void setCacheTime(int maxCacheTime) {
         this.maxCacheTime = maxCacheTime;
     }
 
+    /***
+     * 缓存个数
+     * @param poolSize
+     */
     public void setPoolCacheSize(int poolSize) {
         this.poolCacheSize = poolSize;
     }
 
+
+    /**
+     * 缓存清理时间
+     * @param intervalCleanTime 单位秒
+     */
     public void setIntervalCleanTime(int intervalCleanTime) {
         this.intervalCleanTime = intervalCleanTime;
     }
@@ -88,7 +107,7 @@ public class MessageThreadPool {
             long duration = SystemClock.elapsedRealtime() - thread.cacheTime;
             if (thread.isTerminated()
                     || threadCache.size() > poolCacheSize
-                    || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {
+                    || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {//线程已经终止、超过缓存时间、超过缓存时间就清除线程
                 iterator.remove();
                 thread.quit();
             }

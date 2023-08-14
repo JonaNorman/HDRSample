@@ -7,7 +7,7 @@ public class RuntimeException extends java.lang.RuntimeException {
         super(message);
     }
 
-    //包装异常时可以保证正确的堆栈日志
+    //传递RuntimeException时可以保证正确的堆栈日志
     public RuntimeException(Throwable exception) {
         super(exception);
         setStackTrace(exception.getStackTrace());

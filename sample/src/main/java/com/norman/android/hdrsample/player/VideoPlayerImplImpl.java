@@ -9,7 +9,7 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
-class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> implements VideoPlayer {
+class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> implements VideoPlayer {
 
     private static final String VIDEO_PLAYER_NAME = "VideoPlayer";
 
@@ -21,11 +21,11 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
 
     private Long seekTimeUs;
 
-    public VideoPlayerImpl(VideoOutput videoOutput) {
+    public VideoPlayerImplImpl(VideoOutput videoOutput) {
         this(VIDEO_PLAYER_NAME, videoOutput);
     }
 
-    public VideoPlayerImpl(String threadName, VideoOutput videoOutput) {
+    public VideoPlayerImplImpl(String threadName, VideoOutput videoOutput) {
         super(VideoDecoder.create(), VideoExtractor.create(), threadName);
         this.videoOutput = videoOutput;
     }
@@ -78,7 +78,7 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
 
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
-        videoOutput.onOutputFormatChanged(outputFormat);
+        videoOutput.onDecodeMediaFormatChanged(outputFormat);
     }
 
     @Override
@@ -95,8 +95,13 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
         if (sleepTime <= -MAX_FRAME_JANK_MS) {
             return false;
         }
-        videoOutput.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
+        videoOutput.onDecodeBufferAvailable(outputBuffer,presentationTimeUs);
         return true;
+    }
+
+    @Override
+    protected void onOutputBufferEndOfStream() {
+        seekTimeUs = null;
     }
 
     @Override
@@ -108,7 +113,7 @@ class VideoPlayerImpl extends DecodePlayer<VideoDecoder, VideoExtractor> impleme
             } catch (InterruptedException ignored) {
             }
         }
-        videoOutput.onOutputBufferRender(presentationTimeUs);
+        videoOutput.onDecodeBufferRender(presentationTimeUs);
     }
 
     @Override

@@ -101,15 +101,28 @@ class EnvDisplayImpl implements GLEnvDisplay {
         }
     }
 
+    /**
+     * 是否支持BT2020 PQ
+     * @return
+     */
     @Override
     public boolean isSupportBT2020PQ() {
         return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_PQ);
     }
 
+    /**
+     * 是否不需要surface也可以makeCurrent
+     * @return
+     */
     @Override
     public boolean isSupportSurfacelessContext() {
         return containEGLExtension(EGL_KHR_surfaceless_context);
     }
+
+    /**
+     * 扩展信息
+     * @return
+     */
 
     @Override
     public String getEGLExtensions() {

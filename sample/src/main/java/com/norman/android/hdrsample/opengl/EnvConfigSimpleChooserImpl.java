@@ -8,6 +8,9 @@ import java.util.List;
 
 class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
 
+    /**
+     * 重新排序，等于1前后顺序交换
+     */
     private final static Comparator<GLEnvConfig> CONFIG_COMPARATOR = (o1, o2) -> {
         if (o1.getRedSize() > o2.getRedSize()) {
             return 1;

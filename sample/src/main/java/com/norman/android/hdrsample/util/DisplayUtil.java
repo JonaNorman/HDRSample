@@ -25,6 +25,10 @@ public class DisplayUtil {
 
     private static Boolean HDR_CAPABILITY_SCREEN = null;
 
+    /**
+     * 最大屏幕亮度
+     * @return
+     */
     public static synchronized float getMaxLuminance() {
         if (MAX_SCREEN_LUMINANCE == null) {
             float maxScreenLuminance = 0;
@@ -43,6 +47,10 @@ public class DisplayUtil {
         return MAX_SCREEN_LUMINANCE;
     }
 
+    /***
+     * 最大亮度值，指的是设置里面的亮度最大值
+     * @return
+     */
     public static synchronized int getMaxBrightness() {
         if (MAX_SCREEN_BRIGHTNESS == null) {
             int maxBrightness = 0;
@@ -78,6 +86,10 @@ public class DisplayUtil {
         return MAX_SCREEN_BRIGHTNESS;
     }
 
+    /***
+     * 当前亮度，指的是设置里面的亮度
+     * @return
+     */
     public static int getBrightness() {
         try {
             Context context = AppUtil.getAppContext();

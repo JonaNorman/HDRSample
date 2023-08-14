@@ -16,7 +16,7 @@ class EnvContextManagerImpl implements GLEnvContextManager {
     public EnvContextManagerImpl(GLEnvContext envContext) {
         this.envContext = envContext;
         envDisplay = envContext.getEnvDisplay();
-        if (envDisplay.isSupportSurfacelessContext()) {//不需要创建Surface的情况下也可以makeSurface
+        if (envDisplay.isSupportSurfacelessContext()) {//不需要创建Surface下也可以makeSurface
             eglSurface = EGL14.EGL_NO_SURFACE;
         } else {
             GLEnvSurface envSurface =GLEnvPbufferSurface.create(envContext,1,1);
@@ -59,7 +59,7 @@ class EnvContextManagerImpl implements GLEnvContextManager {
             return;
         }
         if (envContextManager != null) {
-            synchronized (envContextManager) {
+            synchronized (envContextManager) {//保证上一个attach在这个线程的OpenGL环境置空
                 envContextManager.attachThread = null;
             }
         }
@@ -73,10 +73,10 @@ class EnvContextManagerImpl implements GLEnvContextManager {
         if (isRelease() || attachThread == null) {
             return;
         }
-        if (attachThread != Thread.currentThread()) {
+        if (attachThread != Thread.currentThread()) {//必须在attach的线程detach
             throw new IllegalThreadStateException("detach must in " + attachThread.getName());
         }
-        envDisplay.releaseThread();
+        envDisplay.releaseThread();//常规做法是makeNoCurrent，这个方法有一样的效果
         CONTEXT_MANAGER_THREAD_LOCAL.set(null);
         attachThread = null;
     }

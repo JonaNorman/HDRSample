@@ -45,6 +45,10 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
             this(envDisplay, envDisplay.chooseConfig(envConfigChooser), surface);
         }
 
+        /**
+         * 设置色域
+         * @param colorSpace
+         */
         public void setColorSpace(@ColorSpace int colorSpace) {
             windowSurfaceAttrib.setColorSpace(colorSpace);
         }

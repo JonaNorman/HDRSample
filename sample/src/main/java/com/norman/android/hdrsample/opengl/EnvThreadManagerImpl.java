@@ -42,13 +42,13 @@ class EnvThreadManagerImpl implements GLEnvThreadManager, MessageHandler.LifeCyc
     }
 
     @Override
-    public boolean postSync(Runnable runnable) {
-        return messageHandler.postSync(runnable);
+    public boolean executeSync(Runnable runnable) {
+        return messageHandler.executeSync(runnable);
     }
 
     @Override
-    public boolean postSync(Runnable runnable, long timeout) {
-        return messageHandler.postSync(runnable, timeout);
+    public boolean executeSync(Runnable runnable, long timeout) {
+        return messageHandler.executeSync(runnable, timeout);
     }
 
     @Override

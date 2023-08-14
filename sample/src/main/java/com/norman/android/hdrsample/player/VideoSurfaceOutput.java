@@ -4,7 +4,6 @@ import android.media.MediaFormat;
 import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
-import com.norman.android.hdrsample.player.extract.VideoExtractor;
 
 public class VideoSurfaceOutput extends VideoOutput {
     private Surface decoderSurface;
@@ -18,14 +17,7 @@ public class VideoSurfaceOutput extends VideoOutput {
 
         @Override
         public void onSurfaceRedraw() {
-
             waitNextFrame();
-        }
-
-        @Override
-        public void onSurfaceSizeChange(int width, int height) {
-
-
         }
 
         @Override
@@ -34,18 +26,17 @@ public class VideoSurfaceOutput extends VideoOutput {
         }
     };
 
+    private final OutputSizeSubscriber outputSizeSubscriber = new OutputSizeSubscriber() {
+        @Override
+        public void onOutputSizeChange(int width, int height) {
+            videoView.setAspectRatio(width*1.0f/height);
+        }
+    };
+
 
     public static VideoSurfaceOutput create() {
         return new VideoSurfaceOutput();
     }
-
-    @Override
-    protected void onDecoderPrepare(VideoPlayer videoPlayer, VideoExtractor videoExtractor, VideoDecoder videoDecoder, MediaFormat inputFormat) {
-        super.onDecoderPrepare(videoPlayer, videoExtractor, videoDecoder, inputFormat);
-        videoDecoder.setOutputMode(VideoDecoder.SURFACE_MODE);
-        videoDecoder.setOutputSurface(decoderSurface);
-    }
-
 
     @Override
     public synchronized void setOutputSurface(Surface surface) {
@@ -61,25 +52,25 @@ public class VideoSurfaceOutput extends VideoOutput {
     }
 
     @Override
-    protected void onVideoSizeChange(int width, int height) {
-        super.onVideoSizeChange(width, height);
-        if (videoView != null){
-            videoView.setAspectRatio(width*1.0f/height);
-        }
+    protected void onOutputPrepare(MediaFormat inputFormat) {
+        videoDecoder.setOutputMode(VideoDecoder.SURFACE_MODE);
+        videoDecoder.setOutputSurface(decoderSurface);
     }
 
     @Override
     public synchronized void setOutputVideoView(VideoView view) {
-        if (videoView != view) {
-            if (videoView != null)
-                videoView.unsubscribe(surfaceSubscriber);
-            videoView = view;
+        if (videoView == view) {
+           return;
         }
+        VideoView oldView = videoView;
+        if (oldView != null){
+            oldView.unsubscribe(surfaceSubscriber);
+            unsubscribe(outputSizeSubscriber);
+        }
+        videoView = view;
         if (videoView != null) {
-            videoView.setAspectRatio(getWidth()*1.0f/getHeight());
+            subscribe(outputSizeSubscriber);
             videoView.subscribe(surfaceSubscriber);
         }
     }
-
-
 }

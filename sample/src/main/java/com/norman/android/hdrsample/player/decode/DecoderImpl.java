@@ -34,14 +34,7 @@ abstract class DecoderImpl implements Decoder {
         onConfigure(configuration);
     }
 
-    @Override
-    public void reset() {
-        if (!isConfigured()) {
-            return;
-        }
-        state = DECODE_CREATE;
-        onReset();
-    }
+
 
     @Override
     public synchronized void start() {
@@ -51,6 +44,8 @@ abstract class DecoderImpl implements Decoder {
         state = DECODE_START;
         onStart();
     }
+
+
 
     @Override
     public synchronized void pause() {
@@ -78,6 +73,24 @@ abstract class DecoderImpl implements Decoder {
             return;
         }
         onFlush();
+    }
+
+    @Override
+    public synchronized void stop() {
+        if (!isStarted()) {
+            return;
+        }
+        state = DECODE_CREATE;
+        onStop();
+    }
+
+    @Override
+    public void reset() {
+        if (!isConfigured()) {
+            return;
+        }
+        state = DECODE_CREATE;
+        onReset();
     }
 
 
@@ -148,11 +161,15 @@ abstract class DecoderImpl implements Decoder {
 
     protected abstract void onStart();
 
-    protected abstract void onReset();
-
     protected abstract void onPause();
 
     protected abstract void onResume();
+
+
+    protected abstract void onStop();
+
+
+    protected abstract void onReset();
 
     protected abstract void onFlush();
 

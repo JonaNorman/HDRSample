@@ -270,6 +270,7 @@ public class GLMatrix implements Cloneable {
         return new GLMatrix(currentMatrix);
     }
 
+    // 解决result和left、right一样时的问题
     void multiplyMM(float[] result, float[] left, float[] right) {
         boolean useTemp = result == left || result == right;
         if (!useTemp) {
@@ -280,6 +281,7 @@ public class GLMatrix implements Cloneable {
         copyMM(tempMatrix,result);
     }
 
+    // 解决resultPoint和point一样时的问题
     void multiplyMV(float[] resultPoint, float[] matrix, float[] point) {
         boolean useTemp = resultPoint == point;
         if (!useTemp) {

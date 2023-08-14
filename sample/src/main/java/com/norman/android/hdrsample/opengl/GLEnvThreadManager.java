@@ -18,9 +18,14 @@ public interface GLEnvThreadManager {
 
     boolean postDelayed(Runnable r, long delayMillis);
 
-    boolean postSync(Runnable runnable);
+    /**
+     * 同步执行
+     * @param runnable
+     * @return
+     */
+    boolean executeSync(Runnable runnable);
 
-    boolean postSync(Runnable runnable, long timeout);
+    boolean executeSync(Runnable runnable, long timeout);
 
     <T> Future<T> submit(Callable<T> callable);
 

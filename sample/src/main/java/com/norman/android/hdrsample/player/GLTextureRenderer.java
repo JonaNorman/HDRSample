@@ -94,7 +94,7 @@ class GLTextureRenderer extends GLRenderer {
 
     private final int textureType;
 
-    private final GLMatrix textureMatrix = new GLMatrix();
+    private final float[] textureMatrix = new GLMatrix().get();
 
 
     public GLTextureRenderer(@TextureType int textureType) {
@@ -124,7 +124,7 @@ class GLTextureRenderer extends GLRenderer {
     }
 
 
-    public GLMatrix getTextureMatrix() {
+    public float[] getTextureMatrix() {
         return textureMatrix;
     }
 
@@ -142,7 +142,7 @@ class GLTextureRenderer extends GLRenderer {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         bindTexture(textureId);
         GLES20.glUniform1i(textureUnitUniform, 0);
-        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix.get(), 0);
+        GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix, 0);
         onDraw();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);

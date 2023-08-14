@@ -24,6 +24,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
+/**
+ * 异步加在MediaCodec
+ */
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
 
@@ -128,6 +132,46 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         LogUtil.d(infoBuilder);
     }
 
+
+    public synchronized String getCodecName(){
+        if (isReleased()) {
+            return null;
+        }
+        return mediaCodec.getName();
+    }
+
+    public synchronized boolean isSupportColorFormat(int colorFormat) {
+        if (isReleased()) {
+            return false;
+        }
+        MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodec.getCodecInfo().getCapabilitiesForType(mimeType);
+        for (int format : codecCapabilities.colorFormats) {
+            if (format == colorFormat) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * 是否支持10位YUV420，10位YUV420实际是16位存储的
+     * @return
+     */
+    public synchronized boolean isSupport10BitYUV420() {
+        if (isReleased()) {
+            return false;
+        }
+        MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
+        MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodecInfo.getCapabilitiesForType(mimeType);
+        for (int colorFormat : codecCapabilities.colorFormats) {
+            if (ColorFormatUtil.isSupport10BitYUV420(mediaCodecInfo.getName(),colorFormat)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public synchronized void configure(MediaFormat mediaFormat,
                                        boolean surfaceMode,
                                        CallBack callback) {
@@ -157,7 +201,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         LogUtil.d(infoBuilder);
     }
 
-
     public synchronized void reset() {
         if (isReleased() || !isConfigured()) {
             return;
@@ -172,47 +215,13 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         flushNumber = 0;
         outSurfaceMode = false;
         inputEndStream = false;
-        resumeBuffer.clean();
+        resumeBuffer.clear();
         if (holderSurface != null) {
             holderSurface.release();
             holderSurface = null;
         }
     }
 
-    public synchronized String getCodecName(){
-        if (isReleased()) {
-            return null;
-        }
-        return mediaCodec.getName();
-    }
-
-    public synchronized boolean isSupportColorFormat(int colorFormat) {
-        if (isReleased()) {
-            return false;
-        }
-        MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodec.getCodecInfo().getCapabilitiesForType(mimeType);
-        for (int format : codecCapabilities.colorFormats) {
-            if (format == colorFormat) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    public synchronized boolean isSupportYUV42010Bit() {
-        if (isReleased()) {
-            return false;
-        }
-        MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
-        MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodecInfo.getCapabilitiesForType(mimeType);
-        for (int colorFormat : codecCapabilities.colorFormats) {
-           if (ColorFormatUtil.isYUV42010Bit(mediaCodecInfo.getName(),colorFormat)){
-               return true;
-           }
-        }
-        return false;
-    }
 
 
 
@@ -221,10 +230,38 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         if (!isConfigured()) {
-            throw new RuntimeException("mediacodec has not been configured yet");
+            throw new RuntimeException("mediacodec has not been configured");
         }
         mediaCodec.start();
         started = true;
+    }
+
+
+    public synchronized void stop(){
+        if (isReleased() ){
+            return;
+        }
+        if (!isStarted()){
+            if (isConfigured()){
+                throw new RuntimeException("stop must after mediacodec start");
+            }
+            return;
+        }
+        mediaCodec.setCallback(null);
+        mediaCodec.stop();
+        configured = false;
+        paused = false;
+        started = false;
+        handler.removeCallbacksAndMessages(null);
+        handler = null;
+        flushNumber = 0;
+        outSurfaceMode = false;
+        inputEndStream = false;
+        resumeBuffer.clear();
+        if (holderSurface != null) {
+            holderSurface.release();
+            holderSurface = null;
+        }
     }
 
 
@@ -253,8 +290,9 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         flushNumber++;
-        resumeBuffer.clean();
+        resumeBuffer.clear();
         mediaCodec.flush();
+        //mediaCodec异步模式中调用flush要等待looper的消息执行完毕才能调用其他方法如start方法
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -278,7 +316,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         released = true;
         mediaCodec.setCallback(null);
         mediaCodec.release();
-        resumeBuffer.clean();
+        resumeBuffer.clear();
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
             handler = null;
@@ -294,18 +332,19 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         outputSurface = surface;
-        if (isConfigured()) {
-            if (!outSurfaceMode) {
-                throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
-            }
-            if (surface == null) {
-                if (holderSurface == null) {
-                    holderSurface = new HolderSurface();
-                }
-                surface = holderSurface;
-            }
-            mediaCodec.setOutputSurface(surface);
+        if (!isConfigured()) {
+           return;
         }
+        if (!outSurfaceMode) {
+            throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
+        }
+        if (surface == null) {
+            if (holderSurface == null) {
+                holderSurface = new HolderSurface();
+            }
+            surface = holderSurface;
+        }
+        mediaCodec.setOutputSurface(surface);
     }
 
 
@@ -412,7 +451,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         private final List<Pair<Integer, MediaCodec.BufferInfo>> outputBufferList = new ArrayList<>();
 
-        public synchronized void clean() {
+        public synchronized void clear() {
             inputBufferList.clear();
             outputBufferList.clear();
         }
@@ -432,7 +471,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             for (Pair<Integer, MediaCodec.BufferInfo> outputBufferInfo : outputBufferList) {
                 asyncCallback.onOutputBufferAvailable(mediaCodec, outputBufferInfo.first, outputBufferInfo.second);
             }
-            clean();
+            clear();
         }
 
     }

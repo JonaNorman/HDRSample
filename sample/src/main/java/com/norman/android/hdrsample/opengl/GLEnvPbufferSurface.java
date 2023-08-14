@@ -12,6 +12,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
         GLEnvDisplay envDisplay;
         GLEnvConfig envConfig;
 
+        // surface属性
 
         EnvPbufferSurfaceAttribArrayImpl surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
 
@@ -41,6 +42,10 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
             surfaceAttrib.setHeight(height);
         }
 
+        /**
+         * 设置色域
+         * @param colorSpace
+         */
         public void setColorSpace(@ColorSpace int colorSpace) {
             surfaceAttrib.setColorSpace(colorSpace);
         }

@@ -71,12 +71,13 @@ public class VideoView extends FrameLayout {
 
     public void setViewType(@ViewType int viewType) {
         if (viewType == this.viewType) {
-          return;
+            return;
         }
         this.viewType = viewType;
-        onSurfaceDestroy(surface);
+        onSurfaceDestroy(surface);//remove前面要先解绑Surface
         View oldView = currentView;
-        postDelayed(() -> removeView(oldView),DELAY_REMOVE_VIEW_TIME_MS);
+        // 延迟一段时间移除解决闪白屏的问题
+        postDelayed(() -> removeView(oldView), DELAY_REMOVE_VIEW_TIME_MS);
         FrameLayout.LayoutParams layoutParams = new LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
@@ -88,7 +89,7 @@ public class VideoView extends FrameLayout {
 
 
     public void setAspectRatio(float aspectRatio) {
-        if (aspectRatio <= 0)return;
+        if (aspectRatio <= 0) return;
         this.aspectRatio = aspectRatio;
         View view = currentView;
         if (Looper.getMainLooper() == Looper.myLooper()) {
@@ -152,7 +153,7 @@ public class VideoView extends FrameLayout {
         }
     }
 
-    class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener{
+    class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener {
         private Surface surface;
 
         public AspectRatioTextureView(Context context) {
@@ -249,7 +250,7 @@ public class VideoView extends FrameLayout {
         @Override
         public void surfaceCreated(@NonNull SurfaceHolder holder) {
             surface = holder.getSurface();
-            onSurfaceAvailable(surface,getWidth(),getHeight());
+            onSurfaceAvailable(surface, getWidth(), getHeight());
         }
 
         @Override
@@ -266,13 +267,21 @@ public class VideoView extends FrameLayout {
 
 
     interface SurfaceSubscriber {
-        void onSurfaceAvailable(Surface surface, int width, int height);
+        default void onSurfaceAvailable(Surface surface, int width, int height) {
 
-        void onSurfaceRedraw();
+        }
 
-        void onSurfaceSizeChange(int width, int height);
+        default void onSurfaceRedraw() {
 
-        void onSurfaceDestroy();
+        }
+
+        default void onSurfaceSizeChange(int width, int height) {
+
+        }
+
+        default void onSurfaceDestroy() {
+
+        }
     }
 
 

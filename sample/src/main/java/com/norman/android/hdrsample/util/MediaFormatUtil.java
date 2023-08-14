@@ -53,6 +53,7 @@ public class MediaFormatUtil {
         return mediaFormat.getByteBuffer(name);
     }
 
+    //以下set方法判断值为空不设置是因为在部分手机底层会判断key存在导致空指针
     public static void setInteger(MediaFormat mediaFormat, String name, int value) {
         if (mediaFormat == null || TextUtils.isEmpty(name)) {
             return;
@@ -127,7 +128,7 @@ public class MediaFormatUtil {
     }
 
     /**
-     * 判断视频是否是HDR色彩
+     * 判断视频是否是HDR色域
      * @param mediaFormat
      * @return
      */

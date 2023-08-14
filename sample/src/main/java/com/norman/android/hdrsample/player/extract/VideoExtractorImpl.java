@@ -80,6 +80,10 @@ class VideoExtractorImpl implements VideoExtractor {
         }
     }
 
+    /**
+     * 是否存在Video轨道
+     * @return
+     */
     @Override
     public synchronized boolean isAvailable() {
         return extractor != null && !isRelease();

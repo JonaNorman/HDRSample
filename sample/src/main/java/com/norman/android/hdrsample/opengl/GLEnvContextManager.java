@@ -3,9 +3,18 @@ package com.norman.android.hdrsample.opengl;
 import android.opengl.EGL14;
 import android.opengl.EGLContext;
 
+/**
+ * EGLContext管理器
+ */
 public interface GLEnvContextManager {
+    /**
+     * 必须attach以后才能在当前线程使用
+     */
     void attach();
 
+    /**
+     * 必须在attach的线程detach
+     */
     void detach();
 
     Thread getAttachThread();

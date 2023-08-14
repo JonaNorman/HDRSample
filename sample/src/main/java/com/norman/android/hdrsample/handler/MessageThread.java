@@ -13,7 +13,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 给Handler新增wait、future方法需要在线程中处理，防止一直等待
+ * MessageHandler的执行线程
  */
 class MessageThread extends android.os.HandlerThread {
 
@@ -38,6 +38,10 @@ class MessageThread extends android.os.HandlerThread {
         return getState() == State.TERMINATED;
     }
 
+    /**
+     * 空闲中，表示可以复用
+     * @return
+     */
     boolean isIdle() {
         Looper looper = getLooper();
         if (looper == null) {

@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.view.Surface;
 
 /**
- * 关联纹理的Surface
+ * 纹理Surface
  */
 public class GLTextureSurface extends Surface {
 
@@ -23,6 +23,10 @@ public class GLTextureSurface extends Surface {
     }
 
 
+    /**
+     * 已经关联纹理
+     * @return
+     */
     public boolean isAttached() {
         return surfaceTexture.isAttached();
     }
@@ -166,7 +170,7 @@ public class GLTextureSurface extends Surface {
 
         @Override
         protected synchronized void finalize() throws Throwable {
-            finalize = true;
+            finalize = true;//解决finalize后再调用release产生的崩溃问题
             super.finalize();
         }
 

@@ -13,11 +13,11 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
-abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BasePlayer implements Player {
+abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends PlayerImpl implements Player {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
 
-    private final BasePlayer.CallBackHandler callBackHandler = new CallBackHandler();
+    private final PlayerImpl.CallBackHandler callBackHandler = new CallBackHandler();
 
 
     private E extractor;
@@ -30,7 +30,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     private volatile  float currentTime;
 
 
-    public DecodePlayer(D decoder, E extractor, String threadName) {
+    public DecodePlayerImpl(D decoder, E extractor, String threadName) {
         super(threadName);
         this.extractor = extractor;
         this.decoder = decoder;
@@ -38,6 +38,9 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     @Override
     public synchronized void setSource(FileSource fileSource) {
+        if (isPrepared()){
+            throw new IllegalStateException("setSource must before prepare");
+        }
         this.fileSource = fileSource;
     }
 
@@ -134,12 +137,12 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
         @Override
         public boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
-            return  DecodePlayer.this.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
+            return  DecodePlayerImpl.this.onOutputBufferAvailable(outputBuffer,presentationTimeUs);
         }
 
         @Override
         public void onOutputBufferRender(long presentationTimeUs) {
-            DecodePlayer.this.onOutputBufferRender(presentationTimeUs);
+            DecodePlayerImpl.this.onOutputBufferRender(presentationTimeUs);
             currentTime = TimeUtil.microToSecond(presentationTimeUs);
             callBackHandler.callProcess(currentTime);
         }
@@ -152,6 +155,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
         @Override
         public void onOutputBufferEndOfStream() {
+            DecodePlayerImpl.this.onOutputBufferEndOfStream();
             callBackHandler.callEnd();
             if (repeat) {
                 seek(0);
@@ -160,7 +164,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
         @Override
         public void onOutputFormatChanged(MediaFormat format) {
-            DecodePlayer.this.onOutputFormatChanged(format);
+            DecodePlayerImpl.this.onOutputFormatChanged(format);
         }
     }
 
@@ -173,5 +177,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     protected abstract boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
     protected abstract void onOutputBufferRender(long presentationTimeUs);
+
+    protected abstract void onOutputBufferEndOfStream();
 
 }

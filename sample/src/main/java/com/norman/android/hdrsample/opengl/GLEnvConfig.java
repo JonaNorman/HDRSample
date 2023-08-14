@@ -2,6 +2,9 @@ package com.norman.android.hdrsample.opengl;
 
 import android.opengl.EGLConfig;
 
+/**
+ * EGL的Config配置
+ */
 public interface GLEnvConfig {
 
     static GLEnvConfig create(GLEnvDisplay display, EGLConfig config) {

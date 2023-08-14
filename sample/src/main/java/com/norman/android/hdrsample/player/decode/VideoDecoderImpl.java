@@ -51,6 +51,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
     }
 
 
+    @Override
     public synchronized void setOutputSurface(Surface surface) {
         outputSurface = surface;
         if (mediaCodecAdapter != null) {
@@ -63,17 +64,20 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         this.outputMode = outputMode;
     }
 
+    /**
+     * 解码到Buffer时是否支持10位YUV420，10位YUV420实际是16位存储的
+     * @return
+     */
     @Override
-    public boolean isSupportYUV42010BitBufferMode() {
+    public boolean isSupport10BitYUV420BufferMode() {
         if (isRelease()){
             return  false;
         }
         if (!isCreated()) {
             throw new RuntimeException("videoDecoder has not been created");
         }
-        return mediaCodecAdapter.isSupportYUV42010Bit();
+        return mediaCodecAdapter.isSupport10BitYUV420();
     }
-
     @Override
     public boolean isSupportColorFormat(int colorFormat) {
         if (isRelease()){
@@ -91,12 +95,6 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
     }
 
     @Override
-    protected void onReset() {
-        mediaCodecAdapter.reset();
-    }
-
-
-    @Override
     protected void onPause() {
         mediaCodecAdapter.pause();
     }
@@ -109,6 +107,17 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
     @Override
     protected void onFlush() {
         mediaCodecAdapter.flush();
+    }
+
+
+    @Override
+    protected void onStop() {
+        mediaCodecAdapter.stop();
+    }
+
+    @Override
+    protected void onReset() {
+        mediaCodecAdapter.reset();
     }
 
     @Override
@@ -151,6 +160,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
         @Override
         public void onOutputFormatChanged(MediaFormat format) {
+            // 根据解码器名称和colorFormat查找视频是哪种YUV420
             int colorFormat = MediaFormatUtil.getInteger(format,MediaFormat.KEY_COLOR_FORMAT);
             format.setInteger(KEY_YUV420_TYPE, ColorFormatUtil.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
             callBack.onOutputFormatChanged(format);
