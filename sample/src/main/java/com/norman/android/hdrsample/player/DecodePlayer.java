@@ -25,12 +25,7 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     private FileSource fileSource;
 
-    private final Object nextFrameWaiter = new Object();
-
     private volatile boolean repeat = true;
-
-    private volatile boolean hasEnd;
-
 
     private volatile  float currentTime;
 
@@ -55,43 +50,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     @Override
     public synchronized void setRepeat(boolean repeat) {
         this.repeat = repeat;
-    }
-
-    @Override
-    public synchronized void release() {
-        super.release();
-        notifyNextFrame();
-    }
-
-    @Override
-    public void waitNextFrame() {
-        waitNextFrame(0);
-    }
-
-    @Override
-    public void waitNextFrame(float waitSecond) {
-        long waitTime = TimeUtil.secondToMill(waitSecond);
-        long startTime = System.currentTimeMillis();
-        while (isPlaying() && !hasEnd) {
-            try {
-                synchronized (nextFrameWaiter) {
-                    nextFrameWaiter.wait(waitTime);
-                }
-            } catch (InterruptedException ignored) {
-
-            }
-            long remainTime = waitTime - (System.currentTimeMillis() - startTime);
-            if (remainTime <= 0) {
-                return;
-            }
-            waitTime = remainTime;
-        }
-    }
-
-    private void notifyNextFrame() {
-        synchronized (nextFrameWaiter) {
-            nextFrameWaiter.notifyAll();
-        }
     }
 
 
@@ -136,7 +94,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     protected void onPlaySeek(long presentationTimeUs) {
         decoder.flush();
         extractor.seekPreSync(presentationTimeUs);
-        hasEnd = false;
     }
 
     protected void onPlayResume() {
@@ -151,7 +108,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
     protected void onPlayStop() {
         decoder.destroy();
         extractor.seekPreSync(0);
-        hasEnd = false;
     }
 
 
@@ -182,11 +138,10 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         }
 
         @Override
-        public void onOutputBufferRelease(long presentationTimeUs) {
-            DecodePlayer.this.onOutputBufferRelease(presentationTimeUs);
+        public void onOutputBufferRender(long presentationTimeUs) {
+            DecodePlayer.this.onOutputBufferRender(presentationTimeUs);
             currentTime = TimeUtil.microToSecond(presentationTimeUs);
             callBackHandler.callProcess(currentTime);
-            notifyNextFrame();
         }
 
 
@@ -198,8 +153,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
         @Override
         public void onOutputBufferEndOfStream() {
             callBackHandler.callEnd();
-            hasEnd = true;
-            notifyNextFrame();
             if (repeat) {
                 seek(0);
             }
@@ -219,6 +172,6 @@ abstract class DecodePlayer<D extends Decoder,E extends Extractor> extends BaseP
 
     protected abstract boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
-    protected abstract void onOutputBufferRelease(long presentationTimeUs);
+    protected abstract void onOutputBufferRender(long presentationTimeUs);
 
 }

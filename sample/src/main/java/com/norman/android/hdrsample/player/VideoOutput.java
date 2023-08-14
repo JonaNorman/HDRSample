@@ -3,18 +3,24 @@ package com.norman.android.hdrsample.player;
 import android.media.MediaFormat;
 import android.view.Surface;
 
+import androidx.annotation.CallSuper;
+
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
+import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class VideoOutput {
 
-    private boolean prepare;
+    private final Object nextFrameWaiter = new Object();
 
-    private boolean release;
+    private static final String KEY_CROP_LEFT = "crop-left";
+    private static final String KEY_CROP_RIGHT = "crop-right";
+    private static final String KEY_CROP_TOP = "crop-top";
+    private static final String KEY_CROP_BOTTOM = "crop-bottom";
+
 
     private int width;
 
@@ -23,66 +29,139 @@ public abstract class VideoOutput {
     private int colorStandard;
     private int colorRange;
     private int colorTransfer;
+    private VideoPlayer videoPlayer;
 
-    private final List<OnOutputFormatChangeCallback>  outputFormatChangeCallbackList = new CopyOnWriteArrayList<>();
+    VideoDecoder videoDecoder;
 
+    VideoExtractor videoExtractor;
 
-    synchronized void prepare() {
-        if (prepare) return;
-        prepare = true;
-        onPrepare();
-    }
-
-
-    synchronized void release() {
-        if (release) return;
-        release = true;
-        if (prepare) {
-            onRelease();
-        }
-    }
-
-    synchronized void stop() {
-        if (release || !prepare) return;
-        onDecoderStop();
-    }
-
-
-
-
-
+   volatile int frameIndex;
 
 
     public abstract void setOutputSurface(Surface surface);
 
 
-    protected abstract void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat);
-
-    protected abstract void onDecoderStop();
+    public abstract void setOutputVideoView(VideoView view);
 
 
-    protected   void onPrepare(){
+    protected void onDecoderPrepare(VideoPlayer videoPlayer, VideoExtractor videoExtractor, VideoDecoder videoDecoder, MediaFormat inputFormat) {
+        this.videoPlayer = videoPlayer;
+        this.videoDecoder = videoDecoder;
+        this.videoExtractor = videoExtractor;
+        colorStandard = videoExtractor.getColorStandard();
+        colorRange = videoExtractor.getColorRange();
+        colorTransfer = videoExtractor.getColorTransfer();
+        setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_STANDARD, colorStandard);
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_RANGE, colorRange);
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
+        inputFormat.setInteger(MediaFormat.KEY_WIDTH, width);
+        inputFormat.setInteger(MediaFormat.KEY_HEIGHT, height);
+    }
+
+    @CallSuper
+    protected void onDecodeStart() {
 
     }
 
-    protected   void onRelease(){
+    @CallSuper
+    protected void onDecodePause() {
+        ignoreWaitFrame();
+    }
+
+    @CallSuper
+    protected void onDecodeResume() {
 
     }
 
-    protected  void onOutputFormatChanged(MediaFormat outputFormat){
-        colorStandard = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
-        colorRange = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
-        colorTransfer = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
-        for (OnOutputFormatChangeCallback formatChangeCallback : outputFormatChangeCallbackList) {
-            formatChangeCallback.onOutputFormatChange(this,outputFormat);
+
+    @CallSuper
+    protected void onDecodeStop() {
+        videoDecoder = null;
+        videoExtractor = null;
+        videoPlayer = null;
+        ignoreWaitFrame();
+    }
+
+
+    protected void onOutputFormatChanged(MediaFormat outputFormat) {
+
+        int width = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_WIDTH);
+        int height = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_HEIGHT);
+        int cropLeft = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_LEFT);
+        int cropRight = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_RIGHT);
+        int cropTop = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_TOP);
+        int cropBottom = MediaFormatUtil.getInteger(outputFormat, KEY_CROP_BOTTOM);
+        if (cropRight > 0 && cropBottom > 0) {
+            width = cropRight - cropLeft + 1;
+            height = cropBottom - cropTop + 1;
         }
+        if (width > 0 && height > 0) {
+            setVideoSize(width, height);
+        }
+    }
+
+    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
 
     }
 
 
-    protected void onVideoSizeChange(int width,int height){
-        this.width =width;
+    protected void onOutputBufferRender(long presentationTimeUs) {
+        frameIndex = frameIndex+1;
+        notifyNextFrame();
+    }
+
+
+    protected void onVideoSizeChange(int width, int height) {
+        this.width = width;
         this.height = height;
+    }
+
+    void setVideoSize(int width, int height) {
+        int oldWidth = this.width;
+        int oldHeight = this.height;
+        this.width = width;
+        this.height = height;
+        if (oldWidth != width || oldHeight != height) {
+            onVideoSizeChange(width, height);
+        }
+    }
+
+
+    public void waitNextFrame() {
+        waitNextFrame(0);
+    }
+
+    public void waitNextFrame(float waitSecond) {
+        long waitTime = TimeUtil.secondToMill(waitSecond);
+        long startTime = System.currentTimeMillis();
+        int oldFrameIndex = frameIndex;
+        while (videoPlayer != null && videoPlayer.isPlaying() && oldFrameIndex !=frameIndex) {
+            try {
+                synchronized (nextFrameWaiter) {
+                    nextFrameWaiter.wait(waitTime);
+                }
+            } catch (InterruptedException ignored) {
+
+            }
+            long remainTime = waitTime - (System.currentTimeMillis() - startTime);
+            if (remainTime <= 0) {
+                return;
+            }
+            waitTime = remainTime;
+        }
+    }
+
+    private void notifyNextFrame() {
+        synchronized (nextFrameWaiter) {
+            nextFrameWaiter.notifyAll();
+        }
+    }
+
+    private void ignoreWaitFrame() {
+        synchronized (nextFrameWaiter) {
+            nextFrameWaiter.notifyAll();
+        }
     }
 
     public int getHeight() {
@@ -103,27 +182,5 @@ public abstract class VideoOutput {
 
     public int getColorTransfer() {
         return colorTransfer;
-    }
-
-    protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
-
-    }
-
-
-    protected void onOutputBufferRelease(long presentationTimeUs) {
-
-    }
-
-    public void addOnOutputFormatChangeCallback(OnOutputFormatChangeCallback  outputFormatChangeCallback){
-        outputFormatChangeCallbackList.add(outputFormatChangeCallback);
-    }
-
-    public void removeOnOutputFormatChangeCallback(OnOutputFormatChangeCallback  outputFormatChangeCallback){
-        outputFormatChangeCallbackList.remove(outputFormatChangeCallback);
-    }
-
-
-    public  interface  OnOutputFormatChangeCallback{
-        void onOutputFormatChange(VideoOutput videoOutput,MediaFormat outputFormat);
     }
 }

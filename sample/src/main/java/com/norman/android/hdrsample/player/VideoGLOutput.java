@@ -12,6 +12,7 @@ import com.norman.android.hdrsample.opengl.GLEnvSurface;
 import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
+import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
@@ -65,13 +66,81 @@ public class VideoGLOutput extends VideoOutput {
 
     private boolean hdrColor;
 
+    private VideoView videoView;
+
+    private VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
+        @Override
+        public void onSurfaceAvailable(Surface surface, int width, int height) {
+
+            playerSurface.setOutputSurface(surface);
+
+        }
+
+        @Override
+        public void onSurfaceRedraw() {
+            waitNextFrame();
+        }
+
+        @Override
+        public void onSurfaceSizeChange(int width, int height) {
+
+
+        }
+
+        @Override
+        public void onSurfaceDestroy() {
+            playerSurface.setOutputSurface(null);
+        }
+    };
+
 
     public static VideoGLOutput create() {
         return new VideoGLOutput();
     }
 
+
     @Override
-    protected void onPrepare() {
+    protected void onDecodeStop() {
+        super.onDecodeStop();
+        playerSurface.release();
+        envContextManager.detach();
+        if (videoSurface != null){
+            videoSurface.release();
+        }
+    }
+
+    @Override
+    public synchronized void setOutputSurface(Surface surface) {
+        setOutputVideoView(null);
+        this.playerSurface.setOutputSurface(surface);
+    }
+
+    @Override
+    protected void onVideoSizeChange(int width, int height) {
+        super.onVideoSizeChange(width, height);
+        if (videoView != null){
+            videoView.setAspectRatio(width*1.0f/height);
+        }
+    }
+
+    @Override
+    public void setOutputVideoView(VideoView view) {
+        if (videoView != view) {
+            if (videoView != null)
+                videoView.unsubscribe(surfaceSubscriber);
+            videoView = view;
+        }
+        if (videoView != null) {
+            videoView.setAspectRatio(getWidth()*1.0f/getHeight());
+            videoView.subscribe(surfaceSubscriber);
+        }
+
+    }
+
+    @Override
+    protected void onDecoderPrepare(VideoPlayer videoPlayer, VideoExtractor videoExtractor, VideoDecoder videoDecoder, MediaFormat inputFormat) {
+        super.onDecoderPrepare(videoPlayer, videoExtractor, videoDecoder, inputFormat);
+
         GLEnvConfigSimpleChooser.Builder envConfigChooser = new GLEnvConfigSimpleChooser.Builder();
         envConfigChooser.setRedSize(16);
         envConfigChooser.setGreenSize(16);
@@ -80,43 +149,22 @@ public class VideoGLOutput extends VideoOutput {
         envContextManager = GLEnvContextManager.create(envConfigChooser.build());
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
-    }
-
-    @Override
-    protected void onRelease() {
-        playerSurface.release();
-        envContextManager.detach();
-        if (videoSurface != null){
-            videoSurface.release();
-        }
-    }
 
 
-    @Override
-    public synchronized void setOutputSurface(Surface surface) {
-        this.playerSurface.setOutputSurface(surface);
-    }
-
-    @Override
-    protected void onDecoderPrepare(VideoDecoder decoder, MediaFormat inputFormat) {
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
-        if (profile10Bit && decoder.isSupportYUV42010BitBufferMode()) {
+        if (profile10Bit && videoDecoder.isSupportYUV42010BitBufferMode()) {
             bufferMode = true;
-            decoder.setOutputMode(VideoDecoder.BUFFER_MODE);
+            videoDecoder.setOutputMode(VideoDecoder.BUFFER_MODE);
         } else {
             bufferMode = false;
-            decoder.setOutputMode(VideoDecoder.SURFACE_MODE);
+            videoDecoder.setOutputMode(VideoDecoder.SURFACE_MODE);
             videoSurface = new GLTextureSurface(GLESUtil.createExternalTextureId());
-            decoder.setOutputSurface(videoSurface);
+            videoDecoder.setOutputSurface(videoSurface);
             externalTextureRenderer.setTextureId(videoSurface.getTextureId());
             y2yExtTextureRenderer.setTextureId(videoSurface.getTextureId());
         }
     }
 
-    @Override
-    protected void onDecoderStop() {
-
-    }
 
     public synchronized void addVideoTransform(GLVideoTransform videoTransform) {
         transformList.add(videoTransform);
@@ -169,7 +217,7 @@ public class VideoGLOutput extends VideoOutput {
     }
 
     @Override
-    protected synchronized void onOutputBufferRelease(long presentationTimeUs) {
+    protected synchronized void onOutputBufferRender(long presentationTimeUs) {
         if (!playerSurface.isValid()) {
             return;
         }

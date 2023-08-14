@@ -2,7 +2,6 @@ package com.norman.android.hdrsample;
 
 import android.content.DialogInterface;
 import android.content.res.AssetManager;
-import android.media.MediaFormat;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
@@ -11,11 +10,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.norman.android.hdrsample.player.VideoGLOutput;
-import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
+import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
-import com.norman.android.hdrsample.player.view.VideoPlayerView;
-import com.norman.android.hdrsample.player.view.VideoView;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 
 import java.io.File;
@@ -25,7 +22,7 @@ import java.util.List;
 
 public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickListener {
     VideoPlayer videoPlayer;
-    VideoPlayerView surfaceView;
+    VideoView surfaceView;
     CubeLutVideoTransform videoTransform;
 
     AlertDialog cubeLutDialog;
@@ -38,16 +35,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 
     int selectLutPosition;
 
-    VideoOutput.OnOutputFormatChangeCallback outputFormatChangeCallback = new VideoOutput.OnOutputFormatChangeCallback() {
-        @Override
-        public void onOutputFormatChange(VideoOutput videoOutput,MediaFormat outputFormat) {
-
-
-
-        }
-    };
-
-
+    boolean faa = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,9 +61,9 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         videoOutput.addVideoTransform(videoTransform);
-        videoOutput.addOnOutputFormatChangeCallback(outputFormatChangeCallback);
-        surfaceView.setViewType(VideoView.VIEW_TYPE_SURFACE_VIEW);
-        surfaceView.setVideoPlayer(videoPlayer);
+        videoOutput.setOutputVideoView(surfaceView);
+
+
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
     }
 

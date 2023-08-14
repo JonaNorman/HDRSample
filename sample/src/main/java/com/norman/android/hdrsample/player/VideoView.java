@@ -28,8 +28,10 @@ public class VideoView extends FrameLayout {
     @interface ViewType {
     }
 
+    private static final int DELAY_REMOVE_VIEW_TIME_MS = 250;
+
     private static final int DEFAULT_VIEW_TYPE = VIEW_TYPE_SURFACE_VIEW;
-    private AspectRatioView ratioPlayerView;
+    private View currentView;
 
     private volatile float aspectRatio;
 
@@ -68,37 +70,35 @@ public class VideoView extends FrameLayout {
 
 
     public void setViewType(@ViewType int viewType) {
-        if (viewType != this.viewType) {
-            this.viewType = viewType;
-            onInternalSurfaceDestroy(surface);
-            AspectRatioView oldView = ratioPlayerView;
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    removeView((View) oldView);
-                }
-            },100);
-            FrameLayout.LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-            layoutParams.gravity = Gravity.CENTER;
-            if (this.viewType == VIEW_TYPE_SURFACE_VIEW) {
-                ratioPlayerView = new AspectRatioSurfaceView(getContext());
-            } else {
-                ratioPlayerView = new AspectRatioTextureView(getContext());
-            }
-            addView((View) ratioPlayerView, layoutParams);
+        if (viewType == this.viewType) {
+          return;
         }
+        this.viewType = viewType;
+        onSurfaceDestroy(surface);
+        View oldView = currentView;
+        postDelayed(() -> removeView(oldView),DELAY_REMOVE_VIEW_TIME_MS);
+        FrameLayout.LayoutParams layoutParams = new LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        layoutParams.gravity = Gravity.CENTER;
+        currentView = this.viewType == VIEW_TYPE_SURFACE_VIEW ?
+                new AspectRatioSurfaceView(getContext()) :
+                new AspectRatioTextureView(getContext());
+        addView(currentView, layoutParams);
     }
+
 
     public void setAspectRatio(float aspectRatio) {
+        if (aspectRatio <= 0)return;
         this.aspectRatio = aspectRatio;
+        View view = currentView;
         if (Looper.getMainLooper() == Looper.myLooper()) {
-            requestLayout();
+            view.requestLayout();
         } else {
-            post(this::requestLayout);
+            post(view::requestLayout);
         }
     }
 
-    synchronized void onInternalSurfaceAvailable(Surface surface, int width, int height) {
+    synchronized void onSurfaceAvailable(Surface surface, int width, int height) {
         if (this.surface != null) {
             return;
         }
@@ -109,7 +109,7 @@ public class VideoView extends FrameLayout {
             surfaceSubscriber.onSurfaceAvailable(surface, width, height);
     }
 
-    synchronized void onInternalSurfaceRedraw(Surface surface) {
+    synchronized void onSurfaceRedraw(Surface surface) {
         if (this.surface != surface) {
             return;
         }
@@ -117,7 +117,7 @@ public class VideoView extends FrameLayout {
             surfaceSubscriber.onSurfaceRedraw();
     }
 
-    synchronized void onInternalSurfaceSizeChange(Surface surface, int width, int height) {
+    synchronized void onSurfaceSizeChange(Surface surface, int width, int height) {
         if (this.surface != surface) {
             return;
         }
@@ -129,7 +129,7 @@ public class VideoView extends FrameLayout {
         }
     }
 
-    synchronized void onInternalSurfaceDestroy(Surface surface) {
+    synchronized void onSurfaceDestroy(Surface surface) {
         if (this.surface != surface || this.surface == null) {
             return;
         }
@@ -152,7 +152,7 @@ public class VideoView extends FrameLayout {
         }
     }
 
-    class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener, AspectRatioView {
+    class AspectRatioTextureView extends TextureView implements TextureView.SurfaceTextureListener{
         private Surface surface;
 
         public AspectRatioTextureView(Context context) {
@@ -185,19 +185,19 @@ public class VideoView extends FrameLayout {
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture, int width, int height) {
             surface = new Surface(surfaceTexture);
-            onInternalSurfaceAvailable(surface, width, height);
+            onSurfaceAvailable(surface, width, height);
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
-            onInternalSurfaceDestroy(surface);
+            onSurfaceDestroy(surface);
             surface = null;
             return true;
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture, int width, int height) {
-            onInternalSurfaceSizeChange(surface, width, height);
+            onSurfaceSizeChange(surface, width, height);
         }
 
         @Override
@@ -205,7 +205,7 @@ public class VideoView extends FrameLayout {
         }
     }
 
-    class AspectRatioSurfaceView extends SurfaceView implements SurfaceHolder.Callback2, AspectRatioView {
+    class AspectRatioSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 
         private Surface surface;
 
@@ -238,7 +238,7 @@ public class VideoView extends FrameLayout {
 
         @Override
         public void surfaceRedrawNeeded(@NonNull SurfaceHolder holder) {
-            onInternalSurfaceRedraw(surface);
+            onSurfaceRedraw(surface);
         }
 
         @Override
@@ -249,24 +249,19 @@ public class VideoView extends FrameLayout {
         @Override
         public void surfaceCreated(@NonNull SurfaceHolder holder) {
             surface = holder.getSurface();
-            onInternalSurfaceAvailable(surface,getWidth(),getHeight());
+            onSurfaceAvailable(surface,getWidth(),getHeight());
         }
 
         @Override
         public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-            onInternalSurfaceSizeChange(surface, width, height);
+            onSurfaceSizeChange(surface, width, height);
         }
 
         @Override
         public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-            onInternalSurfaceDestroy(surface);
+            onSurfaceDestroy(surface);
             surface = null;
         }
-    }
-
-
-    interface AspectRatioView {
-
     }
 
 

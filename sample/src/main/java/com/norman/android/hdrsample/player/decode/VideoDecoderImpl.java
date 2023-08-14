@@ -145,8 +145,8 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         }
 
         @Override
-        public void onOutputBufferRelease(long presentationTimeUs) {
-            callBack.onOutputBufferRelease(presentationTimeUs);
+        public void onOutputBufferRender(long presentationTimeUs) {
+            callBack.onOutputBufferRender(presentationTimeUs);
         }
 
         @Override
