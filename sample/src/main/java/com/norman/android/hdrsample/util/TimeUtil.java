@@ -27,6 +27,15 @@ public class TimeUtil {
     }
 
     /**
+     * 微妙转纳秒
+     * @param timeNs
+     * @return
+     */
+    public static long microToNano(long timeNs){
+        return TimeUnit.MICROSECONDS.toNanos(timeNs);
+    }
+
+    /**
      * 微妙转秒
      * @param timeUs
      * @return

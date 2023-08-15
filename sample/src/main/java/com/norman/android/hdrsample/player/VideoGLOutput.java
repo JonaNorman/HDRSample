@@ -14,6 +14,7 @@ import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
+import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -227,6 +228,7 @@ public class VideoGLOutput extends VideoOutput {
         screenTarget.setRenderSize(windowSurface.getWidth(), windowSurface.getHeight());
         screenTarget.clearColor();
         screenRenderer.renderToTarget(screenTarget);
+        windowSurface.setPresentationTime(TimeUtil.microToNano(presentationTimeUs));
         windowSurface.swapBuffers();
     }
 
