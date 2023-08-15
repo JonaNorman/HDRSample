@@ -45,6 +45,13 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
             this(envDisplay, envDisplay.chooseConfig(envConfigChooser), surface);
         }
 
+        public boolean isSupportBT2020PQ(){
+            return  envDisplay.isSupportBT2020PQ();
+        }
+
+        public boolean isSupportBT2020HLG(){
+            return  envDisplay.isSupportBT2020HLG();
+        }
         /**
          * 设置色域
          * @param colorSpace

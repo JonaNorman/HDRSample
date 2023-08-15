@@ -57,7 +57,9 @@ public class VideoGLOutput extends VideoOutput {
     private boolean textureY2YMode;
     private boolean profile10Bit;
 
-    private boolean hdrColor;
+    private int colorSpace;
+    private int colorRange;
+
 
     private VideoView videoView;
 
@@ -86,6 +88,7 @@ public class VideoGLOutput extends VideoOutput {
             videoView.setAspectRatio(width * 1.0f / height);
         }
     };
+
 
 
     public static VideoGLOutput create() {
@@ -130,10 +133,14 @@ public class VideoGLOutput extends VideoOutput {
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
         GLEnvConfigSimpleChooser.Builder envConfigChooser = new GLEnvConfigSimpleChooser.Builder();
         if (profile10Bit) {
-            envConfigChooser.setRedSize(16);
-            envConfigChooser.setGreenSize(16);
-            envConfigChooser.setBlueSize(16);
-            envConfigChooser.setAlphaSize(16);
+            envConfigChooser.setRedSize(10);
+            envConfigChooser.setGreenSize(10);
+            envConfigChooser.setBlueSize(10);
+            envConfigChooser.setAlphaSize(2);
+//            envConfigChooser.setRedSize(16);
+//            envConfigChooser.setGreenSize(16);
+//            envConfigChooser.setBlueSize(16);
+//            envConfigChooser.setAlphaSize(16);
         }
         envContextManager = GLEnvContextManager.create(envConfigChooser.build());
         envContextManager.attach();
@@ -159,7 +166,8 @@ public class VideoGLOutput extends VideoOutput {
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
         super.onOutputFormatChanged(outputFormat);
-        hdrColor = MediaFormatUtil.isHdrColor(outputFormat);
+        colorRange = MediaFormatUtil.getColorRange(outputFormat);
+        colorSpace = MediaFormatUtil.getInteger(outputFormat,KEY_COLOR_SPACE,COLOR_SPACE_SDR);
         if (bufferMode) {
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
             int sliceHeight = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_SLICE_HEIGHT);
@@ -167,7 +175,7 @@ public class VideoGLOutput extends VideoOutput {
             int bitDepth = strideWidth / width == 2 ? 10 : 8;
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {
-            if (hdrColor && GLY2YExtensionRenderer.isContainY2YEXT()) {
+            if (colorSpace !=COLOR_SPACE_SDR && GLY2YExtensionRenderer.isContainY2YEXT()) {
                 y2yExtTextureRenderer.setBitDepth(profile10Bit ? 10 : 8);
                 y2yExtTextureRenderer.setColorRange(colorRange);
                 textureY2YMode = true;
@@ -219,8 +227,7 @@ public class VideoGLOutput extends VideoOutput {
             texture2DRenderer.setTextureId(frontTarget.textureId);
             screenRenderer = texture2DRenderer;
         }
-        boolean bt2020PQ = colorStandard == MediaFormat.COLOR_STANDARD_BT2020 && colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084;
-        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(bt2020PQ);
+        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(colorSpace);
         if (windowSurface == null) {
             return;
         }
@@ -237,14 +244,13 @@ public class VideoGLOutput extends VideoOutput {
 
         private Surface outputSurface;
 
-        private boolean bt202PQEnable;
+        private int colorSpace;
 
         public synchronized void setOutputSurface(Surface surface) {
             outputSurface = surface;
             if (surface == null || !surface.isValid()) {
                 if (windowSurface != null) {
                     windowSurface.release();
-                    bt202PQEnable = false;
                     windowSurface = null;
                 }
             }
@@ -263,30 +269,35 @@ public class VideoGLOutput extends VideoOutput {
             return outputSurface != null && outputSurface.isValid();
         }
 
-        public synchronized GLEnvWindowSurface getWindowSurface(boolean bt2020PQColorSpace) {
+        public synchronized GLEnvWindowSurface getWindowSurface(int  requestColorSpace) {
             if (outputSurface == null) {
                 if (windowSurface != null) {
                     windowSurface.release();
                     windowSurface = null;
                 }
-                bt202PQEnable = false;
                 return null;
             }
-            boolean requestBT2020PQ = bt2020PQColorSpace && isSupportBT2020(outputSurface);
-            if (windowSurface == null || outputSurface != windowSurface.getSurface() || bt202PQEnable != requestBT2020PQ) {
+            if (windowSurface == null || outputSurface != windowSurface.getSurface() || this.colorSpace != requestColorSpace) {
                 if (windowSurface != null) {
                     windowSurface.release();
                 }
                 GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, outputSurface);
-                if (requestBT2020PQ) {
-                    builder.setColorSpace(GLEnvSurface.COLOR_SPACE_BT2020_PQ);
+                if (isSupportBT2020(outputSurface)) {
+                    if (requestColorSpace == COLOR_SPACE_BT2020_PQ){
+                        if (builder.isSupportBT2020PQ()){
+                            builder.setColorSpace(GLEnvSurface.COLOR_SPACE_BT2020_PQ);
+                        }
+                    }else if (requestColorSpace == COLOR_SPACE_BT2020_HLG){
+                        if (builder.isSupportBT2020HLG()){
+                            builder.setColorSpace(GLEnvSurface.COLOR_SPACE_BT2020_HLG);
+                        }
+                    }
                 }
-                bt202PQEnable = requestBT2020PQ;
                 windowSurface = builder.build();
+                this.colorSpace = requestColorSpace;
             }
             if (!windowSurface.isValid()) {
                 windowSurface.release();
-                bt202PQEnable = false;
                 windowSurface = null;
             }
             return windowSurface;

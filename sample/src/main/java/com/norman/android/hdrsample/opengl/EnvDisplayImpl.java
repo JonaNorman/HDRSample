@@ -13,6 +13,8 @@ import javax.microedition.khronos.egl.EGL10;
 class EnvDisplayImpl implements GLEnvDisplay {
 
     private static final String EXTENSION_COLOR_SPACE_BT2020_PQ = "EGL_EXT_gl_colorspace_bt2020_pq";
+
+    private static final String EXTENSION_COLOR_SPACE_BT2020_HLG = "EGL_EXT_gl_colorspace_bt2020_hlg";
     private static final String EGL_KHR_surfaceless_context = "EGL_KHR_surfaceless_context";
 
 
@@ -108,6 +110,15 @@ class EnvDisplayImpl implements GLEnvDisplay {
     @Override
     public boolean isSupportBT2020PQ() {
         return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_PQ);
+    }
+
+    /**
+     * 是否支持BT2020 HLG
+     * @return
+     */
+    @Override
+    public boolean isSupportBT2020HLG() {
+        return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_HLG);
     }
 
     /**

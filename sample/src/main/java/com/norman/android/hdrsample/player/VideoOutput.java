@@ -3,16 +3,34 @@ package com.norman.android.hdrsample.player;
 import android.media.MediaFormat;
 import android.view.Surface;
 
+import androidx.annotation.IntDef;
+
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class VideoOutput {
+
+
+    public static final String KEY_COLOR_SPACE  = "colorSpace";
+
+    public static final int COLOR_SPACE_SDR = 0;
+
+    public static final int COLOR_SPACE_BT2020_PQ = 1;
+
+    public static final int COLOR_SPACE_BT2020_HLG = 2;
+
+    @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ColorSPace {
+    }
 
     private final Object nextFrameWaiter = new Object();
 
@@ -47,10 +65,6 @@ public abstract class VideoOutput {
     protected int cropTop;
     protected int cropBottom;
 
-    protected int colorStandard;
-    protected int colorRange;
-    protected int colorTransfer;
-
     volatile int frameIndex;
 
     MediaFormat outputFormat;
@@ -66,13 +80,10 @@ public abstract class VideoOutput {
         this.videoPlayer = videoPlayer;
         this.videoDecoder = videoDecoder;
         this.videoExtractor = videoExtractor;
-        colorStandard = videoExtractor.getColorStandard();
-        colorRange = videoExtractor.getColorRange();
-        colorTransfer = videoExtractor.getColorTransfer();
         setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
-        inputFormat.setInteger(MediaFormat.KEY_COLOR_STANDARD, colorStandard);
-        inputFormat.setInteger(MediaFormat.KEY_COLOR_RANGE, colorRange);
-        inputFormat.setInteger(MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_STANDARD, videoExtractor.getColorStandard());
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
+        inputFormat.setInteger(MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
         inputFormat.setInteger(MediaFormat.KEY_WIDTH, width);
         inputFormat.setInteger(MediaFormat.KEY_HEIGHT, height);
         onOutputPrepare(inputFormat);
@@ -136,6 +147,15 @@ public abstract class VideoOutput {
             height = cropBottom - cropTop;
         }
         setVideoSize(width, height);
+        int colorStandard = MediaFormatUtil.getColorStandard(outputFormat);
+        int colorTransfer = MediaFormatUtil.getColorTransfer(outputFormat);
+        if (colorStandard != MediaFormat.COLOR_STANDARD_BT2020 || colorTransfer == MediaFormat.COLOR_TRANSFER_SDR_VIDEO){
+            outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_SDR);
+        }else if (colorTransfer ==MediaFormat.COLOR_TRANSFER_HLG){
+            outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_BT2020_HLG);
+        }else {
+            outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_BT2020_PQ);
+        }
         synchronized (outputFormatSync) {
             this.outputFormat = outputFormat;
             onOutputFormatChanged(outputFormat);

@@ -89,5 +89,9 @@ public interface GLEnvConfig {
 
     boolean isRecordable();
 
+    boolean isColorFixed();
+
+    boolean isColorFloat();
+
     EGLConfig getEGLConfig();
 }

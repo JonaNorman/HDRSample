@@ -108,31 +108,15 @@ public class MediaFormatUtil {
                 profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus;
     }
 
-    /**
-     * 判断视频是否具有HDR的传递函数
-     * @param mediaFormat
-     * @return
-     */
-    public static boolean isHdrColorTransfer(MediaFormat mediaFormat) {
-        int colorTransfer = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
-        return colorTransfer == MediaFormat.COLOR_TRANSFER_HLG || colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084;
-    }
-    /**
-     * 判断视频是否具有HDR的色彩空间
-     * @param mediaFormat
-     * @return
-     */
-    public static boolean isHdrColorSpace(MediaFormat mediaFormat) {
-        int colorStandard = MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
-        return colorStandard == MediaFormat.COLOR_STANDARD_BT2020;
+
+    public static int getColorStandard(MediaFormat mediaFormat) {
+      return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
     }
 
-    /**
-     * 判断视频是否是HDR色域
-     * @param mediaFormat
-     * @return
-     */
-    public static boolean isHdrColor(MediaFormat mediaFormat) {
-        return isHdrColorSpace(mediaFormat) && isHdrColorTransfer(mediaFormat);
+    public static int getColorRange(MediaFormat mediaFormat) {
+        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
+    }
+    public static int getColorTransfer(MediaFormat mediaFormat) {
+        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
     }
 }

@@ -21,8 +21,17 @@ public interface GLEnvDisplay {
     void release();
 
     void releaseThread();
-
+    /**
+     * 是否支持BT2020 PQ
+     * @return
+     */
     boolean isSupportBT2020PQ();
+
+    /**
+     * 是否支持BT2020 HLG
+     * @return
+     */
+    boolean isSupportBT2020HLG();
 
     boolean isSupportSurfacelessContext();
 

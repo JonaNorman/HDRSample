@@ -27,8 +27,8 @@ class EnvAttribArrayImpl implements GLEnvAttribArray ,Cloneable {
             int length = attributeArr.size() * 2 + 1;
             attrib = new int[length];
             for (int i = 0; i < attributeArr.size(); i++) {
-                attrib[i] = attributeArr.keyAt(i);
-                attrib[i + 1] = attributeArr.valueAt(i);
+                attrib[i*2] = attributeArr.keyAt(i);
+                attrib[i*2 + 1] = attributeArr.valueAt(i);
             }
             attrib[length - 1] = EGL14.EGL_NONE;
             update = false;
