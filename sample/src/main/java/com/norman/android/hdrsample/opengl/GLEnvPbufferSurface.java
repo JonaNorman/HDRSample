@@ -46,7 +46,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
          * 设置色域
          * @param colorSpace
          */
-        public void setColorSpace(@ColorSpace int colorSpace) {
+        public void setColorSpace(@EGLColorSpace int colorSpace) {
             surfaceAttrib.setColorSpace(colorSpace);
         }
 

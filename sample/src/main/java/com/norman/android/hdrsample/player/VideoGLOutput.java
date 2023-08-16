@@ -58,7 +58,7 @@ public class VideoGLOutput extends VideoOutput {
     private boolean textureY2YMode;
     private boolean profile10Bit;
 
-    private int colorSpace;
+    private @ColorSPace int colorSpace;
     private int colorRange;
     private VideoView videoView;
 
@@ -136,6 +136,7 @@ public class VideoGLOutput extends VideoOutput {
             envConfigChooser.setGreenSize(10);
             envConfigChooser.setBlueSize(10);
             envConfigChooser.setAlphaSize(2);
+//            部分手机用RGBA1010102不支持HDR PQSurface，要用RGBA16161616才行
 //            envConfigChooser.setRedSize(16);
 //            envConfigChooser.setGreenSize(16);
 //            envConfigChooser.setBlueSize(16);
@@ -248,10 +249,7 @@ public class VideoGLOutput extends VideoOutput {
         public synchronized void setOutputSurface(Surface surface) {
             outputSurface = surface;
             if (surface == null || !surface.isValid()) {
-                if (windowSurface != null) {
-                    windowSurface.release();
-                    windowSurface = null;
-                }
+                release();
             }
         }
 
@@ -268,27 +266,24 @@ public class VideoGLOutput extends VideoOutput {
             return outputSurface != null && outputSurface.isValid();
         }
 
-        public synchronized GLEnvWindowSurface getWindowSurface(int  requestColorSpace) {
+        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSPace int  requestColorSpace) {
             if (outputSurface == null) {
-                if (windowSurface != null) {
-                    windowSurface.release();
-                    windowSurface = null;
-                }
+                release();
                 return null;
             }
-            if (windowSurface == null || outputSurface != windowSurface.getSurface() || this.colorSpace != requestColorSpace) {
-                if (windowSurface != null) {
-                    windowSurface.release();
-                }
+            if (windowSurface == null ||
+                    outputSurface != windowSurface.getSurface() ||
+                    this.colorSpace != requestColorSpace) {
+                release();
                 GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, outputSurface);
                 if (isSupportBT2020(outputSurface)) {
                     if (requestColorSpace == COLOR_SPACE_BT2020_PQ){
                         if (builder.isSupportBT2020PQ()){
-                            builder.setColorSpace(GLEnvSurface.COLOR_SPACE_BT2020_PQ);
+                            builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_PQ);
                         }
                     }else if (requestColorSpace == COLOR_SPACE_BT2020_HLG){
                         if (builder.isSupportBT2020HLG()){
-                            builder.setColorSpace(GLEnvSurface.COLOR_SPACE_BT2020_HLG);
+                            builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_HLG);
                         }
                     }
                 }
@@ -296,8 +291,7 @@ public class VideoGLOutput extends VideoOutput {
                 this.colorSpace = requestColorSpace;
             }
             if (!windowSurface.isValid()) {
-                windowSurface.release();
-                windowSurface = null;
+                release();
             }
             return windowSurface;
         }
