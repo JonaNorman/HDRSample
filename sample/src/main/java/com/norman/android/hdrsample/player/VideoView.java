@@ -74,10 +74,14 @@ public class VideoView extends FrameLayout {
             return;
         }
         this.viewType = viewType;
-        onSurfaceDestroy(surface);//remove前面要先解绑Surface
-        View oldView = currentView;
-        // 延迟一段时间移除解决闪白屏的问题
-        postDelayed(() -> removeView(oldView), DELAY_REMOVE_VIEW_TIME_MS);
+        if (surface == null){
+            removeView(currentView);
+        }else {
+            onSurfaceDestroy(surface);//remove前面要先解绑Surface
+            View oldView = currentView;
+            // 延迟一段时间移除解决闪白屏的问题
+            postDelayed(() -> removeView(oldView), DELAY_REMOVE_VIEW_TIME_MS);
+        }
         FrameLayout.LayoutParams layoutParams = new LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
