@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 
 public class VideoGLOutput extends VideoOutput {
 
+    private static final float DEFAULT_WAIT_TIME_SECOND = 0.2f;
+
     private GLEnvContextManager envContextManager;
     private GLEnvContext envContext;
 
@@ -51,7 +53,6 @@ public class VideoGLOutput extends VideoOutput {
 
     private GLRenderTextureTarget backTarget = new GLRenderTextureTarget();
 
-
     private boolean bufferMode;
 
     private boolean textureY2YMode;
@@ -59,8 +60,6 @@ public class VideoGLOutput extends VideoOutput {
 
     private int colorSpace;
     private int colorRange;
-
-
     private VideoView videoView;
 
     private VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
@@ -73,7 +72,7 @@ public class VideoGLOutput extends VideoOutput {
 
         @Override
         public void onSurfaceRedraw() {
-            waitNextFrame();
+            waitNextFrame(DEFAULT_WAIT_TIME_SECOND);
         }
 
         @Override

@@ -80,12 +80,12 @@ public abstract class VideoOutput {
         this.videoPlayer = videoPlayer;
         this.videoDecoder = videoDecoder;
         this.videoExtractor = videoExtractor;
-        setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
         inputFormat.setInteger(MediaFormat.KEY_COLOR_STANDARD, videoExtractor.getColorStandard());
         inputFormat.setInteger(MediaFormat.KEY_COLOR_RANGE, videoExtractor.getColorRange());
         inputFormat.setInteger(MediaFormat.KEY_COLOR_TRANSFER, videoExtractor.getColorTransfer());
-        inputFormat.setInteger(MediaFormat.KEY_WIDTH, width);
-        inputFormat.setInteger(MediaFormat.KEY_HEIGHT, height);
+        inputFormat.setInteger(MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
+        inputFormat.setInteger(MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
+        setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
         onOutputPrepare(inputFormat);
     }
 
@@ -268,7 +268,9 @@ public abstract class VideoOutput {
         long waitTime = TimeUtil.secondToMill(waitSecond);
         long startTime = System.currentTimeMillis();
         int oldFrameIndex = frameIndex;
-        while (videoPlayer != null && videoPlayer.isPlaying() && oldFrameIndex != frameIndex) {
+        while (videoPlayer != null &&
+                videoPlayer.isPlaying() &&
+                oldFrameIndex == frameIndex) {
             try {
                 synchronized (nextFrameWaiter) {
                     nextFrameWaiter.wait(waitTime);

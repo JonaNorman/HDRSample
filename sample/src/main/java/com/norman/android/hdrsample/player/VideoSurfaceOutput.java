@@ -6,6 +6,8 @@ import android.view.Surface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 
 public class VideoSurfaceOutput extends VideoOutput {
+
+    private static final float DEFAULT_WAIT_TIME_SECOND = 0.2f;
     private Surface decoderSurface;
     private VideoView videoView;
 
@@ -17,7 +19,7 @@ public class VideoSurfaceOutput extends VideoOutput {
 
         @Override
         public void onSurfaceRedraw() {
-            waitNextFrame();
+            waitNextFrame(DEFAULT_WAIT_TIME_SECOND);
         }
 
         @Override
