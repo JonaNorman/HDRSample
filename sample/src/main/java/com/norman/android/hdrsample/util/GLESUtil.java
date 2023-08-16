@@ -193,6 +193,21 @@ public class GLESUtil {
         return textureId;
     }
 
+    public static int createTextureId(int width, int height,int bitDepth) {
+        int textureId = createTextureId();
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        if (bitDepth <= 8){
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        }else  if (bitDepth <= 16){
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES30.GL_RGBA16F, width, height, 0, GLES20.GL_RGBA, GLES20.GL_FLOAT, null);
+        }else {
+            throw new IllegalArgumentException("not support bitDepth:"+bitDepth);
+        }
+        GLESUtil.checkGLError();
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+        return textureId;
+    }
+
     public static int createTextureId(Bitmap bitmap){
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);

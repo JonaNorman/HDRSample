@@ -15,6 +15,11 @@ public abstract class GLVideoTransform  extends GLRenderer {
         return inputTarget.renderHeight;
     }
 
+    protected  final int getInputBitDepth(){
+        return inputTarget.bitDepth;
+    }
+
+
     protected  final int getInputTextureId(){
         return inputTarget.textureId;
     }
@@ -29,6 +34,7 @@ public abstract class GLVideoTransform  extends GLRenderer {
     }
 
 
+
     protected final void clearColor(){
          outputTarget.clearColor();
     }
@@ -36,6 +42,10 @@ public abstract class GLVideoTransform  extends GLRenderer {
 
     void renderToTarget(GLRenderTextureTarget inputTarget,GLRenderTarget renderTarget) {
         this.inputTarget = inputTarget;
+        if (renderTarget instanceof GLRenderTextureTarget){
+            GLRenderTextureTarget outTextureTarget  = (GLRenderTextureTarget) renderTarget;
+            outTextureTarget.setBitDepth(inputTarget.bitDepth);
+        }
         super.renderToTarget(renderTarget);
     }
 
@@ -48,6 +58,7 @@ public abstract class GLVideoTransform  extends GLRenderer {
     void onRender() {
         transform();
     }
+
 
 
     void transform(){

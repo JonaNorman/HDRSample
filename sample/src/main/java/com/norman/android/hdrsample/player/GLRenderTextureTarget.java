@@ -20,12 +20,25 @@ class GLRenderTextureTarget extends GLRenderTarget {
     int frameBufferId;
     int textureId;
 
+    int bitDepth = 8;
+
+    public void setBitDepth(int bitDepth) {
+        if (this.bitDepth != bitDepth && renderWidth >= 0 && renderHeight >= 0) {
+            this.bitDepth = bitDepth;
+            createFrameBuffer(renderWidth, renderHeight, bitDepth);
+        }
+    }
+
     @Override
     void onRenderSizeChange(int renderWidth, int renderHeight) {
+        createFrameBuffer(renderWidth, renderHeight, bitDepth);
+    }
+
+    void createFrameBuffer(int renderWidth, int renderHeight, int bitDepth) {
         GLESUtil.delTextureId(textureId);
         GLESUtil.deleteFrameBufferId(frameBufferId);
         frameBufferId = GLESUtil.createFrameBufferId();
-        textureId = GLESUtil.createTextureId(renderWidth, renderHeight);
+        textureId = GLESUtil.createTextureId(renderWidth, renderHeight, bitDepth);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId);
         GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textureId, 0);
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);

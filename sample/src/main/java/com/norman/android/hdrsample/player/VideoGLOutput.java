@@ -213,6 +213,7 @@ public class VideoGLOutput extends VideoOutput {
         if (transformList.isEmpty()) {
             screenRenderer = textureRenderer;
         } else {
+            frontTarget.setBitDepth(profile10Bit ? 16 : 8);
             frontTarget.setRenderSize(width, height);
             backTarget.setRenderSize(width, height);
             textureRenderer.renderToTarget(frontTarget);

@@ -115,7 +115,9 @@ class GLTextureRenderer extends GLRenderer {
     }
 
     int onCreateProgram() {
-        return GLESUtil.createProgramId(VERTEX_SHADER, textureType == TYPE_TEXTURE_2D ? FRAGMENT_SHADER : EXTERNAL_OES_FRAGMENT_SHADER);
+        return GLESUtil.createProgramId(VERTEX_SHADER,
+                textureType == TYPE_TEXTURE_2D ?
+                FRAGMENT_SHADER : EXTERNAL_OES_FRAGMENT_SHADER);
     }
 
 
