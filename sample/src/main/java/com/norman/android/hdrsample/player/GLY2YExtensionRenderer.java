@@ -5,6 +5,9 @@ import android.opengl.GLES20;
 import com.norman.android.hdrsample.util.ColorMatrixUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
+/**
+ * 通过GL_EXT_YUV_target扩展直接读取出纹理中的YUV，然后再通过矩阵转换成RGB，比直接读取RGB据说有更高位数的精度
+ */
 class GLY2YExtensionRenderer extends GLTextureRenderer {
 
     private static final String EXTENSION_YUV_TARGET = "GL_EXT_YUV_target";
@@ -22,7 +25,7 @@ class GLY2YExtensionRenderer extends GLTextureRenderer {
 
     private static final String FRAGMENT_SHADER = "#version 300 es\n" +
             "#extension GL_OES_EGL_image_external : require\n" +
-            "#extension GL_EXT_YUV_target : require\n" +
+            "#extension GL_EXT_YUV_target : require\n" +//YUV扩展让Shader直接支持YUV
             "\n" +
             "precision highp float;\n" +
             "uniform __samplerExternal2DY2YEXT inputImageTexture;\n" +
