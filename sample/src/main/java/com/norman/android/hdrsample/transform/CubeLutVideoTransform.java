@@ -58,6 +58,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
             "\n" +
             "    // Based on \\\\\\\\GPU Gems 2 — Chapter 24. Using Lookup Tables to Accelerate Color Transformations\\\\\\\\\n" +
             "    // More info and credits @ http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter24.html\n" +
+            "    // 解决OpenGL时线性插值在边缘处的精度问题\n" +
             "    vec4 rawColor = texture(inputImageTexture, textureCoordinate);\n" +
             "    vec3 scale = vec3((cubeLutSize - 1.0) / cubeLutSize);\n" +
             "    vec3 offset = vec3(1.0 / (2.0 * cubeLutSize));\n" +
