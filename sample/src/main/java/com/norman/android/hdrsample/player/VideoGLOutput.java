@@ -58,7 +58,7 @@ public class VideoGLOutput extends VideoOutput {
     private boolean textureY2YMode;
     private boolean profile10Bit;
 
-    private @ColorSPace int colorSpace;
+    private @ColorSpace int colorSpace;
     private int colorRange;
     private VideoView videoView;
 
@@ -210,6 +210,7 @@ public class VideoGLOutput extends VideoOutput {
             videoSurface.getTransformMatrix(textureRenderer.getTextureMatrix());
         }
         GLTextureRenderer screenRenderer;
+        int finalColorSpace = colorSpace;
         if (transformList.isEmpty()) {
             screenRenderer = textureRenderer;
         } else {
@@ -217,6 +218,7 @@ public class VideoGLOutput extends VideoOutput {
             frontTarget.setRenderSize(width, height);
             backTarget.setRenderSize(width, height);
             textureRenderer.renderToTarget(frontTarget);
+            frontTarget.setColorSpace(colorSpace);
             for (GLVideoTransform videoTransform : transformList) {
                 videoTransform.renderToTarget(frontTarget, backTarget);
                 if (videoTransform.transformSuccess) {
@@ -226,9 +228,10 @@ public class VideoGLOutput extends VideoOutput {
                 }
             }
             texture2DRenderer.setTextureId(frontTarget.textureId);
+            finalColorSpace = frontTarget.colorSpace;
             screenRenderer = texture2DRenderer;
         }
-        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(colorSpace);
+        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(finalColorSpace);
         if (windowSurface == null) {
             return;
         }
@@ -267,7 +270,7 @@ public class VideoGLOutput extends VideoOutput {
             return outputSurface != null && outputSurface.isValid();
         }
 
-        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSPace int  requestColorSpace) {
+        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSpace int  requestColorSpace) {
             if (outputSurface == null) {
                 release();
                 return null;

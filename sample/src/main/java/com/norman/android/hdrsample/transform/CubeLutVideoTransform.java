@@ -6,6 +6,7 @@ import android.opengl.GLES30;
 import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
 import com.norman.android.hdrsample.player.GLVideoTransform;
+import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
@@ -185,7 +186,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
-        success();
+        success(VideoOutput.COLOR_SPACE_SDR);
     }
 
 

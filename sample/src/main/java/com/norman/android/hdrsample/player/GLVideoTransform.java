@@ -44,6 +44,7 @@ public abstract class GLVideoTransform  extends GLRenderer {
         this.inputTarget = inputTarget;
         if (renderTarget instanceof GLRenderTextureTarget){
             GLRenderTextureTarget outTextureTarget  = (GLRenderTextureTarget) renderTarget;
+            outTextureTarget.setColorSpace(inputTarget.colorSpace);
             outTextureTarget.setBitDepth(inputTarget.bitDepth);
         }
         super.renderToTarget(renderTarget);
@@ -51,6 +52,14 @@ public abstract class GLVideoTransform  extends GLRenderer {
 
     protected final void success(){
         transformSuccess = true;
+    }
+
+    protected final void success(@VideoOutput.ColorSpace int colorSpace){
+        transformSuccess = true;
+        if (outputTarget instanceof GLRenderTextureTarget){
+            GLRenderTextureTarget outTextureTarget = (GLRenderTextureTarget) outputTarget;
+            outTextureTarget.setColorSpace(colorSpace);
+        }
     }
 
 

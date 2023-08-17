@@ -22,11 +22,18 @@ class GLRenderTextureTarget extends GLRenderTarget {
 
     int bitDepth = 8;
 
-    public void setBitDepth(int bitDepth) {
+    @VideoOutput.ColorSpace
+    int colorSpace = VideoOutput.COLOR_SPACE_SDR;
+
+    void setBitDepth(int bitDepth) {
         if (this.bitDepth != bitDepth && renderWidth >= 0 && renderHeight >= 0) {
             this.bitDepth = bitDepth;
             createFrameBuffer(renderWidth, renderHeight, bitDepth);
         }
+    }
+
+    void setColorSpace(@VideoOutput.ColorSpace int colorSpace) {
+        this.colorSpace = colorSpace;
     }
 
     @Override

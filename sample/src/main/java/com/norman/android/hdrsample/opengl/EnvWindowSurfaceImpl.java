@@ -64,9 +64,15 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     public void release() {
         if (release) return;
         release = true;
+        EGLSurface currentSurface =  EGL14.eglGetCurrentSurface(EGL14.EGL_READ);
         boolean destroySurface = EGL14.eglDestroySurface(envDisplay.getEGLDisplay(), eglSurface);
         if (!destroySurface) {
             GLEnvException.checkError();
+        }else {
+            //部分机型如果eglDestroySurface后不releaseThread或makeNoCurrent在重新创建EGLSurface会报EGL_BAD_ALLOC
+            if (eglSurface.equals(currentSurface)){
+                envDisplay.releaseThread();
+            }
         }
     }
 

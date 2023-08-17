@@ -29,7 +29,7 @@ public abstract class VideoOutput {
 
     @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface ColorSPace {
+    public @interface ColorSpace {
     }
 
     private final Object nextFrameWaiter = new Object();
