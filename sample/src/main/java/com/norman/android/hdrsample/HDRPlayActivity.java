@@ -58,7 +58,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 //        video_1280x720_hevc_hdr10_static_3mbps.mp4
 //        video_h265_hdr10plus.mp4
 
-        videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
+        videoPlayer.setSource(AssetFileSource.create("video/Rec2020-222000000.mp4"));
         videoTransform = new CubeLutVideoTransform();
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.setOutputVideoView(surfaceView);

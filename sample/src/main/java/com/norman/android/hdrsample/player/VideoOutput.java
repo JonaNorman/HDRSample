@@ -27,7 +27,9 @@ public abstract class VideoOutput {
 
     public static final int COLOR_SPACE_BT2020_HLG = 2;
 
-    @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG})
+    public static final int COLOR_SPACE_BT2020_UNKNOWN = 3;
+
+    @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG,COLOR_SPACE_BT2020_UNKNOWN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ColorSpace {
     }
@@ -149,12 +151,14 @@ public abstract class VideoOutput {
         setVideoSize(width, height);
         int colorStandard = MediaFormatUtil.getColorStandard(outputFormat);
         int colorTransfer = MediaFormatUtil.getColorTransfer(outputFormat);
-        if (colorStandard != MediaFormat.COLOR_STANDARD_BT2020 || colorTransfer == MediaFormat.COLOR_TRANSFER_SDR_VIDEO){
+        if (colorStandard != MediaFormat.COLOR_STANDARD_BT2020){
             outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_SDR);
         }else if (colorTransfer ==MediaFormat.COLOR_TRANSFER_HLG){
             outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_BT2020_HLG);
-        }else {
+        }else if (colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084){
             outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_BT2020_PQ);
+        }else {
+            outputFormat.setInteger(KEY_COLOR_SPACE,COLOR_SPACE_BT2020_UNKNOWN);
         }
         synchronized (outputFormatSync) {
             this.outputFormat = outputFormat;

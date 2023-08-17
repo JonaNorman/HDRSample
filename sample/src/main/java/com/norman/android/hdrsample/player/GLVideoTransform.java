@@ -25,6 +25,11 @@ public abstract class GLVideoTransform  extends GLRenderer {
     }
 
 
+    protected final @VideoOutput.ColorSpace int getInputColorSpace() {
+        return inputTarget.colorSpace;
+    }
+
+
     protected  final int getOutputWidth(){
         return outputTarget.renderWidth;
     }

@@ -112,6 +112,10 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
     @Override
     protected void onTransform() {
+        int colorSpace = getInputColorSpace();
+        if (colorSpace == VideoOutput.COLOR_SPACE_SDR){
+            return;
+        }
         Future<CubeLut3D> future = lut3DFuture;
         if (future != null && future.get() != currentCube) {
             currentCube = future.get();
