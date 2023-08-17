@@ -49,6 +49,18 @@ public class AndroidTexturePlayerRenderer {
             hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
             ShortBuffer shortBuffer = hdrStaticInfo.asShortBuffer();
             int maxFrameAverageLuminance = shortBuffer.get(11);
+//            hdrStaticInfo.putShort((short) ((primaryRChromaticityX() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((primaryRChromaticityY() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((primaryGChromaticityX() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((primaryGChromaticityY() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((primaryBChromaticityX() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((primaryBChromaticityY() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((whitePointChromaticityX() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) ((whitePointChromaticityY() * MAX_CHROMATICITY) + 0.5f));
+//            hdrStaticInfo.putShort((short) (maxMasteringLuminance() + 0.5f));
+//            hdrStaticInfo.putShort((short) (minMasteringLuminance() + 0.5f));
+//            hdrStaticInfo.putShort((short) maxContentLuminance());
+//            hdrStaticInfo.putShort((short) maxFrameAverageLuminance());
         }
 
     }
