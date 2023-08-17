@@ -6,9 +6,6 @@ object GamutMapMatrix:GLShaderCode() {
     override val code: String
         get() = """
             // Simple conversion from BT.2020 to BT.709 based on linear matrix transformation
-        //!HOOK OUTPUT
-        //!BIND HOOKED
-        //!DESC gamut mapping (matrix)
 
         mat3 M = mat3(
              1.6605, -0.5876, -0.0728,

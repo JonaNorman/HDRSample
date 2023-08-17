@@ -3,9 +3,9 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
 object GammaPQ:GLShaderCode() {
+    // PQ公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-13
     override val code: String
         get() = """
-              // PQ公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-13
         #define PQ_M1  0.1593017578125
         #define PQ_M2  78.84375
         #define PQ_C1  0.8359375

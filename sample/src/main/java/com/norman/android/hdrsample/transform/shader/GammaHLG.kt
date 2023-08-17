@@ -3,9 +3,9 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
 object GammaHLG : GLShaderCode() {
+    // HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
     override val code: String
         get() = """
-            // HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
         #define  BT2020_LUMA_COEFF  vec3(0.2627, 0.6780, 0.0593)// BT.2020RGB转亮度Y的计算系数
         #define  HLG_A  0.17883277// ABC三个参数是为了平滑连接HLG的两端曲线
         #define  HLG_B  0.28466892

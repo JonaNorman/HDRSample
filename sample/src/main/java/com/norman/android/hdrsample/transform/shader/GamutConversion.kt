@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.opengl.GLShaderCode
 object GamutConversion : GLShaderCode() {
     override val code: String
         get() = """
-             #define BT709_TO_BT2020_MAT3  mat3(0.6274040, 0.0690970, 0.0163916, \
+        #define BT709_TO_BT2020_MAT3  mat3(0.6274040, 0.0690970, 0.0163916, \
                                                         0.3292820, 0.9195400, 0.0880132, \
                                                         0.0433136, 0.0113612, 0.8955950)
 
