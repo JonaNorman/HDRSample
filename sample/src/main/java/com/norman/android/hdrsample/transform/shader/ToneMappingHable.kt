@@ -3,27 +3,12 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
 object ToneMappingHable : GLShaderCode() {
+    // Filmic curve by John Hable, Also known as the "Uncharted 2 curve".
+    // http://filmicworlds.com/blog/filmic-tonemapping-operators/
     override val code: String
         get() = """
-            // Filmic curve by John Hable, Also known as the "Uncharted 2 curve".
-            // http://filmicworlds.com/blog/filmic-tonemapping-operators/
-
-            //!PARAM L_hdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 10000
-            1000.0
-
-            //!PARAM L_sdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 1000
-            203.0
-
-            //!HOOK OUTPUT
-            //!BIND HOOKED
-            //!DESC tone mapping (hable)
-
+            #define L_hdr 1000.0
+            #define L_sdr 203.0
             const float A = 0.15;   // Shoulder Strength
             const float B = 0.50;   // Linear Strength
             const float C = 0.10;   // Linear Angle
@@ -40,10 +25,13 @@ object ToneMappingHable : GLShaderCode() {
                 return f(x) / f(W);
             }
 
-            vec4 color = HOOKED_tex(HOOKED_pos);
-            vec4 hook() {
-                const float L = dot(color.rgb, vec3(0.2627, 0.6780, 0.0593));
-                color.rgb *= curve(L) / L;
+            vec3 tone_mapping_y(vec3 RGB) {
+                const float y = dot(RGB, vec3(0.2627002120112671, 0.6779980715188708, 0.05930171646986196));
+                return RGB * curve(y) / y;
+            }
+
+            vec4 ${javaClass.name}(vec4 color) {
+                color.rgb = tone_mapping_y(color.rgb);
                 return color;
             }
         """.trimIndent()
