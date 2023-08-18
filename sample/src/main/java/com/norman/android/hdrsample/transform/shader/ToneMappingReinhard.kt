@@ -3,39 +3,30 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
 object ToneMappingReinhard : GLShaderCode() {
+
+    // 通过ReinhardCurve曲线作为缩放值改变颜色
+    // Extended mapping by Reinhard et al. 2002. which allows high luminances to burn out.
+    // https://www.researchgate.net/publication/2908938_Photographic_Tone_Reproduction_For_Digital_Images
     override val code: String
         get() = """
-            // Extended mapping by Reinhard et al. 2002. which allows high luminances to burn out.
-            // https://www.researchgate.net/publication/2908938_Photographic_Tone_Reproduction_For_Digital_Images
+          #define L_hdr 1000.0
+          #define L_sdr 203.0
 
-            //!PARAM L_hdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 10000
-            1000.0
+          float curve(float x) {
+              const float w = L_hdr / L_sdr;
+              const float simple = x / (1.0 + x);
+              const float extended = simple * (1.0 + x / (w * w));
+              return extended;
+          }
 
-            //!PARAM L_sdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 1000
-            203.0
+          vec3 tone_mapping_y(vec3 RGB) {
+              const float y = dot(RGB, vec3(0.2627002120112671, 0.6779980715188708, 0.05930171646986196));
+              return RGB * curve(y) / y;
+          }
 
-            //!HOOK OUTPUT
-            //!BIND HOOKED
-            //!DESC tone mapping (reinhard)
-
-            float curve(float x) {
-                const float w = L_hdr / L_sdr;
-                const float simple = x / (1.0 + x);
-                const float extended = simple * (1.0 + x / (w * w));
-                return extended;
-            }
-
-            vec4 color = HOOKED_tex(HOOKED_pos);
-            vec4 hook() {
-                const float L = dot(color.rgb, vec3(0.2627, 0.6780, 0.0593));
-                color.rgb *= curve(L) / L;
-                return color;
-            }
+          vec4 ${javaClass.name}(vec4 color) {
+              color.rgb = tone_mapping_y(color.rgb);
+              return color;
+          }
         """.trimIndent()
 }
