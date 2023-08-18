@@ -3,45 +3,39 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
 object ToneMappingBT2460a : GLShaderCode() {
+    // ITU-R BT.2446 Conversion Method A
+    // https://www.itu.int/pub/R-REP-BT.2446
     override val code: String
         get() = """
-            // ITU-R BT.2446 Conversion Method A
-            // https://www.itu.int/pub/R-REP-BT.2446
+            #define L_hdr 1000.0
+            #define L_sdr 203.0
+            const float a = 0.2627002120112671;
+            const float b = 0.6779980715188708;
+            const float c = 0.05930171646986196;
+            const float d = 2.0 * (1.0 - c);
+            const float e = 2.0 * (1.0 - a);
 
-            //!PARAM L_hdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 10000
-            1000.0
+            vec3 RGB_to_YCbCr(vec3 RGB) {
+                float R = RGB.r;
+                float G = RGB.g;
+                float B = RGB.b;
 
-            //!PARAM L_sdr
-            //!TYPE float
-            //!MINIMUM 0
-            //!MAXIMUM 1000
-            203.0
-
-            //!HOOK OUTPUT
-            //!BIND HOOKED
-            //!DESC tone mapping (bt.2446a)
-
-            // https://gist.github.com/yohhoy/dafa5a47dade85d8b40625261af3776a
-            const float a = 0.2627;
-            const float b = 0.6780;
-            const float c = 0.0593; // a + b + c = 1
-            const float d = 1.8814; // 2 * (a + b)
-            const float e = 1.4747; // 2 * (1 - a)
-
-            vec3 RGB_to_YCbCr(float R, float G, float B) {
-                const float Y  = a * R + b * G + c * B;
+                const float Y  = dot(RGB, vec3(a, b, c));
                 const float Cb = (B - Y) / d;
                 const float Cr = (R - Y) / e;
+
                 return vec3(Y, Cb, Cr);
             }
 
-            vec3 YCbCr_to_RGB(float Y, float Cb, float Cr) {
+            vec3 YCbCr_to_RGB(vec3 YCbCr) {
+                float Y  = YCbCr.x;
+                float Cb = YCbCr.y;
+                float Cr = YCbCr.z;
+
                 const float R = Y + e * Cr;
                 const float G = Y - (a * e / b) * Cr - (c * d / b) * Cb;
                 const float B = Y + d * Cb;
+
                 return vec3(R, G, B);
             }
 
@@ -83,11 +77,11 @@ object ToneMappingBT2460a : GLShaderCode() {
                 return vec3(Y, Cb, Cr);
             }
 
-            vec4 color = HOOKED_tex(HOOKED_pos);
-            vec4 hook() {
-                color.rgb = RGB_to_YCbCr(color.r, color.g, color.b);
+            vec4 ${javaClass.name}(vec4 color) {
+                color.rgb = RGB_to_YCbCr(color.rgb);
                 color.rgb = tone_mapping(color.rgb);
-                color.rgb = YCbCr_to_RGB(color.r, color.g, color.b);
+                color.rgb = YCbCr_to_RGB(color.rgb);
+
                 return color;
             }
         """.trimIndent()
