@@ -2,6 +2,7 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.ConstantParams.EPSILON
+import com.norman.android.hdrsample.transform.shader.ConstantParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.ConstantParams.PI
 
 object ColorSpaceConversion : GLShaderCode() {
@@ -144,19 +145,19 @@ object ColorSpaceConversion : GLShaderCode() {
         }
         
 
-       vec3 $methodBt2020ToLab(vec3 color,float refW) {
-           color *= refW;
+       vec3 $methodBt2020ToLab(vec3 color) {
+           color *= $HDR_REFERENCE_WHITE;
            color  = $methodBt2020ToXYZ(color);
            color  = $methodXYZD65ToXYZD50(color);
-           color  = $methodXYZToLab(color,$methodBt2020ToXYZ(vec3(refW)));
+           color  = $methodXYZToLab(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
            return color;
        }
 
-       vec3 $methodLabToBT2020(vec3 color,float refW) {
-           color  = $methodLabToXYZ(color,$methodBt2020ToXYZ(vec3(refW)));
+       vec3 $methodLabToBT2020(vec3 color) {
+           color  = $methodLabToXYZ(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
            color  = $methodXYZD50ToXYZD65(color);
            color  = $methodXYZToBt2020(color);
-           color /= refW;
+           color /= $HDR_REFERENCE_WHITE;
            return color;
        }
        
