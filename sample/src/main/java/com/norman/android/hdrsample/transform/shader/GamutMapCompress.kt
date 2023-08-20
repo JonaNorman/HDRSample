@@ -1,18 +1,23 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
+import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
 
-object GamutMapCompress :GLShaderCode() {
+/**
+ * 色域映射的压缩处理方式
+ * BT2020色域到BT709时会产生超过边界的值，有两个色域三角形，一个是BT709颜色三角形，一个BT2020颜色三角形
+ * 两个三角形之间就是通过矩阵转换后不正常的颜色，对高光颜色进行消色处理(可以理解成降低饱和度)
+ * 消色处理是通过对消色轴的距离进行Parabolic数学公式缩放进行的
+ * 参考至
+ * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/gamut-mapping/jedypod.glsl
+ * https://github.com/jedypod/gamut-compress
+ * https://github.com/ampas/aces-dev/blob/dev/transforms/ctl/lmt/LMT.Academy.ReferenceGamutCompress.ctl
+ *
+ */
+object GamutMapCompress :GamutMap() {
 
-    /**
-     * 压缩BT2020色域到BT709时会产生一些超过边界的值，个人理解相当于有两个色域三角形，一个是BT709threshold颜色三角形，一个BT2020limit颜色三角形，
-     * 两个三角形之间就是通过矩阵转换后不正常的颜色，通过Parabolic compression function数学公式压缩不正常的颜色
-     * 参考至https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/gamut-mapping/jedypod.glsl
-     * https://github.com/jedypod/gamut-compress
-     * https://github.com/ampas/aces-dev/blob/dev/transforms/ctl/lmt/LMT.Academy.ReferenceGamutCompress.ctl
-     *
-     */
-
+    init {
+        includeList.add(ColorSpaceConversion)
+    }
     override val code: String
         get() = """
             #define cyan_limit 1.518705262732682
@@ -23,39 +28,43 @@ object GamutMapCompress :GLShaderCode() {
             #define magenta_threshold 0.9405097727736265
             #define yellow_threshold 0.9771607745933959
             
+            // Parabolic compression function: https://www.desmos.com/calculator/nvhp63hmtj
+            float parabolic(float dist, float lim, float thr) {
+                if (dist > thr) {
+                    // Calculate scale so compression function passes through distance limit: (x=dl, y=1)
+                    float scale = (1.0 - thr) / sqrt(lim - 1.0);
+                    float sacle_ = scale * scale / 4.0;
+                    dist = scale * (sqrt(dist - thr + sacle_) - sqrt(sacle_)) + thr;
+                }
+                return dist;
+            }
+            
 
-            vec4 ${javaClass.name}() {
-                vec3 color_src = color.rgb;
-                vec3 color_dst = BT2020_TO_BT709(color_src);
-                vec3 rgb = gamut_compress(color_dst);
-
-               // Distance limit: How far beyond the gamut boundary to compress
+            vec4 $methodGamutMap(vec4 color) {
+            
+                vec3 rgb = $methodBt2020ToBt709(color.rgb);
                 vec3 dl = vec3(cyan_limit, magenta_limit, yellow_limit);
 
                 // Amount of outer gamut to affect
                 vec3 th = vec3(cyan_threshold, magenta_threshold, yellow_threshold);
-
+            
                 // Achromatic axis
                 float ac = max(max(rgb.r, rgb.g), rgb.b);
-
+            
                 // Inverse RGB Ratios: distance from achromatic axis
                 vec3 d = ac == 0.0 ? vec3(0.0) : (ac - rgb) / abs(ac);
-
-                // Calculate scale so compression function passes through distance limit: (x=dl, y=1)
-                vec3 s;
-                s.x = (1.0 - th.x) / sqrt(dl.x - 1.0);
-                s.y = (1.0 - th.y) / sqrt(dl.y - 1.0);
-                s.z = (1.0 - th.z) / sqrt(dl.z - 1.0);
-
-                vec3 cd; // Compressed distance
-                // Parabolic compression function: https://www.desmos.com/calculator/nvhp63hmtj
-                cd.x = d.x < th.x ? d.x : s.x * sqrt(d.x - th.x + s.x * s.x / 4.0) - s.x * sqrt(s.x * s.x / 4.0) + th.x;
-                cd.y = d.y < th.y ? d.y : s.y * sqrt(d.y - th.y + s.y * s.y / 4.0) - s.y * sqrt(s.y * s.y / 4.0) + th.y;
-                cd.z = d.z < th.z ? d.z : s.z * sqrt(d.z - th.z + s.z * s.z / 4.0) - s.z * sqrt(s.z * s.z / 4.0) + th.z;
-
+            
+                // Compressed distance
+                vec3 cd = vec3(
+                    parabolic(d.x, dl.x, th.x),
+                    parabolic(d.y, dl.y, th.y),
+                    parabolic(d.z, dl.z, th.z)
+                );
+            
                 // Inverse RGB Ratios to RGB
-                vec3 crgb = ac - cd * abs(ac);
-                return crgb;
+                color.rgb = ac - cd * abs(ac);
+                
+                return color;
             }
         """.trimIndent()
 }
