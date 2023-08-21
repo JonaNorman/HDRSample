@@ -1,18 +1,23 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
+import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
 
-object GamutMapAdaptiveL0 : GLShaderCode() {
+/**
+ *    个人理解：BT2020转BT709超过边界的值保持亮度自适应投射到接近当前色调的色域尖点，也属于裁剪方法的一种
+ *   // https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/gamut-mapping/bottosson.glsl
+ *   // https://bottosson.github.io/posts/gamutclipping/
+ *   // https://wenku.baidu.com/view/7ffc40bf02768e9950e738b8?bfetype=new&_wkts_=1692340094511
+ *
+ */
+object GamutMapAdaptiveL0Cusp : GamutMap() {
 
-    /**
-     *    个人理解：BT2020转BT709超过边界的值通过保持亮度不同自适应找到一个在色域内的点作为边界值，也属于裁剪方法的一种
-     *   // https://bottosson.github.io/posts/gamutclipping/
-     *   // https://wenku.baidu.com/view/7ffc40bf02768e9950e738b8?bfetype=new&_wkts_=1692340094511
-     */
+    init {
+        includeList.add(ColorSpaceConversion)
+    }
 
     override val code: String
         get() = """
-           #define cbrt(x) (sign(x) * pow(abs(x), 1.0 / 3.0))
+        
            #define FLT_MAX 3.402823466e+38
 
            vec3 linear_srgb_to_oklab(vec3 c)
@@ -21,9 +26,9 @@ object GamutMapAdaptiveL0 : GLShaderCode() {
            	float m = 0.2119034982 * c.r + 0.6806995451 * c.g + 0.1073969566 * c.b;
            	float s = 0.0883024619 * c.r + 0.2817188376 * c.g + 0.6299787005 * c.b;
 
-           	float l_ = cbrt(l);
-           	float m_ = cbrt(m);
-           	float s_ = cbrt(s);
+           	float l_ = sign(l) * pow(abs(l), 1.0 / 3.0);
+           	float m_ = sign(m) * pow(abs(m), 1.0 / 3.0);
+           	float s_ = sign(s) * pow(abs(s), 1.0 / 3.0);
 
            	return vec3(
            		0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
@@ -224,116 +229,6 @@ object GamutMapAdaptiveL0 : GLShaderCode() {
                return t;
            }
 
-           // float clamp(float x, float min, float max)
-           // {
-           // 	if (x < min)
-           // 		return min;
-           // 	if (x > max)
-           // 		return max;
-
-           // 	return x;
-           // }
-
-           // float sgn(float x)
-           // {
-           // 	return (float)(0.0 < x) - (float)(x < 0.0);
-           // }
-
-           vec3 gamut_clip_preserve_chroma(vec3 rgb)
-           {
-               if (rgb.r < 1 && rgb.g < 1 && rgb.b < 1 && rgb.r > 0 && rgb.g > 0 && rgb.b > 0)
-                   return rgb;
-
-               vec3 lab = linear_srgb_to_oklab(rgb);
-
-               float L = lab.x;
-               float eps = 0.00001;
-               float C = max(eps, sqrt(lab.y * lab.y + lab.z * lab.z));
-               float a_ = lab.y / C;
-               float b_ = lab.z / C;
-
-               float L0 = clamp(L, 0, 1);
-
-               float t = find_gamut_intersection(a_, b_, L, C, L0);
-               float L_clipped = L0 * (1 - t) + t * L;
-               float C_clipped = t * C;
-
-               return oklab_to_linear_srgb(vec3(L_clipped, C_clipped * a_, C_clipped * b_));
-           }
-
-           vec3 gamut_clip_project_to_0_5(vec3 rgb)
-           {
-               if (rgb.r < 1 && rgb.g < 1 && rgb.b < 1 && rgb.r > 0 && rgb.g > 0 && rgb.b > 0)
-                   return rgb;
-
-               vec3 lab = linear_srgb_to_oklab(rgb);
-
-               float L = lab.x;
-               float eps = 0.00001;
-               float C = max(eps, sqrt(lab.y * lab.y + lab.z * lab.z));
-               float a_ = lab.y / C;
-               float b_ = lab.z / C;
-
-               float L0 = 0.5;
-
-               float t = find_gamut_intersection(a_, b_, L, C, L0);
-               float L_clipped = L0 * (1 - t) + t * L;
-               float C_clipped = t * C;
-
-               return oklab_to_linear_srgb(vec3(L_clipped, C_clipped * a_, C_clipped * b_));
-           }
-
-           vec3 gamut_clip_project_to_L_cusp(vec3 rgb)
-           {
-               if (rgb.r < 1 && rgb.g < 1 && rgb.b < 1 && rgb.r > 0 && rgb.g > 0 && rgb.b > 0)
-                   return rgb;
-
-               vec3 lab = linear_srgb_to_oklab(rgb);
-
-               float L = lab.x;
-               float eps = 0.00001;
-               float C = max(eps, sqrt(lab.y * lab.y + lab.z * lab.z));
-               float a_ = lab.y / C;
-               float b_ = lab.z / C;
-
-               // The cusp is computed here and in find_gamut_intersection, an optimized solution would only compute it once.
-               vec2 cusp = find_cusp(a_, b_);
-
-               float L0 = cusp.x;
-
-               float t = find_gamut_intersection(a_, b_, L, C, L0);
-
-               float L_clipped = L0 * (1 - t) + t * L;
-               float C_clipped = t * C;
-
-               return oklab_to_linear_srgb(vec3(L_clipped, C_clipped * a_, C_clipped * b_));
-           }
-
-           vec3 gamut_clip_adaptive_L0_0_5(vec3 rgb, float alpha)
-           {
-               if (alpha < 0) alpha = 0.05;
-               if (rgb.r < 1 && rgb.g < 1 && rgb.b < 1 && rgb.r > 0 && rgb.g > 0 && rgb.b > 0)
-                   return rgb;
-
-               vec3 lab = linear_srgb_to_oklab(rgb);
-
-               float L = lab.x;
-               float eps = 0.00001;
-               float C = max(eps, sqrt(lab.y * lab.y + lab.z * lab.z));
-               float a_ = lab.y / C;
-               float b_ = lab.z / C;
-
-               float Ld = L - 0.5;
-               float e1 = 0.5 + abs(Ld) + alpha * C;
-               float L0 = 0.5*(1.0 + sign(Ld)*(e1 - sqrt(e1*e1 - 2.0 *abs(Ld))));
-
-               float t = find_gamut_intersection(a_, b_, L, C, L0);
-               float L_clipped = L0 * (1.0 - t) + t * L;
-               float C_clipped = t * C;
-
-               return oklab_to_linear_srgb(vec3(L_clipped, C_clipped * a_, C_clipped * b_));
-           }
-
            vec3 gamut_clip_adaptive_L0_L_cusp(vec3 rgb, float alpha)
            {
                if (alpha < 0) alpha = 0.05;
@@ -365,9 +260,8 @@ object GamutMapAdaptiveL0 : GLShaderCode() {
            }
 
 
-           vec4 ${javaClass.name}(vec4 color) {
-           
-               vec4 bt709Color = BT2020_TO_BT709(color.rgb);
+           vec4 $methodGamutMap(vec4 color) {
+               vec3 rgb = $methodBt2020ToBt709(color.rgb);
                color.rgb = gamut_clip_adaptive_L0_L_cusp(bt709Color, -1.0);
                return color;
            }
