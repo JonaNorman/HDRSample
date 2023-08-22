@@ -1,10 +1,10 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToLab
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToBT2020
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToLch
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLchToLab
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToLab
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabToBT2020
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabToLch
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLchToLab
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
 
@@ -23,7 +23,7 @@ object ChromaCorrection : GLShaderCode() {
     const val paramAlpha = "ALPHA"//颜色串扰crosstalk程度
 
     init {
-        includeList.add(ColorSpaceConversion)
+        includeList.add(ColorConversion)
         includeList.add(MetaDataParams)
     }
 

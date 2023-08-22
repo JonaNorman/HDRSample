@@ -1,7 +1,5 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
-
 //https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/bt2446c.glsl
 object ToneMapBT2446c : GamutMap() {
     // ITU-R BT.2446 Conversion Method C
@@ -30,11 +28,11 @@ object ToneMapBT2446c : GamutMap() {
           }
 
           vec3 $methodGamutMap(vec3 color) {
-              color.rgb = ${ColorSpaceConversion.methodBt2020ToXYZ}(color.rgb);
-              color.rgb = ${ColorSpaceConversion.methodXYZToxyY}(color.rgb);
+              color.rgb = ${ColorConversion.methodBt2020ToXYZ}(color.rgb);
+              color.rgb = ${ColorConversion.methodXYZToxyY}(color.rgb);
               color.z   = curve(color.z);
-              color.rgb = ${ColorSpaceConversion.methodxyYToXYZ}(color.rgb);
-              color.rgb = ${ColorSpaceConversion.methodXYZToBt2020}(color.rgb);
+              color.rgb = ${ColorConversion.methodxyYToXYZ}(color.rgb);
+              color.rgb = ${ColorConversion.methodXYZToBt2020}(color.rgb);
               return color;
           }
         """.trimIndent()

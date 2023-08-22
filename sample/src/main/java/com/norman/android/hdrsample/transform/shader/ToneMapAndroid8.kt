@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToXYZ
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodXYZToBt2020
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE

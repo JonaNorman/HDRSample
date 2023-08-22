@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToBt709
 
 /**
  * 色域映射的压缩处理方式
@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.method
 object GamutMapCompress :GamutMap() {
 
     init {
-        includeList.add(ColorSpaceConversion)
+        includeList.add(ColorConversion)
     }
     override val code: String
         get() = """

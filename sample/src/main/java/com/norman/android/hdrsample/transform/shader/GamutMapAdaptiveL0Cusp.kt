@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToBt709
 
 /**
  *    个人理解：BT2020转BT709超过边界的值保持亮度自适应投射到接近当前色调的色域尖点，也属于裁剪方法的一种
@@ -12,7 +12,7 @@ import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.method
 object GamutMapAdaptiveL0Cusp : GamutMap() {
 
     init {
-        includeList.add(ColorSpaceConversion)
+        includeList.add(ColorConversion)
     }
 
     override val code: String

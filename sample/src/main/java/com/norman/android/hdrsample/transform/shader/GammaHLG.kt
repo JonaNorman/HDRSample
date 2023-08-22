@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToXYZ
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 
 // HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
@@ -15,7 +15,7 @@ object GammaHLG : GLShaderCode() {
 
 
     init {
-        includeList.add(ColorSpaceConversion)
+        includeList.add(ColorConversion)
         includeList.add(MetaDataParams)
     }
     override val code: String

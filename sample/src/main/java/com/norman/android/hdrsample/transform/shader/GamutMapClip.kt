@@ -1,7 +1,6 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
+import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToBt709
 
 /**
  * 直接裁剪BT2020转BT709色域映射后超出范围的值
@@ -9,7 +8,7 @@ import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.method
 object GamutMapClip: GamutMap() {
 
     init {
-        includeList.add(ColorSpaceConversion)
+        includeList.add(ColorConversion)
     }
     override val code: String
         get() = """

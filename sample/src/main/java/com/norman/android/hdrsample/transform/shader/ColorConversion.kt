@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.EPSILON
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.PI
 
-object ColorSpaceConversion : GLShaderCode() {
+object ColorConversion : GLShaderCode() {
 
     const val methodBt2020ToBt709 = "BT2020_TO_BT709"
     const val methodBt709ToBt2020 = "BT709_TO_BT2020"
