@@ -1,11 +1,11 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_FRAME_AVERAGE_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToLab
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToBT2020
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToLch
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLchToLab
-import com.norman.android.hdrsample.transform.shader.ConstantParams.HDR_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ConstantParams.HDR_REFERENCE_WHITE
 
 /**
@@ -61,7 +61,7 @@ object ChromaCorrection : GLShaderCode() {
 
        vec4 ${javaClass.name}(vec4 color) {
            const float L_ref = $methodBt2020ToLab(vec3(1.0)).x;
-           const float L_max = $methodBt2020ToLab(vec3($HDR_MAX_LUMINANCE / $HDR_REFERENCE_WHITE)).x;
+           const float L_max = $methodBt2020ToLab(vec3($MAX_FRAME_AVERAGE_LUMINANCE / $HDR_REFERENCE_WHITE)).x;
            color.rgb = crosstalk(color.rgb, $paramAlpha);
            color.rgb = $methodBt2020ToLab(color.rgb);
            color.rgb = $methodLabToLch(color.rgb);

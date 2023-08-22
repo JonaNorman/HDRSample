@@ -4,9 +4,9 @@ import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToBt709
 
 /**
- * 色域映射抽象类
+ * 色调映射抽象类
  */
-abstract class GamutMap: GLShaderCode() {
+abstract class ToneMap: GLShaderCode() {
 
-    val methodGamutMap = "GAMUT_MAP"
+    val methodToneMap = "TONE_MAP"
 }

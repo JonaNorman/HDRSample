@@ -1,22 +1,39 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_FRAME_AVERAGE_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToXYZ
+import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodXYZToBt2020
+import com.norman.android.hdrsample.transform.shader.ConstantParams.HLG_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ConstantParams.PQ_MAX_LUMINANCE
 
-object ToneMappingAndroid8PQ : GLShaderCode() {
+//参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
+
+object ToneMapAndroid8 : ToneMap() {
     override val code: String
         get() = """
-      //参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
-        #include shader/gamma/pq.fsh
-        #include shader/gamma/bt709.fsh
-        #include shader/colorspace/color_gamut.fsh
+            
+        float libtonemap_applyBaseOOTFGain(float nits) {
+               return $COLOR_SPACE == $COLOR_SPACE_BT2020_HLG?pow(nits, 0.2): 1.0;
+        }
+       
+       vec3 ScaleLuminance(vec3 xyz) {
+               return $COLOR_SPACE == $COLOR_SPACE_BT2020_PQ?xyz * $PQ_MAX_LUMINANCE:xyz * $HLG_MAX_LUMINANCE;         
+       }
+        
+       vec3 NormalizeLuminance(vec3 xyz) {
+              return xyz / $MAX_DISPLAY_LUMINANCE;
+       }
 
-        uniform vec2 displayLuminanceRange;// 屏幕最大亮度
-        uniform float maxFrameAverageLuminance;// 最大平均亮度
-
-
+        // Here we're mapping from HDR to SDR content, so interpolate using a
+                        // Hermitian polynomial onto the smaller luminance range.
         float toneMapTargetNits(vec3 xyz) {
-            float maxInLumi = maxFrameAverageLuminance;
-            float maxOutLumi = displayLuminanceRange.y;
+            float maxInLumi = $MAX_FRAME_AVERAGE_LUMINANCE;
+            float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
+            xyz = xyz * libtonemap_applyBaseOOTFGain(xyz.y);
             float nits = xyz.y;
             // if the max input luminance is less than what we can
             // output then no tone mapping is needed as all color
@@ -66,26 +83,22 @@ object ToneMappingAndroid8PQ : GLShaderCode() {
             }
             return nits;
         }
-        float lookupTonemapGain(vec3 linearRGB, vec3 xyz) {
+
+        float lookupTonemapGain(vec3 xyz) {
             if (xyz.y <= 0.0) {
                 return 1.0;
             }
             return toneMapTargetNits(xyz) / xyz.y;
         }
+        
 
-
-
-        void main()
+        vec3 $methodToneMap(vec3 rgb)
         {
-            vec4 rgba  = textureColor();
-            vec3 linearRGB = PQ_EOTF(rgba.rgb);
-            vec3 xyz = BT2020_TO_XYZ(linearRGB);
-            vec3 absoluteRGB = linearRGB *PQ_MAX_LUMINANCE;
-            vec3 absoluteXYZ = xyz *PQ_MAX_LUMINANCE;
-            float gain = lookupTonemapGain(absoluteRGB,absoluteXYZ);
-            xyz = absoluteXYZ * gain/displayLuminanceRange.y;
-            vec3 finalColor = BT709_OETF(XYZ_TO_BT709(xyz));
-            setOutColor(vec4(finalColor, rgba.a));
+            vec3 xyz = $methodBt2020ToXYZ(rgb)
+            vec3 absoluteXYZ = ScaleLuminance(xyz);
+            float gain = lookupTonemapGain(absoluteXYZ);
+            xyz = NormalizeLuminance(absoluteXYZ * gain);
+            return $methodXYZToBt2020(xyz);
         }
         """.trimIndent()
 }

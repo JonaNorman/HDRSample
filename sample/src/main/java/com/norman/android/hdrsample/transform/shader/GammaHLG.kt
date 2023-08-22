@@ -23,6 +23,7 @@ object GammaHLG : GLShaderCode() {
         #define  HLG_A  0.17883277// ABC三个参数是为了平滑连接HLG的两端曲线
         #define  HLG_B  0.28466892
         #define  HLG_C  0.55991073
+        #define  HLG_MIN_BRIGHTNESS_NITS 500.0// 防止HLG亮度过低时黑暗场景过于明亮，参考至Android的computeHlgGamma做法
 
 
         vec3 $methodHLGOETF(vec3 x)
@@ -40,8 +41,9 @@ object GammaHLG : GLShaderCode() {
             step(0.5, x));
         }
 
-        // HLG的系统伽马，根据设备亮度调整，1000亮度时候系统伽马是1.2
+        // HLG的系统伽马，根据设备亮度调整，1000亮度时候系统伽马是1.2，
         float $methodHLGGamma(float lw){
+            lw = max(lw,HLG_MIN_BRIGHTNESS_NITS);
             return 1.2+0.42*log(lw/$HDR_REFERENCE_WHITE)/log(10.0);
         }
 
