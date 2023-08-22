@@ -1,7 +1,10 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
+/**
+ * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/clip.glsl
+ */
 object ToneMappingClip : GLShaderCode() {
     // Crop code values that are out of the SDR range
     override val code: String

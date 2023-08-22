@@ -1,8 +1,8 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingRetroachPQ : GLShaderCode() {
+object InverseToneMapRetroach : GLShaderCode() {
     override val code: String
         get() = """
             //参考代码：https://github.com/libretro/RetroArch/blob/master/gfx/drivers/vulkan_shaders/hdr.frag

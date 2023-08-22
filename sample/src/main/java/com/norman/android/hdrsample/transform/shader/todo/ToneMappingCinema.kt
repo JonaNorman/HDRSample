@@ -1,8 +1,8 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingCinemaHLG : GLShaderCode() {
+object ToneMappingCinema : GLShaderCode() {
     override val code: String
         get() = """
             //参考代码: https://github.com/VoidXH/Cinema-Shader-Pack/blob/master/Shaders/HDR%20to%20SDR.hlsl

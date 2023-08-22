@@ -1,11 +1,11 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingIctcp : GLShaderCode() {
+object ToneMappingJzazbz : GLShaderCode() {
 
     /*
-        https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/_dev/tone-mapping/linear_ictcp.glsl
+        https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/_dev/tone-mapping/linear_jzazbz.glsl
 
      */
     override val code: String
@@ -53,64 +53,89 @@ object ToneMappingIctcp : GLShaderCode() {
                 return XYZ * M;
             }
 
-            vec3 XYZ_to_LMS(vec3 XYZ) {
+            vec3 XYZ_to_Cone(vec3 XYZ) {
                 mat3 M = mat3(
-                     0.3592, 0.6976, -0.0358,
-                    -0.1922, 1.1004,  0.0755,
-                     0.0070, 0.0749,  0.8434);
+                     0.41478972, 0.579999,  0.0146480,
+                    -0.2015100,  1.120649,  0.0531008,
+                    -0.0166008,  0.264800,  0.6684799);
                 return XYZ * M;
             }
 
-            vec3 LMS_to_XYZ(vec3 LMS) {
+            vec3 Cone_to_XYZ(vec3 LMS) {
                 mat3 M = mat3(
-                     2.070180056695613509600, -1.326456876103021025500,  0.206616006847855170810,
-                     0.364988250032657479740,  0.680467362852235141020, -0.045421753075853231409,
-                    -0.049595542238932107896, -0.049421161186757487412,  1.187995941732803439400);
+                     1.9242264357876067,  -1.0047923125953657,  0.037651404030618,
+                     0.35031676209499907,  0.7264811939316552, -0.06538442294808501,
+                    -0.09098281098284752, -0.3127282905230739,  1.5227665613052603);
                 return LMS * M;
             }
 
-            vec3 LMS_to_ICtCp(vec3 LMS) {
-                LMS.x = Y_to_ST2084(LMS.x);
-                LMS.y = Y_to_ST2084(LMS.y);
-                LMS.z = Y_to_ST2084(LMS.z);
+            vec3 Cone_to_Iab(vec3 LMS) {
                 mat3 M = mat3(
-                     2048,   2048,    0,
-                     6610, -13613, 7003,
-                    17933, -17390, -543) / 4096;
+                    0.5,       0.5,       0.0,
+                    3.524000, -4.066708,  0.542708,
+                    0.199076,  1.096799, -1.295875);
                 return LMS * M;
             }
 
-            vec3 ICtCp_to_LMS(vec3 ICtCp) {
+            vec3 Iab_to_Cone(vec3 Iab) {
                 mat3 M = mat3(
-                    0.99998889656284013833,  0.00860505014728705821,  0.11103437159861647860,
-                    1.00001110343715986160, -0.00860505014728705821, -0.11103437159861647860,
-                    1.00003206339100541200,  0.56004913547279000113, -0.32063391005412026469);
-                ICtCp *= M;
-                ICtCp.x = ST2084_to_Y(ICtCp.x);
-                ICtCp.y = ST2084_to_Y(ICtCp.y);
-                ICtCp.z = ST2084_to_Y(ICtCp.z);
-                return ICtCp;
+                    1.0,                 0.1386050432715393,   0.05804731615611886,
+                    0.9999999999999999, -0.1386050432715393,  -0.05804731615611886,
+                    0.9999999999999998, -0.09601924202631895, -0.8118918960560388);
+                return Iab * M;
             }
 
-            vec3 RGB_to_ICtCp(vec3 color) {
+            const float b = 1.15;
+            const float g = 0.66;
+
+            const float d = -0.56;
+            const float d0 = 1.6295499532821566e-11;
+
+            vec3 RGB_to_Jzazbz(vec3 color) {
                 color *= L_sdr;
+
                 color = RGB_to_XYZ(color);
-                color = XYZ_to_LMS(color);
-                color = LMS_to_ICtCp(color);
+
+                float Xm = (b * color.x) - ((b - 1.0) * color.z);
+                float Ym = (g * color.y) - ((g - 1.0) * color.x);
+
+                color = XYZ_to_Cone(vec3(Xm, Ym, color.z));
+
+                color.r = Y_to_ST2084(color.r);
+                color.g = Y_to_ST2084(color.g);
+                color.b = Y_to_ST2084(color.b);
+
+                color = Cone_to_Iab(color);
+
+                color.r = ((1.0 + d) * color.r) / (1.0 + (d * color.r)) - d0;
+
                 return color;
             }
 
-            vec3 ICtCp_to_RGB(vec3 color) {
-                color = ICtCp_to_LMS(color);
-                color = LMS_to_XYZ(color);
-                color = XYZ_to_RGB(color);
+            vec3 Jzazbz_to_RGB(vec3 color) {
+                color.r = (color.r + d0) / (1.0 + d - d * (color.r + d0));
+
+                color = Iab_to_Cone(color);
+
+                color.r = ST2084_to_Y(color.r);
+                color.g = ST2084_to_Y(color.g);
+                color.b = ST2084_to_Y(color.b);
+
+                color = Cone_to_XYZ(color);
+
+                float Xa = (color.x + ((b - 1.0) * color.z)) / b;
+                float Ya = (color.y + ((g - 1.0) * Xa)) / g;
+
+                color = XYZ_to_RGB(vec3(Xa, Ya, color.z));
+
                 color /= L_sdr;
+
                 return color;
             }
 
             float curve(float x) {
-                const float iw = Y_to_ST2084(L_hdr);
-                const float ow = Y_to_ST2084(L_sdr);
+                const float iw = RGB_to_Jzazbz(vec3(L_hdr / L_sdr)).x;
+                const float ow = RGB_to_Jzazbz(vec3(1.0)).x;
                 const float w = iw / ow;
                 return x / w;
             }
@@ -124,9 +149,9 @@ object ToneMappingIctcp : GLShaderCode() {
             }
 
             vec4 ${javaClass.name}(vec4 color) {
-                color.rgb = RGB_to_ICtCp(color.rgb);
+                color.rgb = RGB_to_Jzazbz(color.rgb);
                 color.rgb = tone_mapping_ictcp(color.rgb);
-                color.rgb = ICtCp_to_RGB(color.rgb);
+                color.rgb = Jzazbz_to_RGB(color.rgb);
 
                 return color;
             }
