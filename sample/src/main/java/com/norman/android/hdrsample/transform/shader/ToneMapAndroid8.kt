@@ -1,14 +1,14 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_FRAME_AVERAGE_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.ConstantParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ConstantParams.PQ_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 
 //参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
 
@@ -31,7 +31,7 @@ object ToneMapAndroid8 : ToneMap() {
         // Here we're mapping from HDR to SDR content, so interpolate using a
                         // Hermitian polynomial onto the smaller luminance range.
         float toneMapTargetNits(vec3 xyz) {
-            float maxInLumi = $MAX_FRAME_AVERAGE_LUMINANCE;
+            float maxInLumi = $MAX_CONTENT_LUMINANCE;
             float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
             xyz = xyz * libtonemap_applyBaseOOTFGain(xyz.y);
             float nits = xyz.y;

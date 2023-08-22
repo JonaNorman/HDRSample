@@ -1,17 +1,17 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_FRAME_AVERAGE_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.ConstantParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ConstantParams.PQ_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.GammaHLG.methodHLGGamma
 import com.norman.android.hdrsample.transform.shader.GammaPQ.methodPQEOTFInv
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.CURRENT_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 
 //参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
 
@@ -31,7 +31,7 @@ object ToneMapAndroid13 : ToneMap() {
                 if($COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){
                     return maxRGB * pow(maxRGB / $HLG_MAX_LUMINANCE, $methodHLGGamma($CURRENT_DISPLAY_LUMINANCE) - 1.0) * $MAX_DISPLAY_LUMINANCE / $HLG_MAX_LUMINANCE;
                 }
-                float maxInLumi = $MAX_FRAME_AVERAGE_LUMINANCE;
+                float maxInLumi = $MAX_CONTENT_LUMINANCE;
                 float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
                 float nits = maxRGB;
                 float x1 = maxOutLumi * 0.65;
