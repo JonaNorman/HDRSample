@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingUchimura : GLShaderCode() {
+object ToneMapUchimura : GLShaderCode() {
     override val code: String
         get() = """
             // Filmic curve by Hajime Uchimura. Also known as the "Gran Turismo curve".

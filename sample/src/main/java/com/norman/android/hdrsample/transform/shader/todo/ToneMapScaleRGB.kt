@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingScaleRGB : GLShaderCode() {
+object ToneMapScaleRGB : GLShaderCode() {
 
     /*
         https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/_dev/tone-mapping/linear_rgb.glsl

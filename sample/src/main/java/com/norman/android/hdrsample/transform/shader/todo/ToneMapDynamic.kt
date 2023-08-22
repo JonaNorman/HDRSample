@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 //https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/dynamic.glsl
-object ToneMappingDynamic : GLShaderCode() {
+object ToneMapDynamic : GLShaderCode() {
     override val code: String
         get() = """
             //!PARAM L_hdr

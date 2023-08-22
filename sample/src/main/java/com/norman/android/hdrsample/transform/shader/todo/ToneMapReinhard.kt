@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingReinhard : GLShaderCode() {
+object ToneMapReinhard : GLShaderCode() {
 
     // 通过ReinhardCurve曲线作为缩放值改变颜色
     // Extended mapping by Reinhard et al. 2002. which allows high luminances to burn out.

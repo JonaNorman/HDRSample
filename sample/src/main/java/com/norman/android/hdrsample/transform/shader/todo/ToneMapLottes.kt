@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingLottes : GLShaderCode() {
+object ToneMapLottes : GLShaderCode() {
     // Filmic curve by Timothy Lottes, Also known as the "AMD curve".
     // https://www.gdcvault.com/play/1023512/Advanced-Graphics-Techniques-Tutorial-Day
     override val code: String

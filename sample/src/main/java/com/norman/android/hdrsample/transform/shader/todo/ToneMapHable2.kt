@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingHable2 : GLShaderCode() {
+object ToneMapHable2 : GLShaderCode() {
     // Filmic curve by John Hable. Based on the "Uncharted 2", but updated with a better controllability.
     // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
     override val code: String

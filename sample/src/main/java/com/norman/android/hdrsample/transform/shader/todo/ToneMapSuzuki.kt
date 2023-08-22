@@ -2,7 +2,7 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingSuzuki : GLShaderCode() {
+object ToneMapSuzuki : GLShaderCode() {
     override val code: String
         get() = """
             // Hyperbola tone mapping by suzuki.

@@ -1,8 +1,8 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingBT2390 : GLShaderCode() {
+object ToneMapBT2390 : GLShaderCode() {
     // ITU-R BT.2390 EETF
     // https://www.itu.int/pub/R-REP-BT.2390
     override val code: String

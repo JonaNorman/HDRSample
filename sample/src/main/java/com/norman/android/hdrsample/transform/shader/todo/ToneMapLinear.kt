@@ -2,16 +2,18 @@ package com.norman.android.hdrsample.transform.shader.todo
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingIctcp : GLShaderCode() {
-
-    /*
-        https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/_dev/tone-mapping/linear_ictcp.glsl
-
-     */
+/**
+ * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/linear.glsl
+ */
+object ToneMapLinear : GLShaderCode() {
+    // Linear tone mapping of I in ICtCp.
     override val code: String
         get() = """
+        
+
             #define L_hdr 1000.0
             #define L_sdr 203.0
+
             const float pq_m1 = 0.1593017578125;
             const float pq_m2 = 78.84375;
             const float pq_c1 = 0.8359375;
@@ -127,7 +129,6 @@ object ToneMappingIctcp : GLShaderCode() {
                 color.rgb = RGB_to_ICtCp(color.rgb);
                 color.rgb = tone_mapping_ictcp(color.rgb);
                 color.rgb = ICtCp_to_RGB(color.rgb);
-
                 return color;
             }
         """.trimIndent()
