@@ -1,9 +1,9 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.transform.shader.ConstantParams.EPSILON
-import com.norman.android.hdrsample.transform.shader.ConstantParams.HDR_REFERENCE_WHITE
-import com.norman.android.hdrsample.transform.shader.ConstantParams.PI
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.EPSILON
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.PI
 
 object ColorSpaceConversion : GLShaderCode() {
 
@@ -32,7 +32,7 @@ object ColorSpaceConversion : GLShaderCode() {
     const val methodxyYToXYZ = "xyY_TO_XYZ"
 
     init {
-        includeList.add(ConstantParams)
+        includeList.add(MetaDataParams)
     }
 
 

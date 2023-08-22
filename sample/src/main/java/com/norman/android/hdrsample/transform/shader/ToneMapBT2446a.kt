@@ -16,8 +16,8 @@ object ToneMapBT2446a : GamutMap() {
             /* BT.2446-1-2021 method A */
             vec3 $methodGamutMap(vec3 x)
             {
-                const float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${ConstantParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
-                const float p_sdr = 1.0 + 32.0 * pow(${ConstantParams.HDR_REFERENCE_WHITE} / ${ConstantParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                const float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                const float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 vec3 xp = pow(x, vec3(1.0 / 2.4));
                 float y_hdr = dot(luma_coeff, xp);
 

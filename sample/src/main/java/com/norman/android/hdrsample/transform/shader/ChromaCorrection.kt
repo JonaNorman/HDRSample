@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.method
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToBT2020
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLabToLch
 import com.norman.android.hdrsample.transform.shader.ColorSpaceConversion.methodLchToLab
-import com.norman.android.hdrsample.transform.shader.ConstantParams.HDR_REFERENCE_WHITE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
 
 /**
@@ -24,7 +24,7 @@ object ChromaCorrection : GLShaderCode() {
 
     init {
         includeList.add(ColorSpaceConversion)
-        includeList.add(ConstantParams)
+        includeList.add(MetaDataParams)
     }
 
     override val code: String

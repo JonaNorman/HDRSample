@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.transform.shader.ConstantParams.HLG_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
 
 //参考代码:https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c
