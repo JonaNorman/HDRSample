@@ -2,7 +2,8 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingBT2460c : GLShaderCode() {
+//https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/bt2446c.glsl
+object ToneMapBT2446c : GLShaderCode() {
     // ITU-R BT.2446 Conversion Method C
     // https://www.itu.int/pub/R-REP-BT.2446
     override val code: String

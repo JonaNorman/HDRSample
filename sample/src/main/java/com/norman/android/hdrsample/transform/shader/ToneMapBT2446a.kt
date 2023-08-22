@@ -2,24 +2,22 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-object ToneMappingBT2460aHLG : GLShaderCode() {
+// 参考代码： https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr.glsl
+// ITU-R BT.2446 Conversion Method A
+// https://www.itu.int/pub/R-REP-BT.2446
+object ToneMapBT2446a : GamutMap() {
     override val code: String
         get() = """
-            // 参考代码： https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr_hlg2sdr.frag
-            #include shader/gamma/hlg.fsh
-            #include shader/gamma/bt709.fsh
-            #include shader/colorspace/color_gamut.fsh
-            const vec3 luma_coeff = vec3(0.2627, 0.6780, 0.0593); // luma weights for BT.2020
-            const float l_hdr = 1000.0;
-            const float l_sdr = 100.0;
-            const float p_hdr = 1.0 + 32.0 * pow(l_hdr / 10000.0, 1.0 / 2.4);
-            const float p_sdr = 1.0 + 32.0 * pow(l_sdr / 10000.0, 1.0 / 2.4);
+         
+            const vec3 luma_coeff = vec3(0.262700, 0.677998, 0.059302); // luma weights for BT.2020
             const float gcr = luma_coeff.r / luma_coeff.g;
             const float gcb = luma_coeff.b / luma_coeff.g;
 
             /* BT.2446-1-2021 method A */
-            vec3 tonemap(vec3 x)
+            vec3 $methodGamutMap(vec3 x)
             {
+                const float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${ConstantParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                const float p_sdr = 1.0 + 32.0 * pow(${ConstantParams.HDR_REFERENCE_WHITE} / ${ConstantParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 vec3 xp = pow(x, vec3(1.0 / 2.4));
                 float y_hdr = dot(luma_coeff, xp);
 
@@ -44,13 +42,6 @@ object ToneMappingBT2460aHLG : GLShaderCode() {
                 /* Convert from Y'Cb'Cr' to R'G'B' (still in BT.2020) */
                 float cg_tmo = -(gcr * cr_tmo + gcb * cb_tmo);
                 return y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo);
-            }
-
-            void main()
-            {
-                vec4 hdr = textureColor();
-                vec3 sdr = BT2020_TO_BT709(tonemap(HLG_EOTF(hdr.rgb)));
-                setOutColor(vec4(sdr, hdr.a));
             }
         """.trimIndent()
 }
