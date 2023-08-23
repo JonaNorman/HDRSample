@@ -25,7 +25,7 @@ object ToneMappingHable : ToneMap() {
 
             vec3 $methodToneMap(vec3 rgb) {
                 float sig_orig = max(max(rgb.r, rgb.g), rgb.b);
-                float peak = $MAX_CONTENT_LUMINANCE/ $HLG_MAX_LUMINANCE;
+                float peak = $MAX_CONTENT_LUMINANCE;
                 float sig = hable(sig_orig) / hable(peak);
                 return  rgb  * sig / sig_orig;
             }
