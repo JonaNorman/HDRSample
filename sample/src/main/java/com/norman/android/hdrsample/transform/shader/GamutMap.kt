@@ -7,5 +7,15 @@ import com.norman.android.hdrsample.opengl.GLShaderCode
  */
 abstract class GamutMap: GLShaderCode() {
 
-    val methodGamutMap = "GAMUT_MAP"
+     val methodGamutMap = "GAMUT_MAP"
+
+    object NONE : GamutMap() {
+        override val code: String
+            get() = """
+                vec3 $methodGamutMap(vec3 color){
+                    return color;
+                }
+            """.trimIndent()
+
+    }
 }

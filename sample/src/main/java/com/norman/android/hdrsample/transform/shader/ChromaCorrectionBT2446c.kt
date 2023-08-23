@@ -18,8 +18,6 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_
  */
 object ChromaCorrectionBT2446c : ChromaCorrection() {
 
-    private const val paramSigma = "SIGMA"//高光去饱和的程度
-
     override val code: String
         get() = """
         #define CHROMA_CORRECT_STRENGTH 0.05//高光去饱和调整程度
@@ -53,6 +51,7 @@ object ChromaCorrectionBT2446c : ChromaCorrection() {
            return x * M;
        }
 
+        // 注意输入的颜色不是0～1，而0～1是参考白下的颜色，大于1是高光颜色
        vec3 ${methodChromaCorrect}(vec3 color) {
            const float L_ref = $methodBt2020ToLab(vec3(1.0)).x;
            const float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE / $HDR_REFERENCE_WHITE)).x;
