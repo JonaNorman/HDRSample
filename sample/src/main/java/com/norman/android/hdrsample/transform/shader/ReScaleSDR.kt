@@ -16,7 +16,7 @@ object ReScaleSDR : ReScale() {
 
     override val code: String
         get() = """
-                vec3 $methodScale(vec3 color){
+                vec3 $methodScaleAbsolute(vec3 color){
                     if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_PQ){
                         return color*$PQ_MAX_LUMINANCE;
                     }else if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){
@@ -25,7 +25,25 @@ object ReScaleSDR : ReScale() {
                     return color; 
                 }
                 
-                vec3 $methodNormalize(vec3 color){
+                float $methodScaleNormalize(float color){
+                    if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_PQ){
+                        return color/$PQ_MAX_LUMINANCE;
+                    }else if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){
+                        return color/$HLG_MAX_LUMINANCE;
+                    }
+                    return color; 
+                }
+                
+                 vec3 $methodScaleNormalize(vec3 color){
+                    if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_PQ){
+                        return color/$PQ_MAX_LUMINANCE;
+                    }else if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){
+                        return color/$HLG_MAX_LUMINANCE;
+                    }
+                    return color; 
+                }
+                
+                vec3 $methodNormalizeDisplay(vec3 color){
                      return color / $MAX_DISPLAY_LUMINANCE;
                 }
             """.trimIndent()
