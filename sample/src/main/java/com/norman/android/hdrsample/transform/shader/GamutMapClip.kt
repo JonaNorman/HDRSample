@@ -9,10 +9,9 @@ object GamutMapClip: GamutMap() {
 
     override val code: String
         get() = """
-        vec4 $methodGamutMap(vec4 color) {
-            vec3 rgb = color.rgb;
-            rgb = $methodBt2020ToBt709(rgb);
-            color.rgb = clamp(rgb, 0.0, 1.0);
+        vec3 $methodGamutMap(vec3 color) {
+            color = $methodBt2020ToBt709(rgb);
+            color = clamp(color, 0.0, 1.0);
             return color;
         }
         """.trimIndent()

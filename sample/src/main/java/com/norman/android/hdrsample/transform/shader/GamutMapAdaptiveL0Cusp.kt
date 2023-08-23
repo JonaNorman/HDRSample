@@ -256,9 +256,9 @@ object GamutMapAdaptiveL0Cusp : GamutMap() {
            }
 
 
-           vec4 $methodGamutMap(vec4 color) {
-               vec3 rgb = $methodBt2020ToBt709(color.rgb);
-               color.rgb = gamut_clip_adaptive_L0_L_cusp(bt709Color, -1.0);
+           vec3 $methodGamutMap(vec3 color) {
+               color = $methodBt2020ToBt709(color);
+               color = gamut_clip_adaptive_L0_L_cusp(color, -1.0);
                return color;
            }
         """.trimIndent()

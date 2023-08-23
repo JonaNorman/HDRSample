@@ -37,9 +37,9 @@ object GamutMapCompress :GamutMap() {
             }
             
 
-            vec4 $methodGamutMap(vec4 color) {
+            vec3 $methodGamutMap(vec3 color) {
             
-                vec3 rgb = $methodBt2020ToBt709(color.rgb);
+                vec3 rgb = $methodBt2020ToBt709(color);
                 vec3 dl = vec3(cyan_limit, magenta_limit, yellow_limit);
 
                 // Amount of outer gamut to affect
@@ -59,7 +59,7 @@ object GamutMapCompress :GamutMap() {
                 );
             
                 // Inverse RGB Ratios to RGB
-                color.rgb = ac - cd * abs(ac);
+                color = ac - cd * abs(ac);
                 
                 return color;
             }
