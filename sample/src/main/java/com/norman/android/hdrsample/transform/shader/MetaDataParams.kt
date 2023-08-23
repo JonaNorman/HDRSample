@@ -9,7 +9,7 @@ object MetaDataParams : GLShaderCode() {
     const val CURRENT_DISPLAY_LUMINANCE ="CURRENT_DISPLAY_LUMINANCE"// 当前亮度
     const val MAX_FRAME_AVERAGE_LUMINANCE ="MAX_FRAME_AVERAGE_LUMINANCE"// 最大平均亮度
     const val MAX_CONTENT_LUMINANCE ="MAX_CONTENT_LUMINANCE"// 最大平均亮度
-    const val COLOR_SPACE ="COLOR_SPACE"//
+    const val VIDEO_COLOR_SPACE ="VIDEO_COLOR_SPACE"//
     const val COLOR_SPACE_BT2020_PQ ="COLOR_SPACE_BT2020_PQ"//
     const val COLOR_SPACE_BT2020_HLG ="COLOR_SPACE_BT2020_HLG"//
     const val PI ="PI"
@@ -24,7 +24,7 @@ object MetaDataParams : GLShaderCode() {
               uniform float $CURRENT_DISPLAY_LUMINANCE;// 当前亮度
               uniform float $MAX_FRAME_AVERAGE_LUMINANCE;// 最大平均亮度
               uniform float $MAX_CONTENT_LUMINANCE;// 最大亮度
-              uniform int $COLOR_SPACE;// 最大平均亮度
+              uniform int $VIDEO_COLOR_SPACE;// 颜色空间
               #define $COLOR_SPACE_BT2020_PQ ${VideoOutput.COLOR_SPACE_BT2020_PQ}
               #define $COLOR_SPACE_BT2020_HLG ${VideoOutput.COLOR_SPACE_BT2020_HLG}
               #define  $PI  3.1415926 //圆周率

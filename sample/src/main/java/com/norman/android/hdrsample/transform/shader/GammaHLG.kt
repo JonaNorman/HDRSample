@@ -2,8 +2,6 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.CURRENT_DISPLAY_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_LUMINANCE

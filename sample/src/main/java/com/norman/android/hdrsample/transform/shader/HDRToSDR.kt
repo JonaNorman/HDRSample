@@ -3,8 +3,6 @@ package com.norman.android.hdrsample.transform.shader
 import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
 
 class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: ToneMap) : GLShaderCode() {
@@ -35,9 +33,9 @@ class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: 
             ${gamutMap.code}
             
             vec3 scaleLinear(vec3 color) {
-               if(${MetaDataParams.COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
+               if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
                     return color*$HLG_MAX_LUMINANCE/$HDR_REFERENCE_WHITE;
-               }else if(${MetaDataParams.COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
+               }else if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
                     return color*$PQ_MAX_LUMINANCE/$HDR_REFERENCE_WHITE;
                }
                return color;         
@@ -49,9 +47,9 @@ class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: 
               vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);
               vec3 rgb = textureColor.rgb;
               vec3 linearColor;
-              if(${MetaDataParams.COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
+              if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
                    linearColor = ${GammaHLG.methodHLGEOTF}(rgb);
-              }else if(${MetaDataParams.COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
+              }else if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
                    linearColor = ${GammaPQ.methodPQEOTF}(rgb);
               }
               vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(linearColor);
