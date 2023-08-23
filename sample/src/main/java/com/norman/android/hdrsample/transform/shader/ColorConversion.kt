@@ -31,10 +31,6 @@ object ColorConversion : GLShaderCode() {
     const val methodXYZToxyY = "XYZ_TO_xyY"
     const val methodxyYToXYZ = "xyY_TO_XYZ"
 
-    init {
-        includeList.add(MetaDataParams)
-    }
-
 
     override val code: String
         get() = """
@@ -59,7 +55,7 @@ object ColorConversion : GLShaderCode() {
                                            -1.537383,1.875968,-0.203977, \
                                            -0.498611,0.041555, 1.056972)
                                                        
-        #define XYZD65_TO_XYZD50_MAT3  mat3(1.04793,0.029628,-0.009243,\
+        #define XYZD65_TO_XYZD50_MAT3  mat3(1.047930,0.029628,-0.009243,\
                                                0.022947,0.990434,0.015055,\
                                                -0.050192,-0.017074,0.751874)\    
                
@@ -80,15 +76,15 @@ object ColorConversion : GLShaderCode() {
         {
             return BT709_TO_BT2020_MAT3 * x;
         }
+        
+        vec3 $methodXYZToBt709(vec3 x)
+        {
+            return XYZ_TO_BT709_MAT3 * x;
+        }
 
         vec3 $methodBt2020ToXYZ(vec3 x)
         {
             return BT2020_TO_XYZ_MAT3 * x;
-        }
-
-        vec3 $methodXYZToBt709(vec3 x)
-        {
-            return XYZ_TO_BT709_MAT3 * x;
         }
 
         vec3 $methodXYZToBt2020(vec3 x)

@@ -7,9 +7,6 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  */
 object GamutMapClip: GamutMap() {
 
-    init {
-        includeList.add(ColorConversion)
-    }
     override val code: String
         get() = """
         vec4 $methodGamutMap(vec4 color) {

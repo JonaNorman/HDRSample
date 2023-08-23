@@ -18,19 +18,20 @@ object GammaBT1886 : GLShaderCode() {
         #define BT18886_b   (pow(BT1886_LB, BT1886_GAMMA_INV) / (pow(BT1886_LW, BT1886_GAMMA_INV) - pow(BT1886_LB, BT1886_GAMMA_INV)))
 
 
-        // L = a(max[(V+b),0])^g
-        float $methodBT1886EOTF(float L) {
+        float $methodBT1886OETF(float L) {
             float a = BT18886_a;
             float b = BT18886_b;
             float V = pow(max(L / a, 0.0), BT1886_GAMMA_INV) - b;
             return V;
         }
-        
-        float $methodBT1886OETF(float L) {
+
+        // L = a(max[(V+b),0])^g
+        float $methodBT1886EOTF(float V) {
             float a = BT18886_a;
             float b = BT18886_b;
             float L = a * pow(max(V + b, 0.0), BT1886_GAMMA);
             return L;
         }
+        
         """.trimIndent()
 }

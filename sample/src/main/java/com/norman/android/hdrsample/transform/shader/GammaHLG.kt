@@ -2,7 +2,11 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.CURRENT_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_LUMINANCE
 
 // HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
 object GammaHLG : GLShaderCode() {
@@ -14,10 +18,6 @@ object GammaHLG : GLShaderCode() {
     const val methodHLGEOTF  = "HLG_EOTF"
 
 
-    init {
-        includeList.add(ColorConversion)
-        includeList.add(MetaDataParams)
-    }
     override val code: String
         get() = """
         #define  HLG_A  0.17883277// ABC三个参数是为了平滑连接HLG的两端曲线
@@ -44,23 +44,22 @@ object GammaHLG : GLShaderCode() {
         // HLG的系统伽马，根据设备亮度调整，1000亮度时候系统伽马是1.2，
         float $methodHLGGamma(float lw){
             lw = max(lw,HLG_MIN_BRIGHTNESS_NITS);
-            return 1.2+0.42*log(lw/$HDR_REFERENCE_WHITE)/log(10.0);
+            return 1.2+0.42*log(lw/$HLG_MAX_LUMINANCE)/log(10.0);
         }
 
-        vec3 $methodHLGOOTF(vec3 x, float lw)
+        vec3 $methodHLGOOTF(vec3 x)
         {
-            return x * pow($methodBt2020ToXYZ(x).y,$methodHLGGamma(lw)-1.0);
+            return x * pow($methodBt2020ToXYZ(x).y,$methodHLGGamma($MAX_DISPLAY_LUMINANCE)-1.0);
         }
 
-        vec3 $methodHLGBlackLift(vec3 x, vec2 range){//调整黑电平，range表示亮度的范围，x表示最小，y表示最大
-            float b = sqrt(3.0 * pow(range.x/range.y, 1.0/$methodHLGGamma(range.y)));
+        vec3 $methodHLGBlackLift(vec3 x){//调整黑电平，range表示亮度的范围，x表示最小，y表示最大
+            float b = sqrt(3.0 * pow($MIN_DISPLAY_LUMINANCE/$MAX_DISPLAY_LUMINANCE, 1.0/$methodHLGGamma($MAX_DISPLAY_LUMINANCE)));
             return max(vec3(0.0), (1.0-b)*x + b);
         }
 
-
-        vec3 $methodHLGEOTF(vec3 x, vec2 range)
+        vec3 $methodHLGEOTF(vec3 x)
         {
-            return $methodHLGOOTF($methodHLGOETFInv($methodHLGBlackLift(x, range)), range.y);
+            return $methodHLGOOTF($methodHLGOETFInv($methodHLGBlackLift(x)));
         }
         """.trimIndent()
 

@@ -15,9 +15,6 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  */
 object GamutMapCompress :GamutMap() {
 
-    init {
-        includeList.add(ColorConversion)
-    }
     override val code: String
         get() = """
             #define cyan_limit 1.518705262732682

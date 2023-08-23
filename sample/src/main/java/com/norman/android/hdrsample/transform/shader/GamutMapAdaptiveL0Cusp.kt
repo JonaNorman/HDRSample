@@ -11,10 +11,6 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  */
 object GamutMapAdaptiveL0Cusp : GamutMap() {
 
-    init {
-        includeList.add(ColorConversion)
-    }
-
     override val code: String
         get() = """
         
