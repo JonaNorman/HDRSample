@@ -21,7 +21,7 @@ object GammaBT709 : GLShaderCode() {
         
         vec3 $methodBt709EOTF(vec3 x)
         {
-            return mix(x / 4.5,   pow((V + (BT709_ALPHA - 1.0)) / BT709_ALPHA, BT709_GAMMA), step(BT709_BETA*4.5, x));
+            return mix(x / 4.5,   pow((x + (BT709_ALPHA - 1.0)) / BT709_ALPHA, vec3(BT709_GAMMA)), step(BT709_BETA*4.5, x));
         }
         """.trimIndent()
 }

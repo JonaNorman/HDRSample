@@ -6,7 +6,6 @@ import android.opengl.GLES20;
 import androidx.annotation.IntDef;
 
 import com.norman.android.hdrsample.opengl.GLMatrix;
-import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.lang.annotation.Retention;
@@ -27,20 +26,6 @@ class GLTextureRenderer extends GLRenderer {
 
     private static final int VERTEX_LENGTH = 2;
 
-    private static final float[] POSITION_COORDINATES = {
-            -1.0f, -1.0f,//left bottom
-            1.0f, -1.0f,//right bottom
-            -1.0f, 1.0f,//left top
-            1.0f, 1.0f,//right top
-    };
-
-
-    private static final float[] TEXTURE_COORDINATES = {
-            0.0f, 0.0f,//left bottom
-            1.0f, 0.0f,//right bottom
-            0.0f, 1.0f,//left top
-            1.0f, 1.0f,//right  top
-    };
 
     private static final String FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
             "precision mediump float;\n" +
@@ -99,8 +84,8 @@ class GLTextureRenderer extends GLRenderer {
 
     public GLTextureRenderer(@TextureType int textureType) {
         this.textureType = textureType;
-        positionCoordinateBuffer = BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
-        textureCoordinateBuffer = BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
+        positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
+        textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();
     }
 
 

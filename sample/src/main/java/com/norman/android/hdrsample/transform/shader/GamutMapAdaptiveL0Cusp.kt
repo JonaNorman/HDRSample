@@ -261,5 +261,5 @@ object GamutMapAdaptiveL0Cusp : GamutMap() {
                color = gamut_clip_adaptive_L0_L_cusp(color, -1.0);
                return color;
            }
-        """.trimIndent()
+           """.trimIndent()
 }

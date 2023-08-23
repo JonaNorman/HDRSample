@@ -41,27 +41,7 @@ public class AndroidTexturePlayerRenderer {
     }
 
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
-        ByteBuffer hdrStaticInfo = MediaFormatUtil.getByteBuffer(outputFormat, MediaFormat.KEY_HDR_STATIC_INFO);
-        if (hdrStaticInfo != null) {
-            hdrStaticInfo.clear();
-            hdrStaticInfo.position(1);
-            hdrStaticInfo.limit(hdrStaticInfo.capacity());
-            hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
-            ShortBuffer shortBuffer = hdrStaticInfo.asShortBuffer();
-            int maxFrameAverageLuminance = shortBuffer.get(11);
-//            hdrStaticInfo.putShort((short) ((primaryRChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((primaryRChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((primaryGChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((primaryGChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((primaryBChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((primaryBChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((whitePointChromaticityX() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) ((whitePointChromaticityY() * MAX_CHROMATICITY) + 0.5f));
-//            hdrStaticInfo.putShort((short) (maxMasteringLuminance() + 0.5f));
-//            hdrStaticInfo.putShort((short) (minMasteringLuminance() + 0.5f));
-//            hdrStaticInfo.putShort((short) maxContentLuminance());
-//            hdrStaticInfo.putShort((short) maxFrameAverageLuminance());
-        }
+
 
     }
 

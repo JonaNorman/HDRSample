@@ -15,7 +15,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_
  *
  * //
  */
-object ToneMapBT2446a : GamutMap() {
+object ToneMapBT2446a : ToneMap() {
     override val code: String
         get() = """
          
@@ -24,12 +24,12 @@ object ToneMapBT2446a : GamutMap() {
             const float gcb = luma_coeff.b / luma_coeff.g;
 
             /* BT.2446-1-2021 method A */
-            vec3 $methodGamutMap(vec3 color)
+            vec3 $methodToneMap(vec3 color)
             {
                 color = ${ReScale.methodScaleNormalize}(color);//输入需要归一化
-                const float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
-                const float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
-                vec3 xp = pow(x, vec3(1.0 / 2.4));
+                float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                vec3 xp = pow(color, vec3(1.0 / 2.4));
                 float y_hdr = dot(luma_coeff, xp);
 
                 /* Step 1: convert signal to perceptually linear space */
@@ -52,9 +52,9 @@ object ToneMapBT2446a : GamutMap() {
 
                 /* Convert from Y'Cb'Cr' to R'G'B' (still in BT.2020) */
                 float cg_tmo = -(gcr * cr_tmo + gcb * cb_tmo);
-                color = y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo)
+                color = y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo);
                 color = color*$MAX_DISPLAY_LUMINANCE;//输入的范围要0-MAX_DISPLAY_LUMINANCE
                 return color;
             }
-        """.trimIndent()
+            """.trimIndent()
 }

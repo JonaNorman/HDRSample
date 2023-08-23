@@ -13,7 +13,7 @@ import com.norman.android.hdrsample.util.AppUtil;
 import com.norman.android.hdrsample.util.DisplayUtil;
 
 
-public class ScreenBrightnessObserver extends ContentObserver {
+class ScreenBrightnessObserver extends ContentObserver {
 
     private BrightnessChangeListener listener;
     private boolean hasListen;

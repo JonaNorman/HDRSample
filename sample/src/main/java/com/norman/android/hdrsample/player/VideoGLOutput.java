@@ -17,6 +17,8 @@ import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -59,6 +61,8 @@ public class VideoGLOutput extends VideoOutput {
     private boolean profile10Bit;
 
     private @ColorSpace int colorSpace;
+
+    private int maxContentLuminance;
     private int colorRange;
     private VideoView videoView;
 
@@ -168,6 +172,29 @@ public class VideoGLOutput extends VideoOutput {
         super.onOutputFormatChanged(outputFormat);
         colorRange = MediaFormatUtil.getColorRange(outputFormat);
         colorSpace = MediaFormatUtil.getInteger(outputFormat,KEY_COLOR_SPACE,COLOR_SPACE_SDR);
+        ByteBuffer hdrStaticInfo = MediaFormatUtil.getByteBuffer(outputFormat, MediaFormat.KEY_HDR_STATIC_INFO);
+        if (hdrStaticInfo != null) {
+            hdrStaticInfo.clear();
+            hdrStaticInfo.position(1);
+            hdrStaticInfo.limit(hdrStaticInfo.capacity());
+            hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
+            ShortBuffer shortBuffer = hdrStaticInfo.asShortBuffer();
+            int primaryRChromaticityX = shortBuffer.get(0);
+            int primaryRChromaticityY = shortBuffer.get(1);;
+            int primaryGChromaticityX = shortBuffer.get(2);;
+            int primaryGChromaticityY = shortBuffer.get(3);;
+            int primaryBChromaticityX = shortBuffer.get(4);;
+            int primaryBChromaticityY = shortBuffer.get(5);;
+            int whitePointChromaticityX = shortBuffer.get(6);;
+            int whitePointChromaticityY = shortBuffer.get(7);;
+            int maxMasteringLuminance = shortBuffer.get(8);;
+            int minMasteringLuminance = shortBuffer.get(9);;
+            maxContentLuminance = shortBuffer.get(10);;
+            maxContentLuminance =   maxContentLuminance <=0? 1000: maxContentLuminance;
+            int maxFrameAverageLuminance = shortBuffer.get(11);
+        }else{
+            maxContentLuminance = 0;
+        }
         if (bufferMode) {
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
             int sliceHeight = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_SLICE_HEIGHT);
@@ -219,6 +246,7 @@ public class VideoGLOutput extends VideoOutput {
             backTarget.setRenderSize(width, height);
             textureRenderer.renderToTarget(frontTarget);
             frontTarget.setColorSpace(colorSpace);
+            frontTarget.setMaxContentLuminance(maxContentLuminance);
             for (GLVideoTransform videoTransform : transformList) {
                 videoTransform.renderToTarget(frontTarget, backTarget);
                 if (videoTransform.transformSuccess) {

@@ -29,6 +29,10 @@ public abstract class GLVideoTransform  extends GLRenderer {
         return inputTarget.colorSpace;
     }
 
+    protected final @VideoOutput.ColorSpace int getInputMaxContentLuminance() {
+        return inputTarget.maxContentLuminance;
+    }
+
 
     protected  final int getOutputWidth(){
         return outputTarget.renderWidth;
@@ -50,6 +54,7 @@ public abstract class GLVideoTransform  extends GLRenderer {
         if (renderTarget instanceof GLRenderTextureTarget){
             GLRenderTextureTarget outTextureTarget  = (GLRenderTextureTarget) renderTarget;
             outTextureTarget.setColorSpace(inputTarget.colorSpace);
+            outTextureTarget.setMaxContentLuminance(inputTarget.maxContentLuminance);
             outTextureTarget.setBitDepth(inputTarget.bitDepth);
         }
         super.renderToTarget(renderTarget);
@@ -59,6 +64,14 @@ public abstract class GLVideoTransform  extends GLRenderer {
         transformSuccess = true;
     }
 
+    protected final void success(@VideoOutput.ColorSpace int colorSpace,int maxContentLuminance){
+        transformSuccess = true;
+        if (outputTarget instanceof GLRenderTextureTarget){
+            GLRenderTextureTarget outTextureTarget = (GLRenderTextureTarget) outputTarget;
+            outTextureTarget.setColorSpace(colorSpace);
+            outTextureTarget.setMaxContentLuminance(maxContentLuminance);
+        }
+    }
     protected final void success(@VideoOutput.ColorSpace int colorSpace){
         transformSuccess = true;
         if (outputTarget instanceof GLRenderTextureTarget){

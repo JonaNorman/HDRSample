@@ -57,12 +57,12 @@ object ColorConversion : GLShaderCode() {
                                                        
         #define XYZD65_TO_XYZD50_MAT3  mat3(1.047930,0.029628,-0.009243,\
                                                0.022947,0.990434,0.015055,\
-                                               -0.050192,-0.017074,0.751874)\    
+                                               -0.050192,-0.017074,0.751874)   
                
                                                     
-        #define XYZD50_TO_XYZD65_MAT3  mat3(0.955473,-0.028370,0.012314,\ 
-                                               -0.023099,1.009995,-0.020508,\ 
-                                               0.063259,0.021041,1.330366)\    
+        #define XYZD50_TO_XYZD65_MAT3  mat3(0.955473, -0.028370,0.012314,\
+                                                -0.023099,1.009995,-0.020508,\
+                                                0.063259,0.021041,1.330366) 
         
         #define  LAB_DELTA  6.0 / 29.0
         #define  LAB_DELTAC  LAB_DELTA * 2.0 / 3.0                                                                                  
@@ -118,9 +118,9 @@ object ColorConversion : GLShaderCode() {
             float X = XYZ.x;
             float Y = XYZ.y;
             float Z = XYZ.z;
-            X = labf1(X / XYZ_ref.x, LAB_DELTA);
-            Y = labf1(Y / XYZ_ref.y, LAB_DELTA);
-            Z = labf1(Z / XYZ_ref.z, LAB_DELTA);
+            X = labf1(X / XYZ_ref.x);
+            Y = labf1(Y / XYZ_ref.y);
+            Z = labf1(Z / XYZ_ref.z);
             float L = 116.0 * Y - 16.0;
             float a = 500.0 * (X - Y);
             float b = 200.0 * (Y - Z);
@@ -134,28 +134,28 @@ object ColorConversion : GLShaderCode() {
             float Y = (L + 16.0) / 116.0;
             float X = Y + a / 500.0;
             float Z = Y - b / 200.0;
-            X = labf2(X, LAB_DELTA) * XYZ_ref.x;
-            Y = labf2(Y, LAB_DELTA) * XYZ_ref.y;
-            Z = labf2(Z, LAB_DELTA) * XYZ_ref.z;
+            X = labf2(X) * XYZ_ref.x;
+            Y = labf2(Y) * XYZ_ref.y;
+            Z = labf2(Z) * XYZ_ref.z;
             return vec3(X, Y, Z);
         }
         
 
-       vec3 $methodBt2020ToLab(vec3 color) {
+        vec3 $methodBt2020ToLab(vec3 color) {
            color  = $methodBt2020ToXYZ(color);
            color  = $methodXYZD65ToXYZD50(color);
            color  = $methodXYZToLab(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
            return color;
-       }
+        }
 
-       vec3 $methodLabToBT2020(vec3 color) {
+        vec3 $methodLabToBT2020(vec3 color) {
            color  = $methodLabToXYZ(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
            color  = $methodXYZD50ToXYZD65(color);
            color  = $methodXYZToBt2020(color);
            return color;
-       }
+        }
        
-         vec3 $methodLabToLch(vec3 Lab) {
+        vec3 $methodLabToLch(vec3 Lab) {
            float a = Lab.y;
            float b = Lab.z;
            float C = length(vec2(a, b));
@@ -166,15 +166,15 @@ object ColorConversion : GLShaderCode() {
                H = mod((mod(H, 360.0) + 360.0), 360.0);
            }
            return vec3(Lab.x, C, H);
-       }
+        }
 
-       vec3 $methodLchToLab(vec3 LCH) {
+        vec3 $methodLchToLab(vec3 LCH) {
            float C = max(LCH.y, 0.0);
            float H = LCH.z * $PI / 180.0;
            float a = C * cos(H);
            float b = C * sin(H);
            return vec3(LCH.x, a, b);
-       }
+        }
        
         vec3 $methodXYZToxyY(vec3 XYZ) {
             float divisor = XYZ.x + XYZ.y + XYZ.z;

@@ -25,6 +25,8 @@ class GLRenderTextureTarget extends GLRenderTarget {
     @VideoOutput.ColorSpace
     int colorSpace = VideoOutput.COLOR_SPACE_SDR;
 
+    int maxContentLuminance;
+
     void setBitDepth(int bitDepth) {
         if (this.bitDepth != bitDepth && renderWidth >= 0 && renderHeight >= 0) {
             this.bitDepth = bitDepth;
@@ -34,6 +36,11 @@ class GLRenderTextureTarget extends GLRenderTarget {
 
     void setColorSpace(@VideoOutput.ColorSpace int colorSpace) {
         this.colorSpace = colorSpace;
+    }
+
+
+    public void setMaxContentLuminance(int maxContentLuminance) {
+        this.maxContentLuminance = maxContentLuminance;
     }
 
     @Override

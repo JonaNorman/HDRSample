@@ -32,6 +32,5 @@ object GammaBT1886 : GLShaderCode() {
             float L = a * pow(max(V + b, 0.0), BT1886_GAMMA);
             return L;
         }
-        
         """.trimIndent()
 }

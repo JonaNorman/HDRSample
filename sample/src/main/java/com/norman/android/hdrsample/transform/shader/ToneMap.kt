@@ -8,4 +8,19 @@ import com.norman.android.hdrsample.opengl.GLShaderCode
 abstract class ToneMap: GLShaderCode() {
 
     val methodToneMap = "TONE_MAP"
+
+    companion object{
+        @JvmField
+        val  NONE = object: ToneMap() {
+            override val code: String
+                get() = """
+                vec3 $methodToneMap(vec3 color){
+                    return color;
+                }
+                """.trimIndent()
+
+        }
+    }
+
+
 }

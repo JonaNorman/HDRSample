@@ -36,7 +36,7 @@ object GammaPQ:GLShaderCode() {
         
         vec3 $methodPQOOTF(vec3 x){
              vec3 x1 =  mix(267.84*x, 1.099*pow(59.5208*x,vec3(0.45))-0.099, step(0.0003024, x));
-             return 100.0* pow(x1,2.4);
+             return 100.0* pow(x1,vec3(2.4));
         }
         
          vec3 $methodPQOETF(vec3 x){

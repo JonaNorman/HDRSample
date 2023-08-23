@@ -23,38 +23,38 @@ object ChromaCorrectionBT2446c : ChromaCorrection() {
         #define CHROMA_CORRECT_STRENGTH 0.05//高光去饱和调整程度
         #define CROSSTALK_STRENGTH 0.04 //减少颜色rgb里色度的串扰程度 0~0.33
         
-
         // 这个公式在文档中有
-       float chroma_correction(float L, float Lref, float Lmax) {
+        float chroma_correction(float L, float Lref, float Lmax) {
            if (L > Lref) {//大于参考白表示高光，返回的值表示饱和度，亮度L越大饱和度越小
                return max(1.0 - CHROMA_CORRECT_STRENGTH * (L - Lref) / (Lmax - Lref), 0.0);
            }
            return 1.0;
-       }
-
-       vec3 crosstalk(vec3 x) {
-           float b = 1.0 - 2.0 * CROSSTALK_STRENGTH;
+        }
+        
+        vec3 crosstalk(vec3 x) {
+           float a = CROSSTALK_STRENGTH;
+           float b = 1.0 - 2.0 * a;
            mat3  M = mat3(
                b, a, a,
                a, b, a,
                a, a, b);
            return x * M;
-       }
-
-       vec3 crosstalk_inv(vec3 x) {
+        }
+        vec3 crosstalk_inv(vec3 x) {
+           float a = CROSSTALK_STRENGTH;
            float b = 1.0 - a;
-           float c = 1.0 - 3.0 * CROSSTALK_STRENGTH;
+           float c = 1.0 - 3.0 * a;
            mat3  M = mat3(
                 b, -a, -a,
                -a,  b, -a,
                -a, -a,  b) / c;
            return x * M;
-       }
+        }
 
         // 注意输入的颜色不是0～1，而0～MAX_CONTENT_LUMINANCE，大于HDR_REFERENCE_WHITE是高光颜色
-       vec3 ${methodChromaCorrect}(vec3 color) {
-           const float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;
-           const float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE)).x;
+        vec3 ${methodChromaCorrect}(vec3 color) {
+           float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;
+           float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE)).x;
            color = crosstalk(color);
            color = $methodBt2020ToLab(color);
            color = $methodLabToLch(color);
@@ -63,6 +63,6 @@ object ChromaCorrectionBT2446c : ChromaCorrection() {
            color = $methodLabToBT2020(color);
            color = crosstalk_inv(color);
            return color;
-       }
+        }
         """.trimIndent()
 }

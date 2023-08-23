@@ -63,5 +63,5 @@ object GamutMapCompress :GamutMap() {
                 
                 return color;
             }
-        """.trimIndent()
+            """.trimIndent()
 }

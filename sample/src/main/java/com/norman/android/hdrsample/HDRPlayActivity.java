@@ -14,6 +14,11 @@ import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
+import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
+import com.norman.android.hdrsample.transform.shader.ChromaCorrection;
+import com.norman.android.hdrsample.transform.shader.GamutMap;
+import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
+import com.norman.android.hdrsample.transform.shader.ToneMapBT2446a;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -22,7 +27,7 @@ import java.util.List;
 
 public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickListener {
     VideoPlayer videoPlayer;
-    VideoView surfaceView;
+    VideoView videoView;
     CubeLutVideoTransform videoTransform;
 
     AlertDialog cubeLutDialog;
@@ -34,6 +39,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
     List<String> lutNameList = new ArrayList<>();
 
     int selectLutPosition;
+    HDRToSDRVideoTransform hdrToSDRVideoTransform;
 
     boolean faa = true;
     @Override
@@ -41,7 +47,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
-        surfaceView = findViewById(R.id.VideoPlayerView);
+        videoView = findViewById(R.id.VideoPlayerView);
         VideoGLOutput videoOutput = VideoGLOutput.create();
         videoPlayer = VideoPlayer.create(videoOutput);
 //        1.mp4
@@ -58,10 +64,15 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 //        video_1280x720_hevc_hdr10_static_3mbps.mp4
 //        video_h265_hdr10plus.mp4
 
-        videoPlayer.setSource(AssetFileSource.create("video/Rec2020-222000000.mp4"));
+        videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
+        hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
+        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrection.NONE, GamutMap.NONE, ToneMapBT2446a.NONE);
+        hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
         videoOutput.addVideoTransform(videoTransform);
-        videoOutput.setOutputVideoView(surfaceView);
+        videoOutput.addVideoTransform(hdrToSDRVideoTransform);
+        videoOutput.setOutputVideoView(videoView);
+
 
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);

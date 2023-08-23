@@ -7,7 +7,6 @@ import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
 import com.norman.android.hdrsample.player.GLVideoTransform;
 import com.norman.android.hdrsample.player.VideoOutput;
-import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;
@@ -16,21 +15,6 @@ import java.nio.FloatBuffer;
 public class CubeLutVideoTransform extends GLVideoTransform {
 
     private static final int VERTEX_LENGTH = 2;
-
-    private static final float POSITION_COORDINATES[] = {
-            -1.0f, -1.0f,//left bottom
-            1.0f, -1.0f,//right bottom
-            -1.0f, 1.0f,//left top
-            1.0f, 1.0f,//right top
-    };
-
-
-    private static final float TEXTURE_COORDINATES[] = {
-            0.0f, 0.0f,//left bottom
-            1.0f, 0.0f,//right bottom
-            0.0f, 1.0f,//left top
-            1.0f, 1.0f,//right  top
-    };
 
     private static final String VERTEX_SHADER = "#version 300 es\n" +
             "in vec4 position;\n" +
@@ -92,8 +76,8 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
 
     public CubeLutVideoTransform() {
-        positionCoordinateBuffer = BufferUtil.createDirectFloatBuffer(POSITION_COORDINATES);
-        textureCoordinateBuffer = BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES);
+        positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
+        textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();
     }
 
     @Override
@@ -191,7 +175,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.COLOR_SPACE_SDR);
+        success(VideoOutput.COLOR_SPACE_SDR,0);
     }
 
 

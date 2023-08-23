@@ -83,7 +83,7 @@ public class GLESUtil {
             GLES20.glGetShaderiv(shaderObjectId, GLES20.GL_COMPILE_STATUS, status, 0);
             if (status[0] == 0) {
                 String error = GLES20.glGetShaderInfoLog(shaderObjectId);
-                LogUtil.e(TAG, "can not compile shader: " + error);
+                LogUtil.e(TAG, "can not compile shader: " + error+"\n"+shaderCode);
                 GLES20.glDeleteShader(shaderObjectId);
                 return -1;
             }
