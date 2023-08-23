@@ -142,7 +142,6 @@ object ColorConversion : GLShaderCode() {
         
 
        vec3 $methodBt2020ToLab(vec3 color) {
-           color *= $HDR_REFERENCE_WHITE;
            color  = $methodBt2020ToXYZ(color);
            color  = $methodXYZD65ToXYZD50(color);
            color  = $methodXYZToLab(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
@@ -153,7 +152,6 @@ object ColorConversion : GLShaderCode() {
            color  = $methodLabToXYZ(color,$methodBt2020ToXYZ(vec3($HDR_REFERENCE_WHITE)));
            color  = $methodXYZD50ToXYZD65(color);
            color  = $methodXYZToBt2020(color);
-           color /= $HDR_REFERENCE_WHITE;
            return color;
        }
        

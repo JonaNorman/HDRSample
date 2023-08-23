@@ -25,6 +25,7 @@ class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: 
             
             ${MetaDataParams.code}
             ${ColorConversion.code}
+            ${ReScaleSDR.code}
             ${GammaHLG.code}
             ${GammaPQ.code}
             ${GammaBT709.code}
@@ -32,16 +33,6 @@ class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: 
             ${toneMap.code}
             ${gamutMap.code}
             
-            vec3 scaleLinear(vec3 color) {
-               if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
-                    return color*$HLG_MAX_LUMINANCE/$HDR_REFERENCE_WHITE;
-               }else if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
-                    return color*$PQ_MAX_LUMINANCE/$HDR_REFERENCE_WHITE;
-               }
-               return color;         
-            }
-            
-          
             void main()
             {
               vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);
@@ -51,10 +42,15 @@ class HDRToSDR(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: 
                    linearColor = ${GammaHLG.methodHLGEOTF}(rgb);
               }else if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
                    linearColor = ${GammaPQ.methodPQEOTF}(rgb);
+              }else{
+                   gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+                   return;
               }
-              vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(linearColor);
+              vec3 scaleColor = ${ReScaleSDR.methodScale}(linearColor);
+              vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(scaleColor);
               vec3 toneMapColor = ${toneMap.methodToneMap}(chromaCorrectColor);
-              vec3 gamutMapColor = ${gamutMap.methodGamutMap}(toneMapColor);
+              vec3 normalizeColor = ${ReScaleSDR.methodNormalize}(toneMapColor);
+              vec3 gamutMapColor = ${gamutMap.methodGamutMap}(normalizeColor);
               vec3 finalColor = ${GammaBT709.methodBt709OETF}(gamutMapColor);
               gl_FragColor.rgb = finalColor;
               gl_FragColor.a = textureColor.a;

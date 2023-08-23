@@ -2,34 +2,32 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.GammaHLG.methodHLGGamma
-import com.norman.android.hdrsample.transform.shader.GammaPQ.methodPQEOTFInv
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
+import com.norman.android.hdrsample.transform.shader.GammaPQ.methodPQOETF
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.CURRENT_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.VIDEO_COLOR_SPACE
 
+/**
+ * Android13的实现
+ * 个人理解
+ * HLG是直接按屏幕最大亮度进行缩放
+ * PQ是把输入的值按照给定几个点插值形成的曲线进行调整，插值按PQEOTF进行拟合
+ * (x1,y1) x1=y1等于屏幕最大亮度的0.65
+ * (x2,y2) x2表示x1和x3之间的4.0/17.0  y2表示屏幕亮度最大亮度的0.9
+ * (x3,y3) x3等于调整前的最大亮度，y3等于调整后的最大亮度即屏幕最大亮度
+ */
 //参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
 
 object ToneMapAndroid13 : ToneMap() {
     override val code: String
         get() = """
-            
-            vec3 ScaleLuminance(vec3 xyz) {
-               return $COLOR_SPACE == $COLOR_SPACE_BT2020_PQ?xyz * $PQ_MAX_LUMINANCE:xyz * $HLG_MAX_LUMINANCE;         
-            }
-        
-            vec3 NormalizeLuminance(vec3 xyz) {
-              return xyz / $MAX_DISPLAY_LUMINANCE;
-            }
-
             float toneMapTargetNits(float maxRGB) {
-                if($COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){
-                    return maxRGB * pow(maxRGB / $HLG_MAX_LUMINANCE, $methodHLGGamma($CURRENT_DISPLAY_LUMINANCE) - 1.0) * $MAX_DISPLAY_LUMINANCE / $HLG_MAX_LUMINANCE;
+          
+                if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){//Android原来中有用hlgGamma调整，但是我们这边的OETF已经已经进行OOTF调整，不需要再做一次
+                    return maxRGB * $MAX_DISPLAY_LUMINANCE / $HLG_MAX_LUMINANCE;
                 }
                 float maxInLumi = $MAX_CONTENT_LUMINANCE;
                 float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
@@ -40,9 +38,9 @@ object ToneMapAndroid13 : ToneMap() {
                 float y3 = maxOutLumi;
                 float x2 = x1 + (x3 - x1) * 4.0 / 17.0;
                 float y2 = maxOutLumi * 0.9;
-                float greyNorm1 = $methodPQEOTFInv(x1 / $PQ_MAX_LUMINANCE);
-                float greyNorm2 = $methodPQEOTFInv(x2 / $PQ_MAX_LUMINANCE);
-                float greyNorm3 = $methodPQEOTFInv(x3 / $PQ_MAX_LUMINANCE);
+                float greyNorm1 = $methodPQOETF(x1 / $PQ_MAX_LUMINANCE);//Android用的PQOETF其实是PQEOTF的逆函数，这里改成改成真正的OETF也许是对的
+                float greyNorm2 = $methodPQOETF(x2 / $PQ_MAX_LUMINANCE);
+                float greyNorm3 = $methodPQOETF(x3 / $PQ_MAX_LUMINANCE);
                 float slope1 = 0;
                 float slope2 = (y2 - y1) / (greyNorm2 - greyNorm1);
                 float slope3 = (y3 - y2) / (greyNorm3 - greyNorm2);
@@ -52,7 +50,7 @@ object ToneMapAndroid13 : ToneMap() {
                 if (nits > maxInLumi) {
                     return maxOutLumi;
                 }
-                float greyNits = $methodPQEOTFInv(nits / PQ_MAX_LUMINANCE);
+                float greyNits = $methodPQOETF(nits / $PQ_MAX_LUMINANCE);
                 if (greyNits <= greyNorm2) {
                     nits = (greyNits - greyNorm2) * slope2 + y2;
                 } else if (greyNits <= greyNorm3) {
@@ -74,10 +72,8 @@ object ToneMapAndroid13 : ToneMap() {
         vec3 $methodToneMap(vec3 rgb,vec3 xyz)
         {
             vec3 xyz = $methodBt2020ToXYZ(rgb)
-            vec3 absoluteRGB = ScaleLuminance(rgb);
-            vec3 absoluteXYZ = ScaleLuminance(xyz);
-            float gain = lookupTonemapGain(absoluteRGB);
-            xyz = NormalizeLuminance(absoluteXYZ * gain);
+            float gain = lookupTonemapGain(rgb);maxRgb用曲线调整后的比值作为gain值
+            xyz = xyz * gain;
             return $methodXYZToBt2020(xyz);
         }
         """.trimIndent()

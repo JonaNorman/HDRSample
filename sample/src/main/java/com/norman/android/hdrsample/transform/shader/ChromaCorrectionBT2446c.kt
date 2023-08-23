@@ -51,10 +51,10 @@ object ChromaCorrectionBT2446c : ChromaCorrection() {
            return x * M;
        }
 
-        // 注意输入的颜色不是0～1，而0～1是参考白下的颜色，大于1是高光颜色
+        // 注意输入的颜色不是0～1，而0～MAX_CONTENT_LUMINANCE，大于HDR_REFERENCE_WHITE是高光颜色
        vec3 ${methodChromaCorrect}(vec3 color) {
-           const float L_ref = $methodBt2020ToLab(vec3(1.0)).x;
-           const float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE / $HDR_REFERENCE_WHITE)).x;
+           const float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;
+           const float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE)).x;
            color = crosstalk(color);
            color = $methodBt2020ToLab(color);
            color = $methodLabToLch(color);

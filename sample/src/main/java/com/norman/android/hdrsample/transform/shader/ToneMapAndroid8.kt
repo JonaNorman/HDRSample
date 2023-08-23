@@ -4,36 +4,32 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.VIDEO_COLOR_SPACE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 
-//参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
-
+/**
+ * Android8的实现，
+ * 个人理解和Android13其实思路是一样，按几个点插值形成的曲线进行调整
+ * (x0,y0) x0=10,y0=17,其实就是暗部这部分线性插值
+ * (x1,y1) x1=y1等于屏幕最大亮度的0.75,也是线性插值
+ * (x2,y2) x2在x1和输入最大亮度的中间，y2在y1和屏幕最大亮度的中间，然后用Hermitian曲线进行插值
+ * Hermitian在BT2309中也有使用到
+ * 参考地址：
+ * https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
+ * https://www.itu.int/dms_pub/itu-r/opb/rep/R-REP-BT.2390-10-2021-PDF-E.pdf
+ */
 object ToneMapAndroid8 : ToneMap() {
     override val code: String
         get() = """
             
-        float libtonemap_applyBaseOOTFGain(float nits) {
-               return $COLOR_SPACE == $COLOR_SPACE_BT2020_HLG?pow(nits, 0.2): 1.0;
-        }
-       
-       vec3 ScaleLuminance(vec3 xyz) {
-               return $COLOR_SPACE == $COLOR_SPACE_BT2020_PQ?xyz * $PQ_MAX_LUMINANCE:xyz * $HLG_MAX_LUMINANCE;         
-       }
-        
-       vec3 NormalizeLuminance(vec3 xyz) {
-              return xyz / $MAX_DISPLAY_LUMINANCE;
-       }
-
         // Here we're mapping from HDR to SDR content, so interpolate using a
                         // Hermitian polynomial onto the smaller luminance range.
         float toneMapTargetNits(vec3 xyz) {
             float maxInLumi = $MAX_CONTENT_LUMINANCE;
             float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
-            xyz = xyz * libtonemap_applyBaseOOTFGain(xyz.y);
             float nits = xyz.y;
             // if the max input luminance is less than what we can
             // output then no tone mapping is needed as all color
@@ -94,10 +90,9 @@ object ToneMapAndroid8 : ToneMap() {
 
         vec3 $methodToneMap(vec3 rgb)
         {
-            vec3 xyz = $methodBt2020ToXYZ(rgb)
-            vec3 absoluteXYZ = ScaleLuminance(xyz);
-            float gain = lookupTonemapGain(absoluteXYZ);
-            xyz = NormalizeLuminance(absoluteXYZ * gain);
+            vec3 xyz = $methodBt2020ToXYZ(rgb);
+            float gain = lookupTonemapGain(xyz);//XYZ用Hermitian曲线调整后的比值作为gain值
+            xyz = xyz * gain;
             return $methodXYZToBt2020(xyz);
         }
         """.trimIndent()
