@@ -43,7 +43,7 @@ object ReScaleSDR : ReScale() {
                     return color; 
                 }
                 
-                vec3 $methodNormalizeDisplay(vec3 color){
+                vec3 $methodScaleDisplay(vec3 color){
                      return color / $MAX_DISPLAY_LUMINANCE;
                 }
             """.trimIndent()

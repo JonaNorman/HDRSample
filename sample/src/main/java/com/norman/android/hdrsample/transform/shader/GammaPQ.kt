@@ -1,13 +1,11 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
-
 // PQ公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-13
-object GammaPQ:GLShaderCode() {
-    const val methodPQOETF = "PQ_OETF"
-    const val methodPQEOTF = "PQ_EOTF"
-    const val methodPQOOTF = "PQ_OOTF"
-    const val methodPQEOTFInv = "PQ_EOTF_1"
+object GammaPQ : GammaFunction() {
+    private const val methodPQOOTF = "PQ_OOTF"
+    private const val methodPQEOTFInv = "PQ_EOTF_1"
+    override val methodOETF = "PQ_OETF"
+    override val methodEOTF = "PQ_EOTF"
 
     override val code: String
         get() = """
@@ -39,11 +37,11 @@ object GammaPQ:GLShaderCode() {
              return 100.0* pow(x1,vec3(2.4));
         }
         
-         vec3 $methodPQOETF(vec3 x){
+         vec3 $methodOETF(vec3 x){
              return $methodPQEOTFInv($methodPQOOTF(x));
         }
         
-        vec3 $methodPQEOTF(vec3 x)
+        vec3 $methodEOTF(vec3 x)
         {
             vec3 p = pow(x, vec3(1.0 / PQ_M2));
             vec3 num = max(p - PQ_C1, 0.0);

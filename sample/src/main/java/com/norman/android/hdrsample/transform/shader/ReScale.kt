@@ -8,10 +8,10 @@ import com.norman.android.hdrsample.opengl.GLShaderCode
 abstract class ReScale : GLShaderCode() {
     val methodScaleAbsolute = ReScale.methodScaleAbsolute
     val methodScaleNormalize =  ReScale.methodScaleNormalize
-    val methodNormalizeDisplay =  ReScale.methodNormalizeDisplay
+    val methodScaleDisplay =  ReScale.methodScaleDisplay
     companion object {
         const val methodScaleAbsolute = "RESCALE_ABSOLUTE"
         const val methodScaleNormalize = "RESCALE_NORMALIZE"
-        const val methodNormalizeDisplay = "NORMALIZE_DISPLAY"
+        const val methodScaleDisplay = "NORMALIZE_DISPLAY"
     }
 }

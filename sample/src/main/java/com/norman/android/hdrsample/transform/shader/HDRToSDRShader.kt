@@ -26,6 +26,7 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, ton
             |${GammaHLG.code}
             |${GammaPQ.code}
             |${GammaBT709.code}
+            |${GammaBT1886.code}
             |${chromaCorrection.code}
             |${toneMap.code}
             |${gamutMap.code}
@@ -36,9 +37,9 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, ton
             |  vec3 rgb = textureColor.rgb;
             |  vec3 linearColor;
             |  if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_HLG}){
-            |       linearColor = ${GammaHLG.methodHLGEOTF}(rgb);
+            |       linearColor = ${GammaHLG.methodEOTF}(rgb);
             |  }else if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
-            |       linearColor = ${GammaPQ.methodPQEOTF}(rgb);
+            |       linearColor = ${GammaPQ.methodEOTF}(rgb);
             |  }else{
             |       gl_FragColor = vec4(1.0,0.0,0.0,1.0);
             |       return;
@@ -46,9 +47,9 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, ton
             |  vec3 absoluteColor = ${ReScaleSDR.methodScaleAbsolute}(linearColor);
             |  vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(absoluteColor);
             |  vec3 toneMapColor = ${toneMap.methodToneMap}(chromaCorrectColor);
-            |  vec3 normalizeColor = ${ReScaleSDR.methodNormalizeDisplay}(toneMapColor);
+            |  vec3 normalizeColor = ${ReScaleSDR.methodScaleDisplay}(toneMapColor);
             |  vec3 gamutMapColor = ${gamutMap.methodGamutMap}(normalizeColor);
-            |  vec3 finalColor = ${GammaBT709.methodBt709OETF}(gamutMapColor);
+            |  vec3 finalColor = ${GammaBT1886.methodOETF}(gamutMapColor);
             |  gl_FragColor.rgb = finalColor;
             |  gl_FragColor.a = textureColor.a;
             |}

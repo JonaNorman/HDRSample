@@ -20,5 +20,8 @@ abstract class ChromaCorrection : GLShaderCode() {
                 """.trimIndent()
 
         }
+
+        @JvmField
+        val BT2446C = ChromaCorrectionBT2446C
     }
 }

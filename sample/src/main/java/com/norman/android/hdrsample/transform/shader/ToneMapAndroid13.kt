@@ -2,7 +2,6 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
-import com.norman.android.hdrsample.transform.shader.GammaPQ.methodPQOETF
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
@@ -38,9 +37,9 @@ object ToneMapAndroid13 : ToneMap() {
                 float y3 = maxOutLumi;
                 float x2 = x1 + (x3 - x1) * 4.0 / 17.0;
                 float y2 = maxOutLumi * 0.9;
-                float greyNorm1 = $methodPQOETF(x1 / $PQ_MAX_LUMINANCE);//Android用的PQOETF其实是PQEOTF的逆函数，这里改成改成真正的OETF也许是对的
-                float greyNorm2 = $methodPQOETF(x2 / $PQ_MAX_LUMINANCE);
-                float greyNorm3 = $methodPQOETF(x3 / $PQ_MAX_LUMINANCE);
+                float greyNorm1 = ${GammaPQ.methodOETF}(x1 / $PQ_MAX_LUMINANCE);//Android用的PQOETF其实是PQEOTF的逆函数，这里改成改成真正的OETF也许是对的
+                float greyNorm2 = ${GammaPQ.methodOETF}(x2 / $PQ_MAX_LUMINANCE);
+                float greyNorm3 = ${GammaPQ.methodOETF}(x3 / $PQ_MAX_LUMINANCE);
                 float slope1 = 0;
                 float slope2 = (y2 - y1) / (greyNorm2 - greyNorm1);
                 float slope3 = (y3 - y2) / (greyNorm3 - greyNorm2);
@@ -50,7 +49,7 @@ object ToneMapAndroid13 : ToneMap() {
                 if (nits > maxInLumi) {
                     return maxOutLumi;
                 }
-                float greyNits = $methodPQOETF(nits / $PQ_MAX_LUMINANCE);
+                float greyNits = ${GammaPQ.methodOETF}(nits / $PQ_MAX_LUMINANCE);
                 if (greyNits <= greyNorm2) {
                     nits = (greyNits - greyNorm2) * slope2 + y2;
                 } else if (greyNits <= greyNorm3) {

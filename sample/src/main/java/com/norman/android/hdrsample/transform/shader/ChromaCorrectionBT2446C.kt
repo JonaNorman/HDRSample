@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_
  * https://www.itu.int/dms_pub/itu-r/opb/rep/R-REP-BT.2446-1-2021-PDF-E.pdf
  * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/utils/chroma_correction.glsl
  */
-object ChromaCorrectionBT2446c : ChromaCorrection() {
+object ChromaCorrectionBT2446C : ChromaCorrection() {
 
     override val code: String
         get() = """

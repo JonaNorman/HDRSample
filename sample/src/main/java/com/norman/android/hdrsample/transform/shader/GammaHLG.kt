@@ -1,19 +1,18 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_LUMINANCE
 
 // HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
-object GammaHLG : GLShaderCode() {
-    const val methodHLGOETF  = "HLG_OETF"
-    const val methodHLGOETFInv  = "HLG_OETF_1"
-    const val methodHLGGamma  = "HLG_GAMMA"
-    const val methodHLGOOTF  = "HLG_OOTF"
-    const val methodHLGBlackLift  = "HLG_BLACK_LIFT"
-    const val methodHLGEOTF  = "HLG_EOTF"
+object GammaHLG : GammaFunction() {
+    private const val methodHLGOETFInv = "HLG_OETF_1"
+    private const val methodHLGGamma = "HLG_GAMMA"
+    private const val methodHLGOOTF = "HLG_OOTF"
+    private const val methodHLGBlackLift = "HLG_BLACK_LIFT"
+    override val methodOETF = "HLG_OETF"
+    override val methodEOTF =  "HLG_EOTF"
 
 
     override val code: String
@@ -24,7 +23,7 @@ object GammaHLG : GLShaderCode() {
         #define  HLG_MIN_BRIGHTNESS_NITS 500.0// 防止HLG亮度过低时黑暗场景过于明亮，参考至Android的computeHlgGamma做法
 
 
-        vec3 $methodHLGOETF(vec3 x)
+        vec3 $methodOETF(vec3 x)
         {
             return mix(sqrt(3.0 * x),
             HLG_A * log(12.0 * x - HLG_B) + HLG_C,
@@ -55,7 +54,7 @@ object GammaHLG : GLShaderCode() {
             return max(vec3(0.0), (1.0-b)*x + b);
         }
 
-        vec3 $methodHLGEOTF(vec3 x)
+        vec3 $methodEOTF(vec3 x)
         {
             return $methodHLGOOTF($methodHLGOETFInv($methodHLGBlackLift(x)));
         }

@@ -15,8 +15,8 @@ import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
-import com.norman.android.hdrsample.transform.shader.ChromaCorrection;
-import com.norman.android.hdrsample.transform.shader.GamutMap;
+import com.norman.android.hdrsample.transform.shader.ChromaCorrectionBT2446C;
+import com.norman.android.hdrsample.transform.shader.GamutMapCompress;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
 import com.norman.android.hdrsample.transform.shader.ToneMapBT2446a;
 
@@ -67,11 +67,12 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
-        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrection.NONE, GamutMap.NONE, ToneMapBT2446a.NONE);
+        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrectionBT2446C.INSTANCE, GamutMapCompress.INSTANCE, ToneMapBT2446a.INSTANCE);
         hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.addVideoTransform(hdrToSDRVideoTransform);
         videoOutput.setOutputVideoView(videoView);
+        videoView.setViewType(VideoView.VIEW_TYPE_TEXTURE_VIEW);
 
 
 

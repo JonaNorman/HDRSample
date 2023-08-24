@@ -1,12 +1,10 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.opengl.GLShaderCode
-
 // 参考自https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.1886-0-201103-I!!PDF-E.pdf
-object GammaBT1886 : GLShaderCode() {
+object GammaBT1886 : GammaFunction() {
 
-    const val methodBT1886EOTF = "BT1886_EOTF"
-    const val methodBT1886OETF = "BT1886_OETF"
+    override val methodOETF = "BT1886_OETF"
+    override val methodEOTF = "BT1886_EOTF"
 
     override val code: String
         get() = """
@@ -18,18 +16,18 @@ object GammaBT1886 : GLShaderCode() {
         #define BT18886_b   (pow(BT1886_LB, BT1886_GAMMA_INV) / (pow(BT1886_LW, BT1886_GAMMA_INV) - pow(BT1886_LB, BT1886_GAMMA_INV)))
 
 
-        float $methodBT1886OETF(float L) {
+        vec3 $methodOETF(vec3 L) {
             float a = BT18886_a;
             float b = BT18886_b;
-            float V = pow(max(L / a, 0.0), BT1886_GAMMA_INV) - b;
+            vec3 V = pow(max(L / a, vec3(0.0)), vec3(BT1886_GAMMA_INV)) - b;
             return V;
         }
 
         // L = a(max[(V+b),0])^g
-        float $methodBT1886EOTF(float V) {
+        vec3 $methodEOTF(vec3 V) {
             float a = BT18886_a;
             float b = BT18886_b;
-            float L = a * pow(max(V + b, 0.0), BT1886_GAMMA);
+            vec3 L = a * pow(max(V + b, vec3(0.0)), vec3(BT1886_GAMMA));
             return L;
         }
         """.trimIndent()
