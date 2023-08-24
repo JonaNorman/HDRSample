@@ -2,16 +2,18 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
-class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, toneMap: ToneMap) : GLShaderCode() {
+class HDRToSDRShader(chromaCorrection: ChromaCorrection,toneMap: ToneMap, gamutMap: GamutMap,displayGamma: GammaFunction ) : GLShaderCode() {
 
     val chromaCorrection: ChromaCorrection
     val gamutMap: GamutMap
     val toneMap: ToneMap
+    val displayGamma:GammaFunction
 
     init {
         this.chromaCorrection = chromaCorrection
         this.gamutMap = gamutMap
         this.toneMap = toneMap
+        this.displayGamma = displayGamma
     }
 
     override val code: String
@@ -25,11 +27,10 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, ton
             |${ReScaleSDR.code}
             |${GammaHLG.code}
             |${GammaPQ.code}
-            |${GammaBT709.code}
-            |${GammaBT1886.code}
             |${chromaCorrection.code}
-            |${toneMap.code}
             |${gamutMap.code}
+            |${toneMap.code}
+            |${displayGamma.code}
             |
             |void main()
             |{
@@ -49,7 +50,7 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection, gamutMap: GamutMap, ton
             |  vec3 toneMapColor = ${toneMap.methodToneMap}(chromaCorrectColor);
             |  vec3 normalizeColor = ${ReScaleSDR.methodScaleDisplay}(toneMapColor);
             |  vec3 gamutMapColor = ${gamutMap.methodGamutMap}(normalizeColor);
-            |  vec3 finalColor = ${GammaBT1886.methodOETF}(gamutMapColor);
+            |  vec3 finalColor = ${displayGamma.methodOETF}(gamutMapColor);
             |  gl_FragColor.rgb = finalColor;
             |  gl_FragColor.a = textureColor.a;
             |}

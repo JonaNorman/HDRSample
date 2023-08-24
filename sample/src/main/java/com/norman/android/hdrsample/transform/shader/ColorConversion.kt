@@ -13,7 +13,6 @@ object ColorConversion : GLShaderCode() {
     const val methodBt2020ToXYZ = "BT2020_TO_XYZ"
     const val methodXYZToBt2020 = "XYZ_TO_BT2020"
 
-
     const val methodXYZToBt709 = "XYZ_TO_BT709"
 
     const val methodXYZD65ToXYZD50 = "XYZD65_TO_XYZD50"

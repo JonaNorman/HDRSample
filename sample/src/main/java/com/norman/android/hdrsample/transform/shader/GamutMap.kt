@@ -20,5 +20,14 @@ abstract class GamutMap: GLShaderCode() {
                 """.trimIndent()
 
         }
+
+        @JvmField
+        val  ADAPTIVE_L0_CUSP = GamutMapAdaptiveL0Cusp
+
+        @JvmField
+        val  CLIP = GamutMapClip
+
+        @JvmField
+        val  COMPRESS = GamutMapCompress
     }
 }

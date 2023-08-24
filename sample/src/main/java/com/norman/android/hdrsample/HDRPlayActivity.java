@@ -15,17 +15,18 @@ import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
-import com.norman.android.hdrsample.transform.shader.ChromaCorrectionBT2446C;
-import com.norman.android.hdrsample.transform.shader.GamutMapCompress;
+import com.norman.android.hdrsample.transform.shader.ChromaCorrection;
+import com.norman.android.hdrsample.transform.shader.GammaFunction;
+import com.norman.android.hdrsample.transform.shader.GamutMap;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
-import com.norman.android.hdrsample.transform.shader.ToneMapBT2446a;
+import com.norman.android.hdrsample.transform.shader.ToneMap;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickListener {
+public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener {
     VideoPlayer videoPlayer;
     VideoView videoView;
     CubeLutVideoTransform videoTransform;
@@ -34,7 +35,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
 
     boolean loadLutSuccess;
 
-    List<String>  lutPathList = new ArrayList<>();
+    List<String> lutPathList = new ArrayList<>();
 
     List<String> lutNameList = new ArrayList<>();
 
@@ -42,6 +43,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
     HDRToSDRVideoTransform hdrToSDRVideoTransform;
 
     boolean faa = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,13 +69,12 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
-        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrectionBT2446C.INSTANCE, GamutMapCompress.INSTANCE, ToneMapBT2446a.INSTANCE);
+        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrection.NONE, ToneMap.BT2446A, GamutMap.COMPRESS, GammaFunction.BT1886);
         hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.addVideoTransform(hdrToSDRVideoTransform);
         videoOutput.setOutputVideoView(videoView);
         videoView.setViewType(VideoView.VIEW_TYPE_TEXTURE_VIEW);
-
 
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
@@ -97,8 +98,8 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
         videoPlayer.release();
     }
 
-    private void showCubeLutDialog(){
-        if (cubeLutDialog != null){
+    private void showCubeLutDialog() {
+        if (cubeLutDialog != null) {
             if (!cubeLutDialog.isShowing()) {
                 cubeLutDialog.show();
             }
@@ -118,7 +119,7 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
                         cubeLutDialog = null;
                     }
                 });
-        cubeLutDialog =   builder.show();
+        cubeLutDialog = builder.show();
 
 
     }
@@ -126,14 +127,14 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.ButtonCubeLut){
+        if (id == R.id.ButtonCubeLut) {
             showCubeLutDialog();
         }
     }
 
 
-    private void loadLutList(){
-        if (loadLutSuccess){
+    private void loadLutList() {
+        if (loadLutSuccess) {
             return;
         }
         loadLutSuccess = true;
@@ -145,15 +146,15 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
             String path = pathList.poll();
             String[] names = null;
             try {
-                names   = assetManager.list(path);
-            }catch (Exception ignore){
+                names = assetManager.list(path);
+            } catch (Exception ignore) {
                 continue;
             }
-            if (names.length == 0){
+            if (names.length == 0) {
                 fileList.add(path);
-            }else{
+            } else {
                 for (String name : names) {
-                    pathList.add(path+"/"+name);
+                    pathList.add(path + "/" + name);
                 }
             }
         }
@@ -167,8 +168,8 @@ public class HDRPlayActivity extends AppCompatActivity  implements View.OnClickL
             }
             nameList.add(fileName);
         }
-        fileList.add(0,null);
-        nameList.add(0,"无");
+        fileList.add(0, null);
+        nameList.add(0, "无");
         lutNameList = nameList;
         lutPathList = fileList;
 

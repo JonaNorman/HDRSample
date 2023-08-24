@@ -15,7 +15,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_
  *
  * //
  */
-object ToneMapBT2446a : ToneMap() {
+object ToneMapBT2446A : ToneMap() {
     override val code: String
         get() = """
          
