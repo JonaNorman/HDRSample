@@ -12,13 +12,37 @@
 
     </com.norman.android.hdrsample.player.VideoView>
 
-    <Button
-        android:id="@+id/ButtonCubeLut"
-        android:text="选择LUT"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    </Button>
+        <TextView
+            android:text="HDR转SDR"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        </TextView>
+
+        <Button
+            android:id="@+id/ButtonCubeLut"
+            android:text="LUT配置"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        </Button>
+
+        <Button
+            android:id="@+id/ButtonHdrToSdr"
+            android:text="Shader配置"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        </Button>
+
+    </LinearLayout>
+
+
 
 
 </FrameLayout>

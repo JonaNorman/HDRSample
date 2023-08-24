@@ -15,18 +15,14 @@ import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
-import com.norman.android.hdrsample.transform.shader.ChromaCorrection;
-import com.norman.android.hdrsample.transform.shader.GammaFunction;
-import com.norman.android.hdrsample.transform.shader.GamutMap;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
-import com.norman.android.hdrsample.transform.shader.ToneMap;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener {
+public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener,HdrToSdrShaderDialog.OnShaderSelectListener {
     VideoPlayer videoPlayer;
     VideoView videoView;
     CubeLutVideoTransform videoTransform;
@@ -42,13 +38,15 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     int selectLutPosition;
     HDRToSDRVideoTransform hdrToSDRVideoTransform;
 
-    boolean faa = true;
+    HdrToSdrShaderDialog hdrToSdrShaderDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
+        hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
+        hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
         VideoGLOutput videoOutput = VideoGLOutput.create();
         videoPlayer = VideoPlayer.create(videoOutput);
@@ -69,8 +67,6 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
-        HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(ChromaCorrection.NONE, ToneMap.BT2446A, GamutMap.COMPRESS, GammaFunction.BT1886);
-        hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.addVideoTransform(hdrToSDRVideoTransform);
         videoOutput.setOutputVideoView(videoView);
@@ -78,7 +74,12 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
+        findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);
+
+
+
     }
+
 
     @Override
     protected void onResume() {
@@ -129,6 +130,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         int id = v.getId();
         if (id == R.id.ButtonCubeLut) {
             showCubeLutDialog();
+        }else if (id == R.id.ButtonHdrToSdr){
+            hdrToSdrShaderDialog.show();
         }
     }
 
@@ -172,7 +175,10 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         nameList.add(0, "无");
         lutNameList = nameList;
         lutPathList = fileList;
+    }
 
-
+    @Override
+    public void onShaderSelect(HDRToSDRShader hdrToSDRShader) {
+        hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
     }
 }

@@ -10,7 +10,7 @@ object GamutMapClip: GamutMap() {
     override val code: String
         get() = """
         vec3 $methodGamutMap(vec3 color) {
-            color = $methodBt2020ToBt709(rgb);
+            color = $methodBt2020ToBt709(color);
             color = clamp(color, 0.0, 1.0);
             return color;
         }

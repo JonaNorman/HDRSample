@@ -37,10 +37,11 @@ object ToneMapAndroid13 : ToneMap() {
                 float y3 = maxOutLumi;
                 float x2 = x1 + (x3 - x1) * 4.0 / 17.0;
                 float y2 = maxOutLumi * 0.9;
-                float greyNorm1 = ${GammaPQ.methodOETF}(x1 / $PQ_MAX_LUMINANCE);//Android用的PQOETF其实是PQEOTF的逆函数，这里改成改成真正的OETF也许是对的
-                float greyNorm2 = ${GammaPQ.methodOETF}(x2 / $PQ_MAX_LUMINANCE);
-                float greyNorm3 = ${GammaPQ.methodOETF}(x3 / $PQ_MAX_LUMINANCE);
-                float slope1 = 0;
+                vec3 greyNorm = ${GammaPQ.methodOETF}(vec3(x1,x2,x3) / $PQ_MAX_LUMINANCE);
+                float greyNorm1 = greyNorm.x;//Android用的PQOETF其实是PQEOTF的逆函数，这里改成改成真正的OETF也许是对的
+                float greyNorm2 = greyNorm.y;
+                float greyNorm3 = greyNorm.z;
+                float slope1 = 0.0;
                 float slope2 = (y2 - y1) / (greyNorm2 - greyNorm1);
                 float slope3 = (y3 - y2) / (greyNorm3 - greyNorm2);
                 if (nits < x1) {
@@ -68,10 +69,10 @@ object ToneMapAndroid13 : ToneMap() {
                 return toneMapTargetNits(maxRGB) / maxRGB;
             }
 
-        vec3 $methodToneMap(vec3 rgb,vec3 xyz)
+        vec3 $methodToneMap(vec3 rgb)
         {
-            vec3 xyz = $methodBt2020ToXYZ(rgb)
-            float gain = lookupTonemapGain(rgb);maxRgb用曲线调整后的比值作为gain值
+            vec3 xyz = $methodBt2020ToXYZ(rgb);
+            float gain = lookupTonemapGain(rgb);//maxRgb用曲线调整后的比值作为gain值
             xyz = xyz * gain;
             return $methodXYZToBt2020(xyz);
         }

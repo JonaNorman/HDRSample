@@ -37,8 +37,14 @@ object GammaPQ : GammaFunction() {
              return 100.0* pow(x1,vec3(2.4));
         }
         
-         vec3 $methodOETF(vec3 x){
+        
+        
+        vec3 $methodOETF(vec3 x){
              return $methodPQEOTFInv($methodPQOOTF(x));
+        }
+        
+        float $methodOETF(float x){
+             return $methodOETF(vec3(x)).x;
         }
         
         vec3 $methodEOTF(vec3 x)
