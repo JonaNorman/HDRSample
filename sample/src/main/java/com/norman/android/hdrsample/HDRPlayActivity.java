@@ -108,7 +108,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         }
         loadLutList();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Buy Now")
+        builder.setTitle("3D CUBE LUT")
                 //.setMessage("You can buy our products without registration too. Enjoy the shopping")
                 .setSingleChoiceItems(lutNameList.toArray(new String[0]), selectLutPosition, new DialogInterface.OnClickListener() {
                     @Override

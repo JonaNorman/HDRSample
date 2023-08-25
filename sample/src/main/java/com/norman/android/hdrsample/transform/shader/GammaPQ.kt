@@ -55,5 +55,10 @@ object GammaPQ : GammaFunction() {
             vec3 Y = pow(num / den, vec3(1.0 / PQ_M1));
             return  Y;
         }
+        
+        float $methodEOTF(float x)
+        {
+            return $methodEOTF(vec3(x)).x;
+        }
         """.trimIndent()
 }
