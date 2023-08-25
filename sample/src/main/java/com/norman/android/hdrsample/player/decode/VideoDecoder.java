@@ -7,11 +7,20 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 视频解码器
+ */
 public interface VideoDecoder extends Decoder {
 
     //解码时会在OutputFormat中增加这行属性，表示解码出来的视频是哪种YUV420
-    String KEY_YUV420_TYPE = "yuv420Type";
+    String KEY_YUV420_TYPE = "yuv420-type";
+    /**
+     * buffer解码
+     */
     int BUFFER_MODE = 1;
+    /**
+     * surface解码
+     */
     int SURFACE_MODE = 2;
     @IntDef({BUFFER_MODE, SURFACE_MODE})
     @Retention(RetentionPolicy.SOURCE)
@@ -24,7 +33,7 @@ public interface VideoDecoder extends Decoder {
 
     /**
      * 解码Surface，只能在SurfaceMode时使用
-     * 支持动态设置Surface，初始化也可以不穿Surface
+     * 支持动态设置Surface，初始化也可以不传Surface后续再传
      * @param surface
      */
     void setOutputSurface(Surface surface);
@@ -42,6 +51,11 @@ public interface VideoDecoder extends Decoder {
      */
     boolean isSupport10BitYUV420BufferMode();
 
+    /**
+     * 是否支持某一种colorFormat
+     * @param colorFormat
+     * @return
+     */
     boolean isSupportColorFormat(int colorFormat);
 
 }

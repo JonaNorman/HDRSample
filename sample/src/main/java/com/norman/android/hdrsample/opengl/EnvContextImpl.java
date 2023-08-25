@@ -4,6 +4,8 @@ import android.opengl.EGL14;
 import android.opengl.EGLContext;
 import android.opengl.EGLSurface;
 
+import androidx.annotation.NonNull;
+
 
 class EnvContextImpl implements GLEnvContext {
     EGLContext eglContext;
@@ -11,7 +13,7 @@ class EnvContextImpl implements GLEnvContext {
     GLEnvConfig envConfig;
     boolean release;
 
-    public EnvContextImpl(GLEnvDisplay display, GLEnvConfig config, GLEnvContextAttribArray contextAttrib, EGLContext context) {
+    public EnvContextImpl(GLEnvDisplay display, GLEnvConfig config, AttrList contextAttrib, EGLContext context) {
         envDisplay = display;
         envConfig = config;
         eglContext = EGL14.eglCreateContext(
@@ -86,4 +88,17 @@ class EnvContextImpl implements GLEnvContext {
     }
 
 
+    static class AttrListImpl extends EnvAttrListImpl implements AttrList {
+
+        @Override
+        public void setClientVersion(@OpenGLESVersion int version) {
+            setAttrib(EGL14.EGL_CONTEXT_CLIENT_VERSION, version);
+        }
+
+        @NonNull
+        @Override
+        public AttrListImpl clone() {
+            return (AttrListImpl) super.clone();
+        }
+    }
 }

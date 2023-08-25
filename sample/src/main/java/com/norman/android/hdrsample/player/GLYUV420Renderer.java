@@ -12,6 +12,11 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.Objects;
 
+/**
+ * YUV420四种格式转纹理
+ * https://juejin.cn/post/7206577654933520444   解码10位YUV纹理
+ * https://juejin.cn/post/7206577654933520444   不同YUV420格式转纹理的计算方式，下方代码是文章的优化版
+ */
 class GLYUV420Renderer extends GLRenderer {
 
     private static final String VERTEX_SHADER = "#version 300 es\n" +
@@ -32,25 +37,25 @@ class GLYUV420Renderer extends GLRenderer {
             "precision highp float;\n" +
             "precision highp int;\n" +
             "\n" +
-            "uniform highp usampler2D lumaTexture;\n" +
-            "uniform highp usampler2D chromaSemiTexture;\n" +
-            "uniform highp usampler2D chromaPlanarUTexture;\n" +
-            "uniform highp usampler2D chromaPlanarVTexture;\n" +
+            "uniform highp usampler2D lumaTexture;\n" +//Y平面
+            "uniform highp usampler2D chromaSemiTexture;\n" +//NV21和NV12的UV平面，因为两个数据是在一起的，所以合在一个纹理里
+            "uniform highp usampler2D chromaPlanarUTexture;\n" +//YV12和YV12的U平面，U和V是分开的
+            "uniform highp usampler2D chromaPlanarVTexture;\n" +//YV12和YV12的V平面，U和V是分开的
             "\n" +
-            "uniform vec2 lumaSize;\n" +
-            "uniform vec2 chromaPlanarUSize;\n" +
-            "uniform vec2 chromaPlanarVSize;\n" +
-            "uniform vec2 chromaSemiSize;\n" +
+            "uniform vec2 lumaSize;\n" +//Y亮度平面的大小
+            "uniform vec2 chromaPlanarUSize;\n" +//YV12和YV12的U平面大小
+            "uniform vec2 chromaPlanarVSize;\n" +//YV12和YV12的V平面大小
+            "uniform vec2 chromaSemiSize;\n" +//NV21和NV12的UV平面大小
             "\n" +
-            "uniform mat4 yuvToRgbMatrix;\n" +
-            "uniform int bitDepth;\n" +
-            "uniform int bitMask;\n" +
+            "uniform mat4 yuvToRgbMatrix;\n" +//YUV转RGB矩阵
+            "uniform int bitDepth;\n" +//深度
+            "uniform int bitMask;\n" +//10位纹理其实是16位位移后的数据，所以需要位移回去，8位时bitMask是0，10位时bitmask是6
             "uniform int yuv420Type;\n" +
             "\n" +
             "in  vec2 textureCoordinate;\n" +
             "out vec4 outColor;\n" +
             "\n" +
-            "#define MAX_COLOR_VALUE  (pow(2.0,float(bitDepth))-1.0)\n" +
+            "#define MAX_COLOR_VALUE  (pow(2.0,float(bitDepth))-1.0)\n" +//位深决定颜色的最大值，8位是255，10是1023，注意是0开始的所以要减去1
             "\n" +
             "vec3 yuvToRgb(vec3 yuv){\n" +
             "    vec4 color = yuvToRgbMatrix *vec4(yuv, 1.0);\n" +
@@ -62,12 +67,12 @@ class GLYUV420Renderer extends GLRenderer {
             "}\n" +
             "\n" +
             "\n" +
-            "vec2 normalizedColor(uvec2 color){\n" +
-            "    return vec2(color>>bitMask)/MAX_COLOR_VALUE;\n" +
+            "vec2 normalizedColor(uvec2 color){\n" +//usampler2D获取的颜色是无符号量化的数据，需要归一化
+            "    return vec2(color>>bitMask)/MAX_COLOR_VALUE;\n" +//后续矩阵处理了范围问题10位limit range就不是除以940，除以1023归一化就可以
             "}\n" +
             "\n" +
-            "ivec2 quantizedCoord(vec2 coord, vec2 size){\n" +
-            "    return ivec2(coord*(size-1.0)+0.5);\n" +
+            "ivec2 quantizedCoord(vec2 coord, vec2 size){\n" +//coord坐标是归一化的，usampler2D访问纹理需要用实际的尺寸大小
+            "    return ivec2(coord*(size-1.0)+0.5);\n" +//不直接乘以size是因为个人觉得纹理访问其实取的是中间值
             "}\n" +
             "\n" +
             "float getLumaColor(vec2 textureCoord){\n" +
@@ -118,7 +123,7 @@ class GLYUV420Renderer extends GLRenderer {
             "vec3 getNV21Color(vec2 textureCoord){\n" +
             "    float y = getLumaColor(textureCoord);\n" +
             "    vec2 vu =  getChromaSemiColor(textureCoord);\n" +
-            "    return vec3(y, vu.yx);\n" +
+            "    return vec3(y, vu.yx);\n" +//vu变成uv需要换一下xy
             "}\n" +
             "\n" +
             "\n" +
@@ -127,41 +132,77 @@ class GLYUV420Renderer extends GLRenderer {
             "    vec3 yuv = vec3(0.0);\n" +
             "    if (yuv420Type == YV21){ //i420  Y+U+V\n" +
             "        yuv = getYV21Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == YV12){ //YV12 Y+V+U\n" +
+            "    } else if (yuv420Type == YV12){\n" +//YV12 Y+V+U
             "        yuv = getYV12Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == NV12){ //NV12  Y+UV\n" +
+            "    } else if (yuv420Type == NV12){ \n" +//NV12  Y+UV
             "        yuv = getNV12Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == NV21){ ///NV21 Y+VU\n" +
+            "    } else if (yuv420Type == NV21){ \n" +///NV21 Y+VU
             "        yuv = getNV21Color(textureCoordinate);\n" +
             "    }\n" +
             "    outColor.rgb =yuvToRgb(yuv);\n" +
             "    outColor.a = 1.0;\n" +
             "}";
 
+    /**
+     * YUV420 buffer数据对齐以后的字节宽度
+     */
     private int strideWidth;
+    /**
+     * 字节高度
+     */
     private int sliceHeight;
+    /**
+     * 位深
+     */
     private int bitDepth;
+    /**
+     * 位移大小，10位是用16位存储的，需要位移6位
+     */
 
     private int bitMask;
+    /**
+     * buffer需要读取的数据大小，也就是YUV420图像的字节大小
+     */
 
     private int bufferSize;
+    /**
+     * 格式无效的清空下不需要绘制
+     */
 
     private boolean formatValid;
+
+    /**
+     * buffer还没开始加载或者buffer格式不对
+     */
 
     private boolean bufferAvailable;
 
     @ColorFormatUtil.YUV420Type
     private int yuv420Type;
 
+    /**
+     * buffer中的图像实际显示区域，因为宽度对齐以后有绿边需要裁剪
+     */
     private Rect displayRect;
 
 
+    /**
+     * Y平面的纹理
+     */
     private PlaneTexture lumaTexture;
+    /**
+     * NV21和NV12的UV平面，因为两个数据是在一起的，所以合在一个纹理里
+     */
 
     private PlaneTexture chromaSemiTexture;
 
+    /**
+     * YV12和YV12的U平面
+     */
     private PlaneTexture chromaPlanarUTexture;
-
+    /**
+     * YV12和YV12的U平面
+     */
     private PlaneTexture chromaPlanarVTexture;
 
 
@@ -204,6 +245,15 @@ class GLYUV420Renderer extends GLRenderer {
         textureCoordinateBuffer = GLESUtil.createTextureFlatBufferUpsideDown();
     }
 
+    /**
+     * 设置YUV Buffer的 格式
+     * @param requestStrideWidth buffer对齐以后的宽
+     * @param requestSliceHeight buffer对齐以后的高
+     * @param requestBitDepth  buffer的位数
+     * @param requestDisplayRect buffer的图像实际的显示区域，因为对齐以后图像会有绿边需要裁剪
+     * @param requestYuv420Type yuv420格式
+     */
+
     public void setBufferFormat(int requestStrideWidth,
                                 int requestSliceHeight,
                                 int requestBitDepth,
@@ -214,14 +264,14 @@ class GLYUV420Renderer extends GLRenderer {
                 || strideWidth != requestStrideWidth
                 || bitDepth != requestBitDepth
                 || yuv420Type != requestYuv420Type
-                || Objects.equals(requestDisplayRect, displayRect)) {
+                || Objects.equals(requestDisplayRect, displayRect)) {//相同的清空下不需要重新创建纹理
             strideWidth = requestStrideWidth;
             sliceHeight = requestSliceHeight;
             bitDepth = requestBitDepth;
             yuv420Type = requestYuv420Type;
             displayRect = requestDisplayRect;
             formatValid = strideWidth > 0 && sliceHeight > 0 && bitDepth > 0;
-            if (!formatValid) {
+            if (!formatValid) {//格式不对不需要加载纹理
                 bufferAvailable = false;
                 return;
             }
@@ -241,23 +291,31 @@ class GLYUV420Renderer extends GLRenderer {
                 GLESUtil.delTextureId(chromaPlanarVTexture.textureId);
                 chromaPlanarVTexture = null;
             }
-            int byteCount = (int) Math.ceil(bitDepth / 8.0);
-            bitMask = byteCount * 8 - bitDepth;
-            bufferSize = strideWidth * sliceHeight * 3 / 2;
-            int planeWidth = strideWidth / byteCount;
+            int byteCount = (int) Math.ceil(bitDepth / 8.0);//位数除以8向上取整，譬如10其实是16位存储的，每个字节8位，最终就是2字节
+            bitMask = byteCount * 8 - bitDepth;//多余的位数最终要移除掉
+            bufferSize = strideWidth * sliceHeight * 3 / 2;//最终要从buffer中读取的数据大小，乘以3/2因为YUV420的数据是strideWidth * sliceHeight表示的是Y平面大小，剩下的UV平面大小各自是1/4，最终大小就是3/2
+            int planeWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
             int planeHeight = sliceHeight;
 
-            lumaTexture = new PlaneTexture(planeWidth, planeHeight, byteCount);
+            lumaTexture = new PlaneTexture(planeWidth, planeHeight, byteCount);//Y平面
             if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
+                //NV12和NV21 的UV平面高度和宽度是Y平面的一半，colorCount表示一个通道里面有两个数据也就是UV在一起
                 chromaSemiTexture = new PlaneTexture(planeWidth / 2, planeHeight / 2, byteCount, 2);
             } else {
+                //YV12和YV21的宽度和Y平面是一样的，高度是1/4
                 chromaPlanarUTexture = new PlaneTexture(planeWidth, planeHeight / 4, byteCount);
                 chromaPlanarVTexture = new PlaneTexture(planeWidth, planeHeight / 4, byteCount);
             }
-            float left = displayRect == null ? 0 : displayRect.left * 1.0f / planeWidth;
+            float left = displayRect == null ? 0 : displayRect.left * 1.0f / planeWidth;//纹理坐标需要归一化
             float right = displayRect == null ? 1 : displayRect.right * 1.0f / planeWidth;
             float top = displayRect == null ? 0 : displayRect.top * 1.0f / planeHeight;
             float bottom = displayRect == null ? 1 : displayRect.bottom * 1.0f / planeHeight;
+
+            // 纹理坐标设置顺序，注意bottom在纹理坐标中0但是现在输入的bottom是1，这样做是因为纹理和图像是上下颠倒的，这样做就不需要手动颠倒了
+            //    left bottom
+            //    right bottom
+            //    left top
+            //    right  top
 
             textureCoordinateBuffer.clear();
             textureCoordinateBuffer.put(left);
@@ -285,21 +343,21 @@ class GLYUV420Renderer extends GLRenderer {
         }
         bufferAvailable = true;
 
-        int lumaLimit = offset + lumaTexture.bufferSize;
+        int lumaLimit = offset + lumaTexture.bufferSize;//Y平面需要读取的数据大小
         outputBuffer.clear();
         outputBuffer.position(offset);
         outputBuffer.limit(lumaLimit);
         lumaTexture.updateBuffer(outputBuffer);
 
         if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
-            int chromaSemiLimit = lumaLimit + chromaSemiTexture.bufferSize;
+            int chromaSemiLimit = lumaLimit + chromaSemiTexture.bufferSize;//UV平面需要读取的数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaLimit);
             outputBuffer.limit(chromaSemiLimit);
             chromaSemiTexture.updateBuffer(outputBuffer);
 
         } else if (yuv420Type == ColorFormatUtil.YV21) {
-            int chromaPlanarULimit = lumaLimit + chromaPlanarUTexture.bufferSize;
+            int chromaPlanarULimit = lumaLimit + chromaPlanarUTexture.bufferSize;//U平面数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaLimit);
             outputBuffer.limit(chromaPlanarULimit);
@@ -307,11 +365,11 @@ class GLYUV420Renderer extends GLRenderer {
 
             outputBuffer.clear();
             outputBuffer.position(chromaPlanarULimit);
-            outputBuffer.limit(chromaPlanarULimit + chromaPlanarVTexture.bufferSize);
+            outputBuffer.limit(chromaPlanarULimit + chromaPlanarVTexture.bufferSize);//V平面数据大小
             chromaPlanarVTexture.updateBuffer(outputBuffer);
         } else if (yuv420Type == ColorFormatUtil.YV12) {
 
-            int chromaPlanarVLimit = lumaLimit + chromaPlanarVTexture.bufferSize;
+            int chromaPlanarVLimit = lumaLimit + chromaPlanarVTexture.bufferSize;//V平面数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaLimit);
             outputBuffer.limit(chromaPlanarVLimit);
@@ -320,7 +378,7 @@ class GLYUV420Renderer extends GLRenderer {
 
             outputBuffer.clear();
             outputBuffer.position(chromaPlanarVLimit);
-            outputBuffer.limit(chromaPlanarVLimit + chromaPlanarUTexture.bufferSize);
+            outputBuffer.limit(chromaPlanarVLimit + chromaPlanarUTexture.bufferSize);//U平面数据大小
             chromaPlanarUTexture.updateBuffer(outputBuffer);
 
         }
@@ -404,10 +462,12 @@ class GLYUV420Renderer extends GLRenderer {
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glUseProgram(0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-        GLESUtil.checkGLError();
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);//虽然glActiveTexture有多次，但是绑定纹理回去就只要调用一次就行，不需要多次glActiveTexture
     }
 
+    /**
+     * YUV每个平面的纹理数据封装
+     */
     static class PlaneTexture {
         final int textureId;
 
@@ -433,23 +493,24 @@ class GLYUV420Renderer extends GLRenderer {
             this.textureId = GLESUtil.createNearestTextureId();
             this.width = width;
             this.height = height;
-            if (byteCount == 1 && colorCount == 1) {
+            // internalFormat表示纹理的内部格式，R或者RG表示颜色通道，UI表示无符号量化存储
+            if (byteCount == 1 && colorCount == 1) {//8位 1通道
                 internalFormat = GLES30.GL_R8UI;
-            } else if (byteCount == 1 && colorCount == 2) {
+            } else if (byteCount == 1 && colorCount == 2) {//8位 2通道
                 internalFormat = GLES30.GL_RG8UI;
-            } else if (byteCount == 2 && colorCount == 1) {
+            } else if (byteCount == 2 && colorCount == 1) {// 16位 1通道
                 internalFormat = GLES30.GL_R16UI;
-            } else if (byteCount == 2 && colorCount == 2) {
+            } else if (byteCount == 2 && colorCount == 2) {// 16位 2通道
                 internalFormat = GLES30.GL_RG16UI;
             } else {
                 throw new IllegalArgumentException("not support byteCount->" + byteCount + "colorCount" + colorCount);
             }
-            bufferFormat = colorCount == 1 ? GLES30.GL_RED_INTEGER : GLES30.GL_RG_INTEGER;
-            bufferType = byteCount == 1 ? GLES30.GL_UNSIGNED_BYTE : GLES30.GL_UNSIGNED_SHORT;
-            bufferSize = width * height * byteCount * colorCount;
+            bufferFormat = colorCount == 1 ? GLES30.GL_RED_INTEGER : GLES30.GL_RG_INTEGER;// 几个通道就几个颜色
+            bufferType = byteCount == 1 ? GLES30.GL_UNSIGNED_BYTE : GLES30.GL_UNSIGNED_SHORT;// 1字节就用GL_UNSIGNED_BYTE无符号字节，2字节也就是GL_UNSIGNED_SHORT无符号short
+            bufferSize = width * height * byteCount * colorCount;//根据字节数量和通道大小算出最终数据大小
 
-            int byteWidth = byteCount*width*colorCount;
-
+            //根据每个通道的字节设置OpenGL对齐大小加速读取，OpenGL对齐大小只能是1、2、4、8
+            int byteWidth = byteCount*width*colorCount;//通道的字节大小*宽度*通道数量
             if (byteWidth % 8 == 0) alignment = 8;
             else if (byteWidth % 4 == 0) alignment = 4;
             else if (byteWidth % 2 == 0) alignment = 2;
@@ -460,15 +521,15 @@ class GLYUV420Renderer extends GLRenderer {
             GLES20.glTexImage2D(
                     GLES20.GL_TEXTURE_2D,
                     0,
-                    internalFormat,
+                    internalFormat,//纹理内部格式
                     width,
                     height,
                     0,
-                    bufferFormat,
-                    bufferType,
+                    bufferFormat,//buffer 通道格式
+                    bufferType,//buffer的字节存储方式
                     null);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-            GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 4);
+            GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 4);//OpenGL的字节对齐默认是4，需要还原
 
 
         }
@@ -486,7 +547,7 @@ class GLYUV420Renderer extends GLRenderer {
                     bufferFormat,
                     bufferType,
                     buffer);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);//和上方glTexImage2D不一样，设置大小以后就只需要glTexSubImage2D更新数据，据说能加快速度
             GLES20.glPixelStorei(GLES20.GL_UNPACK_ALIGNMENT, 4);
 
         }

@@ -309,6 +309,13 @@ public class GLESUtil {
         GLES20.glDeleteFramebuffers(1, new int[]{bufferId}, 0);
     }
 
+    public static void attachTexture(int frameBufferId,int textureId){
+        if (frameBufferId<=0 || textureId<=0)return;
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId);
+        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, textureId, 0);
+        GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
+
     public static int createRenderBufferId() {
         int[] buffer = {0};
         GLES20.glGenRenderbuffers(1, buffer, 0);

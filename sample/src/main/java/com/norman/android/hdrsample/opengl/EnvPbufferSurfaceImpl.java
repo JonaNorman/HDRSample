@@ -3,6 +3,8 @@ package com.norman.android.hdrsample.opengl;
 import android.opengl.EGL14;
 import android.opengl.EGLSurface;
 
+import androidx.annotation.NonNull;
+
 class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
 
     private final EGLSurface eglSurface;
@@ -11,7 +13,7 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
 
     private final GLEnvConfig envConfig;
 
-    private final GLEnvPbufferSurfaceAttribArray surfaceAttrib;
+    private final AttrList attrList;
 
     private boolean release;
 
@@ -19,10 +21,10 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
     private int height;
 
 
-    public EnvPbufferSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, GLEnvPbufferSurfaceAttribArray surfaceAttrib) {
+    public EnvPbufferSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, AttrList surfaceAttrib) {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
-        this.surfaceAttrib = surfaceAttrib;
+        this.attrList = surfaceAttrib;
         width = surfaceAttrib.getWidth();
         height = surfaceAttrib.getHeight();
         eglSurface = EGL14.eglCreatePbufferSurface(
@@ -78,4 +80,31 @@ class EnvPbufferSurfaceImpl implements GLEnvPbufferSurface {
     }
 
 
+    static class AttrListImpl extends EnvSurfaceAttrsImpl implements AttrList {
+
+
+        public void setWidth(int width) {
+            setAttrib(EGL14.EGL_WIDTH, width);
+        }
+
+        public void setHeight(int height) {
+            setAttrib(EGL14.EGL_HEIGHT, height);
+        }
+
+        @Override
+        public int getWidth() {
+            return getAttrib(EGL14.EGL_WIDTH);
+        }
+
+        @Override
+        public int getHeight() {
+            return getAttrib(EGL14.EGL_HEIGHT);
+        }
+
+        @NonNull
+        @Override
+        public AttrListImpl clone() {
+            return (AttrListImpl) super.clone();
+        }
+    }
 }

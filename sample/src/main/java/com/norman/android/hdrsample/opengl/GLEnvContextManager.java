@@ -17,10 +17,22 @@ public interface GLEnvContextManager {
      */
     void detach();
 
+    /**
+     * 获取绑定的线程
+     * @return
+     */
     Thread getAttachThread();
 
+    /**
+     * 绑定线程是否在当前线程
+     * @return
+     */
     boolean isCurrentThread();
 
+    /**
+     * 是否已经绑定
+     * @return
+     */
     boolean isAttach();
 
     void release();
@@ -42,6 +54,16 @@ public interface GLEnvContextManager {
 
     static GLEnvContextManager create(GLEnvConfigChooser configChooser) {
         GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder(configChooser);
+        return builder.build();
+    }
+
+    static GLEnvContextManager create(GLEnvDisplay envDisplay,GLEnvConfig envConfig) {
+        GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder(envDisplay,envConfig);
+        return builder.build();
+    }
+
+    static GLEnvContextManager create(GLEnvDisplay envDisplay,GLEnvConfigChooser configChooser) {
+        GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder(envDisplay,configChooser);
         return builder.build();
     }
 
@@ -71,14 +93,33 @@ public interface GLEnvContextManager {
             envContextBuilder = new GLEnvContext.Builder(configChooser, shareContext);
         }
 
+        public Builder(GLEnvDisplay envDisplay,GLEnvConfigChooser configChooser) {
+            this(envDisplay,envDisplay.chooseConfig(configChooser));
+        }
+
+        public Builder(GLEnvDisplay envDisplay,GLEnvConfig envConfig) {
+            this(envDisplay,envConfig,EGL14.EGL_NO_CONTEXT);
+        }
+
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext shareContext) {
             envContextBuilder = new GLEnvContext.Builder(envDisplay, envConfig, shareContext);
         }
+
+        /**
+         * 设置版本
+         * @param version
+         */
 
 
         public void setClientVersion(@GLEnvContext.OpenGLESVersion int version) {
             envContextBuilder.setClientVersion(version);
         }
+
+        /**
+         * 设置属性
+         * @param key
+         * @param value
+         */
         public void setContextAttrib(int key, int value) {
             envContextBuilder.setContextAttrib(key,value);
         }

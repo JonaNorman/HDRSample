@@ -14,7 +14,13 @@ public interface GLEnvThreadManager {
     boolean isRelease();
 
 
+    /**
+     * 在当前OpenGL环境提交一个请求
+     * @param runnable
+     * @return
+     */
     boolean post(Runnable runnable);
+
 
     boolean postDelayed(Runnable r, long delayMillis);
 
@@ -27,10 +33,22 @@ public interface GLEnvThreadManager {
 
     boolean executeSync(Runnable runnable, long timeout);
 
+    /**
+     * 异步提交
+     * @param callable
+     * @return
+     * @param <T>
+     */
     <T> Future<T> submit(Callable<T> callable);
 
     GLEnvContext getEnvContext();
 
+    /**
+     * 同步提交
+     * @param callable
+     * @return
+     * @param <T>
+     */
     <T> T submitSync(Callable<T> callable);
 
     Future<Boolean> submit(Runnable runnable);

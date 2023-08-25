@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class BufferUtil {
-    private static final int FLOAT_SIZE = 4;//float字节大小
+    private static final int FLOAT_SIZE = 4;//float的字节大小
 
     public static FloatBuffer createDirectFloatBuffer(float[] data) {
         FloatBuffer buffer = ByteBuffer

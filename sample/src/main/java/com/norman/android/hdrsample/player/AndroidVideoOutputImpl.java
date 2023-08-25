@@ -5,9 +5,8 @@ import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 
-public class VideoSurfaceOutput extends VideoOutput {
+class AndroidVideoOutputImpl extends AndroidVideoOutput {
 
-    private static final float DEFAULT_WAIT_TIME_SECOND = 0.2f;
     private Surface decoderSurface;
     private VideoView videoView;
 
@@ -31,18 +30,18 @@ public class VideoSurfaceOutput extends VideoOutput {
     private final OutputSizeSubscriber outputSizeSubscriber = new OutputSizeSubscriber() {
         @Override
         public void onOutputSizeChange(int width, int height) {
-            videoView.setAspectRatio(width*1.0f/height);
+            videoView.setAspectRatio(width*1.0f/height);//保证视频比例和Surface比例一样
         }
     };
 
 
-    public static VideoSurfaceOutput create() {
-        return new VideoSurfaceOutput();
+    public static AndroidVideoOutputImpl create() {
+        return new AndroidVideoOutputImpl();
     }
 
     @Override
     public synchronized void setOutputSurface(Surface surface) {
-        setOutputVideoView(null);
+        setOutputVideoView(null);// videoView和Surface只能同时设置一个
         setDecoderSurface(surface);
     }
 
@@ -60,19 +59,21 @@ public class VideoSurfaceOutput extends VideoOutput {
     }
 
     @Override
-    public synchronized void setOutputVideoView(VideoView view) {
-        if (videoView == view) {
-           return;
-        }
-        VideoView oldView = videoView;
-        if (oldView != null){
-            oldView.unsubscribe(surfaceSubscriber);
-            unsubscribe(outputSizeSubscriber);
-        }
-        videoView = view;
-        if (videoView != null) {
-            subscribe(outputSizeSubscriber);
-            videoView.subscribe(surfaceSubscriber);
+    public  void setOutputVideoView(VideoView view) {
+        synchronized (syncLock){
+            if (videoView == view) {
+                return;
+            }
+            VideoView oldView = videoView;
+            if (oldView != null){//取消上一次绑定
+                oldView.unsubscribe(surfaceSubscriber);
+                unsubscribe(outputSizeSubscriber);
+            }
+            videoView = view;
+            if (videoView != null) {
+                subscribe(outputSizeSubscriber);
+                videoView.subscribe(surfaceSubscriber);
+            }
         }
     }
 }

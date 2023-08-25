@@ -27,7 +27,7 @@ public class ColorMatrixUtil {
     public @interface ColorRange {}
 
     private static final Map<Integer, ColorMatrix> YUV_TO_RGB_MATRIX_MAP = new HashMap<>();
-
+    // 参考https://github.com/google/skia/blob/main/src/core/SkYUVMath.cpp
     private static final float[] BT2020_8BIT_FULL_YUV_TO_RGB = {
             1.000000f, 1.000000f, 1.000000f, 0.000000f,
             -0.000000f, -0.164553f, 1.881400f, 0.000000f,

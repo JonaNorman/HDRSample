@@ -29,7 +29,7 @@ class GLY2YExtensionRenderer extends GLTextureRenderer {
             "\n" +
             "precision highp float;\n" +
             "uniform __samplerExternal2DY2YEXT inputImageTexture;\n" +
-            "uniform mat4 yuvToRgbMatrix;\n" +
+            "uniform mat4 yuvToRgbMatrix;\n" +//__samplerExternal2DY2YEXT的纹理是YUV需要用对应矩阵转换成RGB
             "in  vec2 textureCoordinate;\n" +
             "out vec4 outColor;\n" +
             "\n" +
@@ -80,7 +80,11 @@ class GLY2YExtensionRenderer extends GLTextureRenderer {
         GLES20.glUniformMatrix4fv(yuvToRgbMatrixUniform, 1, false, ColorMatrixUtil.getYuvToRgbMatrix(bitDepth,colorRange), 0);
     }
 
-    public static boolean isContainY2YEXT() {
+    /**
+     * 是否支持Y2Y扩展支持
+     * @return
+     */
+    public static boolean isSupportY2YEXT() {
         String extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS);
         return extensions.contains(EXTENSION_YUV_TARGET);
     }

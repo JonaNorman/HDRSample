@@ -9,7 +9,7 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.norman.android.hdrsample.player.VideoGLOutput;
+import com.norman.android.hdrsample.player.GLVideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
@@ -48,7 +48,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
         hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
-        VideoGLOutput videoOutput = VideoGLOutput.create();
+        GLVideoOutput videoOutput = GLVideoOutput.create(GLVideoOutput.TEXTURE_SOURCE_TYPE_BUFFER);
         videoPlayer = VideoPlayer.create(videoOutput);
 //        1.mp4
 //        2.mp4  //
@@ -70,8 +70,6 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         videoOutput.addVideoTransform(videoTransform);
         videoOutput.addVideoTransform(hdrToSDRVideoTransform);
         videoOutput.setOutputVideoView(videoView);
-        videoView.setViewType(VideoView.VIEW_TYPE_TEXTURE_VIEW);
-
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
         findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);

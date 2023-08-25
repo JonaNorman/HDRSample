@@ -1,5 +1,8 @@
 package com.norman.android.hdrsample.opengl;
 
+/**
+ * EGL的config配置选择器简单实现，注意选取出来的配置大于等于要求的配置，譬如选取的RGBA8888不支持，出来的可能就是RGBA16161616
+ */
 public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
 
 
@@ -19,6 +22,7 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
         int sampleBuffers;
         boolean windowSurface = true;
         boolean pbufferSurface = true;
+        //默认要求支持OpenGL2.0和3.0
         Boolean renderGL10;
         Boolean renderGL20 = true;
         Boolean renderGL30 = true;
@@ -65,16 +69,26 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
         }
 
 
+        /**
+         * 是否支持OpenGL1.0
+         * @param renderGL10 null 表示都可以， true表示要支持，false表示不支持
+         */
         public void setRenderGL10(Boolean renderGL10) {
             this.renderGL10 = renderGL10;
         }
 
-
+        /**
+         * 是否支持OpenGL2.0
+         * @param renderGL20 null 表示都可以， true表示要支持，false表示不支持
+         */
         public void setRenderGL20(Boolean renderGL20) {
             this.renderGL20 = renderGL20;
         }
 
-
+        /**
+         * 是否支持OpenGL3.0
+         * @param renderGL30 null 表示都可以， true表示要支持，false表示不支持
+         */
         public void setRenderGL30(Boolean renderGL30) {
             this.renderGL30 = renderGL30;
         }

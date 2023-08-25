@@ -14,6 +14,9 @@ public class GLEnvException extends RuntimeException {
         return errorCode;
     }
 
+    /**
+     * 检查EGL的Error错误
+     */
     static void checkError() {
         while (true) {
             int error = EGL14.eglGetError();
@@ -25,6 +28,9 @@ public class GLEnvException extends RuntimeException {
         }
     }
 
+    /**
+     * 有些情况下，报错的error不需要抛出异常，就清空错误记录
+     */
 
     static void clearError() {
         while (true) {

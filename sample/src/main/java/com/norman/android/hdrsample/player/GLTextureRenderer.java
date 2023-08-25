@@ -24,11 +24,9 @@ class GLTextureRenderer extends GLRenderer {
     @interface TextureType {
     }
 
-    private static final int VERTEX_LENGTH = 2;
-
 
     private static final String FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
-            "precision mediump float;\n" +
+            "precision highp float;\n" +
             "varying highp vec2 textureCoordinate;\n" +
             "uniform sampler2D inputImageTexture;\n" +
             "\n" +
@@ -39,7 +37,7 @@ class GLTextureRenderer extends GLRenderer {
             "}";
 
     private static final String EXTERNAL_OES_FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
-            "precision mediump float;\n" +
+            "precision highp float;\n" +
             "varying highp vec2 textureCoordinate;\n" +
             "uniform samplerExternalOES inputImageTexture;\n" +
             "\n" +
@@ -50,7 +48,7 @@ class GLTextureRenderer extends GLRenderer {
             "}";
 
 
-    private static final String VERTEX_SHADER = "precision mediump float;\n" +
+    private static final String VERTEX_SHADER = "precision highp float;\n" +
             "attribute vec4 position;\n" +
             "attribute vec4 inputTextureCoordinate;\n" +
             "uniform mat4 textureMatrix;\n" +
@@ -84,8 +82,8 @@ class GLTextureRenderer extends GLRenderer {
 
     public GLTextureRenderer(@TextureType int textureType) {
         this.textureType = textureType;
-        positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
-        textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();
+        positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();//平面的顶点坐标
+        textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();//纹理坐标
     }
 
 
@@ -123,9 +121,15 @@ class GLTextureRenderer extends GLRenderer {
         textureCoordinateBuffer.clear();
         GLES20.glUseProgram(programId);
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
-        GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
+        GLES20.glVertexAttribPointer(positionCoordinateAttribute,
+                GLESUtil.FLAT_VERTEX_LENGTH,
+                GLES20.GL_FLOAT, false, 0,
+                positionCoordinateBuffer);
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
-        GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
+        GLES20.glVertexAttribPointer(textureCoordinateAttribute,
+                GLESUtil.FLAT_VERTEX_LENGTH,
+                GLES20.GL_FLOAT, false, 0,
+                textureCoordinateBuffer);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         bindTexture(textureId);
         GLES20.glUniform1i(textureUnitUniform, 0);

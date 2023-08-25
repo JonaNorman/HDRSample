@@ -4,10 +4,13 @@ import android.opengl.Matrix;
 
 import androidx.annotation.NonNull;
 
+/**
+ *OpenGL Matrix的封装，set开头的方法会把数据替换调，其他方法是可以连续调用的
+ */
 public class GLMatrix implements Cloneable {
 
-    private static final int MATRIX_LENGTH = 16;
-    private static final int POINT_LENGTH = 4;
+    private static final int MATRIX_LENGTH = 16;//矩阵长度4*4 =16
+    private static final int POINT_LENGTH = 4;//
     private final float[] tempMatrix = new float[MATRIX_LENGTH];
     private final float[] tempPoint = new float[POINT_LENGTH];
 
@@ -166,6 +169,12 @@ public class GLMatrix implements Cloneable {
         return this;
     }
 
+    /**
+     * 预乘
+     * @param matrix4
+     * @return
+     */
+
     public GLMatrix preMul(GLMatrix matrix4) {
         multiplyMM(currentMatrix, currentMatrix, matrix4.get());
         return this;
@@ -240,10 +249,18 @@ public class GLMatrix implements Cloneable {
         return this;
     }
 
+    /**
+     * 获取逆矩阵
+     * @param matrix4
+     */
+
     public void getInvert(GLMatrix matrix4) {
         Matrix.invertM(matrix4.get(), 0, currentMatrix, 0);
     }
 
+    /**
+     * 逆转矩阵
+     */
     public void invert() {
         Matrix.invertM(tempMatrix, 0, currentMatrix, 0);
         copyMM(tempMatrix,currentMatrix);
@@ -270,7 +287,7 @@ public class GLMatrix implements Cloneable {
         return new GLMatrix(currentMatrix);
     }
 
-    // 解决result和left、right一样时的问题
+    // Matrix.multiplyMM原生方法result和left、right同一个引用，通过新建一个矩阵做中转解决
     void multiplyMM(float[] result, float[] left, float[] right) {
         boolean useTemp = result == left || result == right;
         if (!useTemp) {
@@ -281,7 +298,8 @@ public class GLMatrix implements Cloneable {
         copyMM(tempMatrix,result);
     }
 
-    // 解决resultPoint和point一样时的问题
+    // Matrix.multiplyMV原生方法resultPoint和point同一个引用，通过新建一个数组做中转解决
+
     void multiplyMV(float[] resultPoint, float[] matrix, float[] point) {
         boolean useTemp = resultPoint == point;
         if (!useTemp) {

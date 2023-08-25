@@ -24,7 +24,7 @@ public class GLTextureSurface extends Surface {
 
 
     /**
-     * 已经关联纹理
+     * 是否已经关联纹理
      * @return
      */
     public boolean isAttached() {
@@ -88,7 +88,7 @@ public class GLTextureSurface extends Surface {
     }
 
     /**
-     * SurfaceTexture的加强版，支持获取getTextureId和isAttached状态判断
+     * SurfaceTexture的加强版，支持获取getTextureId、isAttached
      */
     static class SurfaceTexturePlus extends SurfaceTexture {
         boolean release = false;

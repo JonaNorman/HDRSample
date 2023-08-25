@@ -1,5 +1,8 @@
 package com.norman.android.hdrsample.player;
 
+/**
+ * 视频图像处理，如果需要输出到新的纹理需要调用success
+ */
 public abstract class GLVideoTransform  extends GLRenderer {
 
     GLRenderTextureTarget inputTarget;
@@ -29,7 +32,11 @@ public abstract class GLVideoTransform  extends GLRenderer {
         return inputTarget.colorSpace;
     }
 
-    protected final @VideoOutput.ColorSpace int getInputMaxContentLuminance() {
+    /**
+     * HDR的MaxContentLuminance在HDR转SDR有用
+     * @return
+     */
+    protected final  int getInputMaxContentLuminance() {
         return inputTarget.maxContentLuminance;
     }
 

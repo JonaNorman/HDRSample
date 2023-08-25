@@ -95,7 +95,7 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
     }
 
     protected void onPlaySeek(long presentationTimeUs) {
-        decoder.flush();
+        decoder.flush();//seek时清空解码信息
         extractor.seekPreSync(presentationTimeUs);
     }
 
@@ -130,7 +130,7 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
         @Override
         public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer inputBuffer) {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            extractor.readSampleBuffer(inputBuffer, bufferInfo);
+            extractor.read(inputBuffer, bufferInfo);
             extractor.advance();
             return bufferInfo;
         }
@@ -157,7 +157,7 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
         public void onOutputBufferEndOfStream() {
             DecodePlayerImpl.this.onOutputBufferEndOfStream();
             callBackHandler.callEnd();
-            if (repeat) {
+            if (repeat) {//循环播放
                 seek(0);
             }
         }

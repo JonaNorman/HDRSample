@@ -22,6 +22,7 @@ class GLRenderScreenTarget extends GLRenderTarget {
 
     @Override
     void onRenderStart() {
+        //渲染到屏幕的frameBuffer是0
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
         GLES30.glViewport(0, 0, renderWidth, renderHeight);
     }

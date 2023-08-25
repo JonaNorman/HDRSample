@@ -12,6 +12,9 @@ import com.norman.android.hdrsample.util.MediaFormatUtil;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
+/**
+ * 视频解码器的实现
+ */
 class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
 
@@ -38,6 +41,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         mediaCodecAdapter.setOutputSurface(outputSurface);
         MediaFormat inputFormat = configuration.mediaFormat;
         if (outputMode == BUFFER_MODE){
+            //buffer模式下如果支持Android13的YUVP010就设置COLOR_FormatYUVP010，不然就是设置YUV420格式
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     mediaCodecAdapter.isSupportColorFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
                 inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010);
@@ -45,6 +49,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
                 inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
             }
         }else {
+            // Surface模式下要设置COLOR_FormatSurface
             inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,  MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         }
         mediaCodecAdapter.configure(configuration.mediaFormat, outputMode == SURFACE_MODE, new MediaCodecCallBackWrapper(mediaCodecAdapter,configuration.callBack ));
@@ -53,8 +58,8 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
     @Override
     public synchronized void setOutputSurface(Surface surface) {
-        outputSurface = surface;
-        if (mediaCodecAdapter != null) {
+        outputSurface = surface;//
+        if (mediaCodecAdapter != null) {//mediaCodecAdapter为null表示Configure前设置Surface，不为null表示动态改吧Surface
             mediaCodecAdapter.setOutputSurface(surface);
         }
     }
@@ -160,7 +165,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
         @Override
         public void onOutputFormatChanged(MediaFormat format) {
-            // 根据解码器名称和colorFormat查找视频是哪种YUV420
+            // 根据解码器名称和colorFormat查找视频是哪种YUV420，把YUV420格式写入到format方便后续读取
             int colorFormat = MediaFormatUtil.getInteger(format,MediaFormat.KEY_COLOR_FORMAT);
             format.setInteger(KEY_YUV420_TYPE, ColorFormatUtil.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
             callBack.onOutputFormatChanged(format);

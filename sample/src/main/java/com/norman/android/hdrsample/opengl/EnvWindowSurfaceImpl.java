@@ -6,6 +6,8 @@ import android.opengl.EGLExt;
 import android.opengl.EGLSurface;
 import android.view.Surface;
 
+import androidx.annotation.NonNull;
+
 class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
 
 
@@ -14,16 +16,16 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
     private final GLEnvDisplay envDisplay;
     private final GLEnvConfig envConfig;
 
-    private final GLEnvWindowSurfaceAttribArray windowSurfaceAttribArray;
+    private final AttrList attrList;
 
     private final int[] surfaceSize = new int[2];
     private boolean release;
 
-    public EnvWindowSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, Surface surface, GLEnvWindowSurfaceAttribArray windowSurfaceAttrib) {
+    public EnvWindowSurfaceImpl(GLEnvDisplay envDisplay, GLEnvConfig envConfig, Surface surface, AttrList windowSurfaceAttrib) {
         this.envDisplay = envDisplay;
         this.envConfig = envConfig;
         this.surface = surface;
-        this.windowSurfaceAttribArray = windowSurfaceAttrib;
+        this.attrList = windowSurfaceAttrib;
         eglSurface = EGL14.eglCreateWindowSurface(
                 envDisplay.getEGLDisplay(),
                 envConfig.getEGLConfig(),
@@ -69,7 +71,7 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
         if (!destroySurface) {
             GLEnvException.checkError();
         }else {
-            //部分机型如果eglDestroySurface后不releaseThread或makeNoCurrent在重新创建EGLSurface会报EGL_BAD_ALLOC
+            //部分机型如果eglDestroySurface后不releaseThread或makeNoCurrent再重新创建EGLSurface会报EGL_BAD_ALLOC
             if (eglSurface.equals(currentSurface)){
                 envDisplay.releaseThread();
             }
@@ -136,5 +138,14 @@ class EnvWindowSurfaceImpl implements GLEnvWindowSurface {
             return;
         }
         throw new IllegalStateException("Surface is no longer available, please check Surface");
+    }
+
+    static class AttribImpl extends EnvSurfaceAttrsImpl implements AttrList {
+
+        @NonNull
+        @Override
+        public AttribImpl clone() {
+            return (AttribImpl) super.clone();
+        }
     }
 }

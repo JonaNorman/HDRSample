@@ -59,16 +59,16 @@ class ScreenBrightnessObserver extends ContentObserver {
 
 
     public synchronized BrightnessInfo getBrightnessInfo() {
-        if (brightnessInfo == null) {
-            brightnessInfo = new BrightnessInfo();
-            loadBrightness();
-        }
+        loadBrightness();
         return brightnessInfo;
     }
 
     private synchronized void loadBrightness() {
         int maxBrightness = DisplayUtil.getMaxBrightness();
         int brightness = DisplayUtil.getBrightness();
+        if (brightnessInfo == null) {
+            brightnessInfo = new BrightnessInfo();
+        }
         brightnessInfo.brightness = brightness;
         brightnessInfo.brightnessMax = maxBrightness;
         brightnessInfo.brightnessFloat = MathUtils.clamp(brightness * 1.0f / maxBrightness, 0.0f, 1.0f);

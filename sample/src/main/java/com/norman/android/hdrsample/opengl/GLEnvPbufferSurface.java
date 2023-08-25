@@ -1,6 +1,8 @@
 package com.norman.android.hdrsample.opengl;
 
-
+/**
+ * EGLPBufferSurface的封装
+ */
 public interface GLEnvPbufferSurface extends GLEnvSurface {
 
      static GLEnvPbufferSurface create(GLEnvContext envContext, int width, int height){
@@ -14,7 +16,7 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
 
         // surface属性
 
-        EnvPbufferSurfaceAttribArrayImpl surfaceAttrib = new EnvPbufferSurfaceAttribArrayImpl();
+        EnvPbufferSurfaceImpl.AttrListImpl surfaceAttrib = new EnvPbufferSurfaceImpl.AttrListImpl();
 
 
         public Builder(GLEnvContext envContext, int width, int height) {
@@ -50,6 +52,12 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
             surfaceAttrib.setColorSpace(colorSpace);
         }
 
+        /**
+         * 设置Surface属性
+         * @param key
+         * @param value
+         */
+
         public void setSurfaceAttrib(int key, int value) {
             surfaceAttrib.setAttrib(key, value);
         }
@@ -59,4 +67,14 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
 
     }
 
+    interface AttrList extends GLEnvSurface.AttrList {
+
+        void setWidth(int width);
+
+        void setHeight(int height);
+
+        int getWidth();
+
+        int getHeight();
+    }
 }

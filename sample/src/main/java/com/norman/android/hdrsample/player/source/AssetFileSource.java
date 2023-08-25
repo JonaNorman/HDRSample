@@ -7,6 +7,9 @@ import com.norman.android.hdrsample.util.FileUtil;
 import java.io.FileDescriptor;
 import java.io.IOException;
 
+/**
+ * asset文件
+ */
 public class AssetFileSource implements FileSource {
 
     final String assetPath;
@@ -65,7 +68,7 @@ public class AssetFileSource implements FileSource {
                 }
                 try {
                     assetFileDescriptor.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
 
                 }
                 closed = true;

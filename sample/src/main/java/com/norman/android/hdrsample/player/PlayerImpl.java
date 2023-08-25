@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * 播放器的状态封装
+ */
 abstract class PlayerImpl implements Player {
 
     private static final int PLAY_UNINITIALIZED = 0;

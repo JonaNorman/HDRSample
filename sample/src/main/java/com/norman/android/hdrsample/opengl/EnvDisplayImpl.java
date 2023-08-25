@@ -5,6 +5,8 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLDisplay;
 import android.text.TextUtils;
 
+import com.norman.android.hdrsample.util.LogUtil;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,9 +14,18 @@ import javax.microedition.khronos.egl.EGL10;
 
 class EnvDisplayImpl implements GLEnvDisplay {
 
+    /**
+     * BT2020PQ的扩展
+     */
     private static final String EXTENSION_COLOR_SPACE_BT2020_PQ = "EGL_EXT_gl_colorspace_bt2020_pq";
 
+    /**
+     * BT2020HLG的扩展
+     */
     private static final String EXTENSION_COLOR_SPACE_BT2020_HLG = "EGL_EXT_gl_colorspace_bt2020_hlg";
+    /**
+     * 不需要Surface也可以执行OpenGL命令
+     */
     private static final String EGL_KHR_surfaceless_context = "EGL_KHR_surfaceless_context";
 
 
@@ -38,6 +49,7 @@ class EnvDisplayImpl implements GLEnvDisplay {
         if (eglDisplay == EGL14.EGL_NO_DISPLAY || eglDisplay == null) {
             GLEnvException.checkError();
         }
+        //初始化，majorVersion和minorVersion返回的就是1.4
         int[] majorVersion = new int[1];
         int[] minorVersion = new int[1];
         if (!EGL14.eglInitialize(eglDisplay, majorVersion, 0, minorVersion, 0)) {
@@ -78,7 +90,19 @@ class EnvDisplayImpl implements GLEnvDisplay {
 
     @Override
     public GLEnvConfig chooseConfig(GLEnvConfigChooser configChooser) {
-        return configChooser.chooseConfig(envConfigs);
+        GLEnvConfig envConfig  = configChooser.chooseConfig(envConfigs);
+        if (envConfig == null){
+            LogUtil.w("chooseConfig is null");
+        }else {
+            LogUtil.d("chooseConfig is "+envConfig);
+        }
+        return envConfig;
+    }
+
+    @Override
+    public boolean supportConfig(GLEnvConfigChooser configChooser) {
+        GLEnvConfig envConfig =  configChooser.chooseConfig(envConfigs);
+        return envConfig != null;
     }
 
     @Override

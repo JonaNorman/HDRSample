@@ -26,7 +26,7 @@ import java.util.List;
 
 
 /**
- * 异步加在MediaCodec
+ * 异步MediaCodec
  */
 class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
@@ -40,7 +40,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
         @Override
         public void onInputBufferAvailable(@NonNull MediaCodec codec, int index) {
-            if (inputEndStream) {
+            if (inputEndStream) {//输入已经结束不需要处理输入数据，不然会报错
                 return;
             }
             ByteBuffer byteBuffer = codec.getInputBuffer(index);
@@ -52,10 +52,12 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 bufferInfo.flags = MediaCodec.BUFFER_FLAG_END_OF_STREAM;
             }
             if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                //数据结束的标记是数据大小要置空
                 bufferInfo.offset = 0;
                 bufferInfo.size = 0;
                 inputEndStream = true;
             }
+            // 送入编解码解码数据
             codec.queueInputBuffer(index, bufferInfo.offset, bufferInfo.size, bufferInfo.presentationTimeUs, bufferInfo.flags);
         }
 
@@ -63,11 +65,13 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index, @NonNull MediaCodec.BufferInfo info) {
             ByteBuffer outputBuffer = codec.getOutputBuffer(index);
             if (outputBuffer == null) return;
+            // 获取输出数据，要把buffer的数据位置写好，方便后续读取
             outputBuffer.clear();
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
-            boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs >= 0;
+            boolean render = outputBuffer.hasRemaining() && info.presentationTimeUs >= 0;//数据为空，时间为负数不需要渲染
             if (outSurfaceMode && render) {
+                //surface无效就不需要渲染
                 synchronized (MediaCodecAsyncAdapter.this) {
                     render = outputSurface != null && outputSurface.isValid();
                 }
@@ -133,7 +137,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-    public synchronized String getCodecName(){
+    public synchronized String getCodecName() {
         if (isReleased()) {
             return null;
         }
@@ -156,6 +160,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     /**
      * 是否支持10位YUV420，10位YUV420实际是16位存储的
+     *
      * @return
      */
     public synchronized boolean isSupport10BitYUV420() {
@@ -165,13 +170,20 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
         MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodecInfo.getCapabilitiesForType(mimeType);
         for (int colorFormat : codecCapabilities.colorFormats) {
-            if (ColorFormatUtil.isSupport10BitYUV420(mediaCodecInfo.getName(),colorFormat)){
+            if (ColorFormatUtil.isSupport10BitYUV420(mediaCodecInfo.getName(), colorFormat)) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * 配置
+     *
+     * @param mediaFormat
+     * @param surfaceMode surface模式或者buffer模式
+     * @param callback
+     */
     public synchronized void configure(MediaFormat mediaFormat,
                                        boolean surfaceMode,
                                        CallBack callback) {
@@ -181,11 +193,11 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         this.outSurfaceMode = surfaceMode;
         this.callBack = callback;
         this.mediaCodec.setCallback(this);
-        if (!outSurfaceMode && outputSurface != null) {
+        if (!outSurfaceMode && outputSurface != null) {//buffer模式下还设置了Surface
             throw new IllegalArgumentException("bufferMode can not setOutputSurface");
         }
         Surface surface = outputSurface;
-        if (outSurfaceMode && surface == null) {
+        if (outSurfaceMode && surface == null) {//surface模式下没有设置surface需要配置一个占位的Surface防止异常
             if (holderSurface == null) {
                 holderSurface = new HolderSurface();
             }
@@ -201,29 +213,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         LogUtil.d(infoBuilder);
     }
 
-    public synchronized void reset() {
-        if (isReleased() || !isConfigured()) {
-            return;
-        }
-        mediaCodec.setCallback(null);
-        mediaCodec.reset();
-        configured = false;
-        paused = false;
-        started = false;
-        handler.removeCallbacksAndMessages(null);
-        handler = null;
-        flushNumber = 0;
-        outSurfaceMode = false;
-        inputEndStream = false;
-        resumeBuffer.clear();
-        if (holderSurface != null) {
-            holderSurface.release();
-            holderSurface = null;
-        }
-    }
-
-
-
 
     public synchronized void start() {
         if (isReleased() || isStarted()) {
@@ -237,23 +226,37 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-    public synchronized void stop(){
-        if (isReleased() ){
+    public synchronized void reset() {
+        if (isReleased() || !isConfigured()) {
             return;
         }
-        if (!isStarted()){
-            if (isConfigured()){
+        mediaCodec.reset();
+        cleanCodec();
+    }
+
+    public synchronized void stop() {
+        if (isReleased()) {
+            return;
+        }
+        if (!isStarted()) {
+            if (isConfigured()) {
                 throw new RuntimeException("stop must after mediacodec start");
             }
             return;
         }
-        mediaCodec.setCallback(null);
         mediaCodec.stop();
+        cleanCodec();
+    }
+
+    private void cleanCodec() {
+        mediaCodec.setCallback(null);
         configured = false;
         paused = false;
         started = false;
-        handler.removeCallbacksAndMessages(null);
-        handler = null;
+        if (handler == null){
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
         flushNumber = 0;
         outSurfaceMode = false;
         inputEndStream = false;
@@ -279,11 +282,22 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         paused = false;
         handler.post(new Runnable() {
             @Override
-            public void run() {
+            public void run() {//恢复时需要恢复上一次的buffer，并且为了保证时序要在handler中运行
                 resumeBuffer();
             }
         });
     }
+
+    private void resumeBuffer() {
+        if (isDirtyCallback() || isPaused()) {
+            return;
+        }
+        resumeBuffer.resume();
+    }
+
+    /**
+     * 清空编解码器中的数据
+     */
 
     public synchronized void flush() {
         if (!isStarted()) {
@@ -292,7 +306,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         flushNumber++;
         resumeBuffer.clear();
         mediaCodec.flush();
-        //mediaCodec异步模式中调用flush要等待looper的消息执行完毕才能调用其他方法如start方法
+        //mediaCodec异步模式中调用flush保证时序性要等待looper的消息执行完毕才能调用其他方法如start方法
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -303,7 +317,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     private synchronized void finishFlush() {
         flushNumber--;
-        if (flushNumber <= 0 && isConfigured()) {
+        if (flushNumber <= 0 && isConfigured()) {//等请求的flush已经结束就可以重新开启了
             inputEndStream = false;
             mediaCodec.start();
         }
@@ -314,17 +328,8 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         released = true;
-        mediaCodec.setCallback(null);
         mediaCodec.release();
-        resumeBuffer.clear();
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
-            handler = null;
-        }
-        if (holderSurface != null) {
-            holderSurface.release();
-            holderSurface = null;
-        }
+        cleanCodec();
     }
 
     public synchronized void setOutputSurface(Surface surface) {
@@ -333,7 +338,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         }
         outputSurface = surface;
         if (!isConfigured()) {
-           return;
+            return;
         }
         if (!outSurfaceMode) {
             throw new IllegalArgumentException("already in buffer mode, can no longer set Surface");
@@ -348,35 +353,57 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
 
-    private void resumeBuffer() {
-        if (isDirtyCallback() || isPaused()) {
-            return;
-        }
-        resumeBuffer.resume();
-    }
-
+    /**
+     * 已经销毁
+     *
+     * @return
+     */
 
     public synchronized boolean isReleased() {
         return released;
     }
 
+    /***
+     * 已经配置
+     * @return
+     */
     public synchronized boolean isConfigured() {
         return !released && configured;
     }
 
+    /**
+     * 已经打开codec
+     *
+     * @return
+     */
     public synchronized boolean isStarted() {
         return !released && configured && started;
     }
 
+    /**
+     * 运行中
+     *
+     * @return
+     */
     public synchronized boolean isRunning() {
         return isStarted() && !paused;
     }
 
 
+    /**
+     * 暂停中
+     *
+     * @return
+     */
     public synchronized boolean isPaused() {
         return isStarted() && paused;
     }
 
+    /**
+     * codec已经停止或者刷新中就不需要处理回调中的脏数据，不然会报错
+     *
+     * @return
+     */
     private synchronized boolean isDirtyCallback() {
         return flushNumber > 0 || !isStarted();
     }
@@ -429,11 +456,31 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
 
     interface CallBack {
 
+        /**
+         * buffer已经准备好，可以写入数据了
+         * @param byteBuffer
+         * @return
+         */
         MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer byteBuffer);
+
+        /**
+         * 编解码buffer数据处理完成
+         * @param outputBuffer
+         * @param presentationTimeUs
+         * @return true表示这一帧要处理
+         */
 
         boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
+        /**
+         * 一帧数据渲染完的回调
+         * @param presentationTimeUs
+         */
         void onOutputBufferRender(long presentationTimeUs);
+
+        /**
+         * 结束到编解码的数据结束标记
+         */
 
         void onOutputBufferEndOfStream();
 
@@ -477,13 +524,18 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
     /**
-     * 用Surface模式解码如果刚开始不设置Surface会报错，建立一个占位的Surface解决这个问题
+     * MediaCodec用Surface模式解码如果刚开始不设置Surface会报错，建立一个占位的Surface解决这个问题
      */
     static final class HolderSurface extends GLTextureSurface {
 
         private static GLEnvThreadManager ENV_THREAD_MANAGER;
         private static int THREAD_HOLDER_COUNT;
 
+        /**
+         * 建立一个OpenGL线程创建纹理ID，多个Surface同时引用一个线程
+         *
+         * @return
+         */
         private static int obtainTextureId() {
             synchronized (HolderSurface.class) {
                 if (ENV_THREAD_MANAGER == null || ENV_THREAD_MANAGER.isRelease()) {
@@ -505,10 +557,10 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             synchronized (HolderSurface.class) {
                 if (ENV_THREAD_MANAGER == null) return;
                 THREAD_HOLDER_COUNT--;
-                if (THREAD_HOLDER_COUNT == 0) {
+                if (THREAD_HOLDER_COUNT == 0) {//纹理的线程占有引用数量为0就销毁线程
                     ENV_THREAD_MANAGER.release();
                 } else {
-                    ENV_THREAD_MANAGER.post(new Runnable() {
+                    ENV_THREAD_MANAGER.post(new Runnable() {//删除纹理ID
                         @Override
                         public void run() {
                             GLESUtil.delTextureId(getTextureId());

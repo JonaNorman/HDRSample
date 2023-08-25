@@ -10,24 +10,23 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * EGLConfig的封装类
+ */
 class EnvConfigImpl implements GLEnvConfig {
 
     /**
-     * EGL configuration attribute used to expose EGLConfigs that support formats with floating
-     * point RGBA components. This attribute is exposed through the EGL_EXT_pixel_format_float
-     * EGL extension
-     * <p>
-     * See: https://www.khronos.org/registry/EGL/extensions/EXT/EGL_EXT_pixel_format_float.txt
+     * 颜色通道扩展
      */
     private static final int EGL_COLOR_COMPONENT_TYPE_EXT = 0x3339;
 
     /**
-     * EGL configuration attribute value that represents fixed point RGBA components
+     * RGBA颜色通道是整数
      */
     private static final int EGL_COLOR_COMPONENT_TYPE_FIXED_EXT = 0x333A;
 
     /**
-     * EGL configuration attribute value that represents floating point RGBA components
+     * RGBA通道是浮点
      */
     private static final int EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT = 0x333B;
 
@@ -81,7 +80,6 @@ class EnvConfigImpl implements GLEnvConfig {
 
     ConfigBoolValue colorFloat = new ConfigBoolValue("colorFixed", EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT, EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
 
-    //    EGL_COLOR_COMPONENT_TYPE_FIXED_EXT
     private final EGLConfig eglConfig;
 
 
@@ -380,8 +378,8 @@ class EnvConfigImpl implements GLEnvConfig {
         @Override
         public String toString() {
             return "[" +
-                    "name='" + name + '\'' +
-                    ", value=" + value +
+                     name +
+                    "," + value +
                     ']';
         }
     }
@@ -405,8 +403,8 @@ class EnvConfigImpl implements GLEnvConfig {
         @Override
         public String toString() {
             return "[" +
-                    "name='" + name + '\'' +
-                    ", value=" + hasValue +
+                     name +
+                    ","+ hasValue +
                     ']';
         }
     }

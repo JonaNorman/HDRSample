@@ -134,13 +134,13 @@ class VideoExtractorImpl implements VideoExtractor {
     }
 
     @Override
-    public synchronized void readSampleBuffer(ByteBuffer buffer, MediaCodec.BufferInfo bufferInfo) {
-        readSampleBuffer(buffer, 0, bufferInfo);
+    public synchronized void read(ByteBuffer buffer, MediaCodec.BufferInfo bufferInfo) {
+        read(buffer, 0, bufferInfo);
     }
 
 
     @Override
-    public synchronized void readSampleBuffer(ByteBuffer buffer, int offset, MediaCodec.BufferInfo bufferInfo) {
+    public synchronized void read(ByteBuffer buffer, int offset, MediaCodec.BufferInfo bufferInfo) {
         if (!isAvailable()) {
             return;
         }

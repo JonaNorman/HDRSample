@@ -2,8 +2,11 @@ package com.norman.android.hdrsample.opengl;
 
 import android.util.SparseArray;
 
-abstract class EnvSurfaceAttrsImpl extends EnvAttribArrayImpl implements GLEnvSurfaceAttribArray {
+abstract class EnvSurfaceAttrsImpl extends EnvAttrListImpl implements GLEnvSurface.AttrList {
 
+    /**
+     * 颜色空间扩展
+     */
     private static final int EGL_GL_COLORSPACE_KHR = 0x309D;
     private static final int EGL_GL_COLORSPACE_SRGB_KHR = 0x3089;
     private static final int EGL_GL_COLORSPACE_LINEAR_KHR = 0x308A;

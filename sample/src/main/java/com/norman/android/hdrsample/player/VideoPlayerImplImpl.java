@@ -13,11 +13,14 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
 
     private static final String VIDEO_PLAYER_NAME = "VideoPlayer";
 
+    /**
+     * 最大掉帧时间
+     */
     private static final int MAX_FRAME_JANK_MS = 50;
 
     private final VideoOutput videoOutput;
 
-    private final TimeSyncer timeSyncer = new TimeSyncer();
+    private final TimeSyncer timeSyncer = new TimeSyncer();//视频音画同步
 
     private Long seekTimeUs;
 
@@ -30,17 +33,11 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
         this.videoOutput = videoOutput;
     }
 
-
-    @Override
-    protected void onPlayPrepare() {
-        super.onPlayPrepare();
-    }
-
     @Override
     protected void onPlaySeek(long presentationTimeUs) {
         super.onPlaySeek(presentationTimeUs);
         seekTimeUs = presentationTimeUs;
-        timeSyncer.flush();
+        timeSyncer.flush();//seek时候清空时间同步信息
     }
 
     @Override
@@ -52,7 +49,7 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
     @Override
     protected void onPlayPause() {
         super.onPlayPause();
-        timeSyncer.flush();
+        timeSyncer.flush();//
         videoOutput.onDecodePause();
     }
 
@@ -86,13 +83,13 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
         if (!isPlaying()) {
             return false;
         }
-        if (seekTimeUs != null && presentationTimeUs < seekTimeUs) {
+        if (seekTimeUs != null && presentationTimeUs < seekTimeUs) {//seek是往前找的关键帧，如果还没到就不需要渲染
             return false;
         } else if (seekTimeUs != null) {
             seekTimeUs = null;
         }
         long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
-        if (sleepTime <= -MAX_FRAME_JANK_MS) {
+        if (sleepTime <= -MAX_FRAME_JANK_MS) {//掉帧不需要渲染
             return false;
         }
         videoOutput.onDecodeBufferAvailable(outputBuffer,presentationTimeUs);
@@ -101,7 +98,7 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
 
     @Override
     protected void onOutputBufferEndOfStream() {
-        seekTimeUs = null;
+        seekTimeUs = null;//视频播放结束清空原先的seek信息
     }
 
     @Override
@@ -109,7 +106,7 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
         long sleepTime = TimeUtil.microToMill(timeSyncer.sync(presentationTimeUs));
         if (sleepTime > 0) {
             try {
-                Thread.sleep(sleepTime);
+                Thread.sleep(sleepTime);//还没渲染的时间点就等待
             } catch (InterruptedException ignored) {
             }
         }

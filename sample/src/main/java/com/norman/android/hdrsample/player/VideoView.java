@@ -19,7 +19,11 @@ import androidx.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 播放器的显示View
+ */
 public class VideoView extends FrameLayout {
+
     public static final int VIEW_TYPE_SURFACE_VIEW = 1;
     public static final int VIEW_TYPE_TEXTURE_VIEW = 2;
 
@@ -28,6 +32,9 @@ public class VideoView extends FrameLayout {
     @interface ViewType {
     }
 
+    /**
+     * 在SurfaceView和TextureView切换时会有白屏异常，用延时来解决
+     */
     private static final int DELAY_REMOVE_VIEW_TIME_MS = 250;
 
     private static final int DEFAULT_VIEW_TYPE = VIEW_TYPE_SURFACE_VIEW;
@@ -172,6 +179,7 @@ public class VideoView extends FrameLayout {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 return;
             }
+            // 比例的调整
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             int originalMeasuredWidth = getMeasuredWidth();
             int originalMeasuredHeight = getMeasuredHeight();
@@ -241,6 +249,7 @@ public class VideoView extends FrameLayout {
             super.onMeasure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         }
 
+        //当Surface第一次打开或者退到后台重新打开会调用这个方法，可以在内部等待画面出来，不然画面还没加载完成SurfaceView已经绘制了会黑屏
         @Override
         public void surfaceRedrawNeeded(@NonNull SurfaceHolder holder) {
             onSurfaceRedraw(surface);
@@ -269,8 +278,12 @@ public class VideoView extends FrameLayout {
         }
     }
 
+    /***
+     * 订阅Surface
+     */
 
     interface SurfaceSubscriber {
+
         default void onSurfaceAvailable(Surface surface, int width, int height) {
 
         }

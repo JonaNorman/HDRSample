@@ -3,13 +3,27 @@ package com.norman.android.hdrsample.opengl;
 
 import android.view.Surface;
 
+/**
+ * EGLWindowSurface的封装
+ */
 public interface GLEnvWindowSurface extends GLEnvSurface {
 
 
+    /**
+     * 注意一个Surface只能同时和一个EGLWindowSurface绑定
+     * @param envContext
+     * @param surface
+     * @return
+     */
      static GLEnvWindowSurface create(GLEnvContext envContext, Surface surface){
         GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, surface);
         return   builder.build();
     }
+
+    /**
+     * 设置Surface的时间
+     * @param presentationNs
+     */
     void setPresentationTime(long presentationNs);
 
     void swapBuffers();
@@ -23,7 +37,7 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         GLEnvDisplay envDisplay;
         GLEnvConfig envConfig;
         Surface surface;
-        EnvWindowSurfaceAttribImpl windowSurfaceAttrib = new EnvWindowSurfaceAttribImpl();
+        EnvWindowSurfaceImpl.AttribImpl windowSurfaceAttrib = new EnvWindowSurfaceImpl.AttribImpl();
 
 
         public Builder(GLEnvContext envContext, Surface surface) {
@@ -45,13 +59,6 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
             this(envDisplay, envDisplay.chooseConfig(envConfigChooser), surface);
         }
 
-        public boolean isSupportBT2020PQ(){
-            return  envDisplay.isSupportBT2020PQ();
-        }
-
-        public boolean isSupportBT2020HLG(){
-            return  envDisplay.isSupportBT2020HLG();
-        }
         /**
          * 设置色域
          * @param colorSpace
@@ -67,6 +74,10 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
         public GLEnvWindowSurface build() {
             return new EnvWindowSurfaceImpl(envDisplay, envConfig, surface, windowSurfaceAttrib.clone());
         }
+
+    }
+
+    interface AttrList extends GLEnvSurface.AttrList {
 
     }
 }

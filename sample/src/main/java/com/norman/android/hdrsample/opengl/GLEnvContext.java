@@ -11,6 +11,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 
+/**
+ * EGLContext的封装
+ */
 public interface GLEnvContext {
     int OPENGL_ES_VERSION_1 = 1;
     int OPENGL_ES_VERSION_2 = 2;
@@ -28,9 +31,18 @@ public interface GLEnvContext {
 
     GLEnvConfig getEnvConfig();
 
+    /**
+     * 把Surface设置为当前环境的渲染目标
+     * @param envSurface
+     */
+
     void makeCurrent(GLEnvSurface envSurface);
 
     void makeCurrent(EGLSurface eglSurface);
+
+    /**
+     * 退出OpenGL当前执行环境
+     */
 
     void makeNoCurrent();
 
@@ -54,6 +66,16 @@ public interface GLEnvContext {
         return builder.build();
     }
 
+    static GLEnvContext create(GLEnvDisplay envDisplay,GLEnvConfig envConfig) {
+        GLEnvContext.Builder builder = new GLEnvContext.Builder(envDisplay,envConfig);
+        return builder.build();
+    }
+
+    static GLEnvContext create(GLEnvDisplay envDisplay,GLEnvConfigChooser configChooser) {
+        GLEnvContext.Builder builder = new GLEnvContext.Builder(envDisplay,configChooser);
+        return builder.build();
+    }
+
     static GLEnvContext create(@OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
         GLEnvContext.Builder builder = new GLEnvContext.Builder(configChooser);
         builder.setClientVersion(version);
@@ -67,7 +89,7 @@ public interface GLEnvContext {
         GLEnvConfig envConfig;
         EGLContext shareContext;
 
-        final EnvContextAttribArrayImpl contextAttribArray = new EnvContextAttribArrayImpl();
+        final EnvContextImpl.AttrListImpl contextAttribArray = new EnvContextImpl.AttrListImpl();
 
         public Builder() {
             this(EGL14.EGL_NO_CONTEXT);
@@ -88,6 +110,14 @@ public interface GLEnvContext {
             setClientVersion(OPENGL_ES_VERSION_3);
         }
 
+        public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig) {
+           this(envDisplay,envConfig,EGL14.EGL_NO_CONTEXT);
+        }
+
+        public Builder(GLEnvDisplay envDisplay, GLEnvConfigChooser configChooser) {
+            this(envDisplay,envDisplay.chooseConfig(configChooser));
+        }
+
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext eglContext) {
             this.envDisplay = envDisplay;
             this.envConfig = envConfig;
@@ -96,9 +126,19 @@ public interface GLEnvContext {
         }
 
 
+        /**
+         * OpenGL版本号
+         * @param version
+         */
         public void setClientVersion(@OpenGLESVersion int version) {
             contextAttribArray.setClientVersion(version);
         }
+
+        /**
+         * 设置Context属性
+         * @param key
+         * @param value
+         */
 
         public void setContextAttrib(int key, int value) {
             contextAttribArray.setAttrib(key, value);
@@ -109,4 +149,10 @@ public interface GLEnvContext {
         }
     }
 
+    /**
+     * EGLContext的属性列表
+     */
+    interface AttrList extends GLEnvAttrList {
+        void setClientVersion(@OpenGLESVersion int version);
+    }
 }
