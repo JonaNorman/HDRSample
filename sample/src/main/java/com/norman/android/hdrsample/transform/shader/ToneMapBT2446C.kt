@@ -16,7 +16,7 @@ package com.norman.android.hdrsample.transform.shader
  * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/bt2446c.glsl
  */
 
-object ToneMapBT2446C : GamutMap() {
+object ToneMapBT2446C : ToneMap() {
     override val code: String
         get() = """
           const float ip = 58.535;   // linear length 输入是绝对值，把hdr-toys中的0.58535乘100，
@@ -33,16 +33,16 @@ object ToneMapBT2446C : GamutMap() {
           }
 
           float curve(float x) {//  hdr-toys中还乘以over_white =1019.0 / 940.0，这里决定不乘，因为前面处理过已经是全范围了
-              return f(x, k1, k3, ip) ;
+              return f(x, k1, k3, ip);
           }
 
-          vec3 $methodGamutMap(vec3 color) {
+          vec3 $methodToneMap(vec3 color) {
               color = ${ReScale.methodScaleReferenceWhiteToOne}(color);
-              color.rgb = ${ColorConversion.methodBt2020ToXYZ}(color.rgb);
-              color.rgb = ${ColorConversion.methodXYZToxyY}(color.rgb);
+              color= ${ColorConversion.methodBt2020ToXYZ}(color);
+              color = ${ColorConversion.methodXYZToxyY}(color);
               color.z   = curve(color.z);
-              color.rgb = ${ColorConversion.methodxyYToXYZ}(color.rgb);
-              color.rgb = ${ColorConversion.methodXYZToBt2020}(color.rgb);
+              color = ${ColorConversion.methodxyYToXYZ}(color);
+              color = ${ColorConversion.methodXYZToBt2020}(color);
               return color;
           }
         """.trimIndent()

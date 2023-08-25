@@ -176,19 +176,31 @@ object ColorConversion : GLShaderCode() {
         }
        
         vec3 $methodXYZToxyY(vec3 XYZ) {
-            float divisor = XYZ.x + XYZ.y + XYZ.z;
+            float X = XYZ.x;
+            float Y = XYZ.y;
+            float Z = XYZ.z;
+
+            float divisor = X + Y + Z;
             if (divisor == 0.0) divisor = 1e-6;
-            float x = XYZ.x / divisor;
-            float y = XYZ.y / divisor;
-            return vec3(x, y, XYZ.z);
+
+            float x = X / divisor;
+            float y = Y / divisor;
+
+            return vec3(x, y, Y);
         }
 
         vec3 $methodxyYToXYZ(vec3 xyY) {
-            float multiplo = xyY.z / max(xyY.y, 1e-6);
-            float z = 1.0 - xyY.x - xyY.y;
-            float X = xyY.x * multiplo;
+            float x = xyY.x;
+            float y = xyY.y;
+            float Y = xyY.z;
+
+            float multiplo = Y / max(y, 1e-6);
+
+            float z = 1.0 - x - y;
+            float X = x * multiplo;
             float Z = z * multiplo;
-            return vec3(X, xyY.z, Z);
+
+            return vec3(X, Y, Z);
         } 
         """.trimIndent()
 
