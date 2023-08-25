@@ -37,6 +37,7 @@ object ToneMapBT2446C : GamutMap() {
           }
 
           vec3 $methodGamutMap(vec3 color) {
+              color = ${ReScale.methodScaleReferenceWhiteToOne}(color);
               color.rgb = ${ColorConversion.methodBt2020ToXYZ}(color.rgb);
               color.rgb = ${ColorConversion.methodXYZToxyY}(color.rgb);
               color.z   = curve(color.z);

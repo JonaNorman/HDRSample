@@ -24,7 +24,7 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection,toneMap: ToneMap, gamutM
             |
             |${MetaDataParams.code}
             |${ColorConversion.code}
-            |${ReScaleSDR.code}
+            |${ReScale.code}
             |${GammaHLG.code}
             |${GammaPQ.code}
             |${chromaCorrection.code}
@@ -45,11 +45,9 @@ class HDRToSDRShader(chromaCorrection: ChromaCorrection,toneMap: ToneMap, gamutM
             |       gl_FragColor = vec4(1.0,0.0,0.0,1.0);
             |       return;
             |  }
-            |  vec3 absoluteColor = ${ReScaleSDR.methodScaleAbsolute}(linearColor);
-            |  vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(absoluteColor);
+            |  vec3 chromaCorrectColor = ${chromaCorrection.methodChromaCorrect}(linearColor);
             |  vec3 toneMapColor = ${toneMap.methodToneMap}(chromaCorrectColor);
-            |  vec3 normalizeColor = ${ReScaleSDR.methodScaleDisplay}(toneMapColor);
-            |  vec3 gamutMapColor = ${gamutMap.methodGamutMap}(normalizeColor);
+            |  vec3 gamutMapColor = ${gamutMap.methodGamutMap}(toneMapColor);
             |  vec3 finalColor = ${displayGamma.methodOETF}(gamutMapColor);
             |  gl_FragColor.rgb = finalColor;
             |  gl_FragColor.a = textureColor.a;

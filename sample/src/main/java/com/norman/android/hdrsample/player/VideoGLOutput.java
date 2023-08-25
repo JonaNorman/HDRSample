@@ -189,9 +189,9 @@ public class VideoGLOutput extends VideoOutput {
             int whitePointChromaticityY = shortBuffer.get(7);;
             int maxMasteringLuminance = shortBuffer.get(8);;
             int minMasteringLuminance = shortBuffer.get(9);;
-            maxContentLuminance = shortBuffer.get(10);;
-            maxContentLuminance =   maxContentLuminance <=0? 1000: maxContentLuminance;
+            int maxContentLuminance = shortBuffer.get(10);;
             int maxFrameAverageLuminance = shortBuffer.get(11);
+            this.maxContentLuminance =   maxFrameAverageLuminance <=0? 1000: maxFrameAverageLuminance;
         }else{
             maxContentLuminance = 0;
         }

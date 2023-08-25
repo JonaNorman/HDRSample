@@ -1,8 +1,11 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
 
 //参考代码:https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c
 // https://blog.csdn.net/a360940265a/article/details/124671992
@@ -24,8 +27,9 @@ object ToneMappingHable : ToneMap() {
             }
 
             vec3 $methodToneMap(vec3 rgb) {
+                rgb = $methodScaleReferenceWhiteToOne(rgb);
                 float sig_orig = max(max(rgb.r, rgb.g), rgb.b);
-                float peak = $MAX_CONTENT_LUMINANCE;
+                float peak = $MAX_CONTENT_LUMINANCE/$HDR_REFERENCE_WHITE;
                 float sig = hable(sig_orig) / hable(peak);
                 return  rgb  * sig / sig_orig;
             }

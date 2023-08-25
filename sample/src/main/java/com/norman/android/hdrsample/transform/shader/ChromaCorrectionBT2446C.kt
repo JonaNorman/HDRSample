@@ -53,6 +53,7 @@ object ChromaCorrectionBT2446C : ChromaCorrection() {
 
         // 注意输入的颜色不是0～1，而0～MAX_CONTENT_LUMINANCE，大于HDR_REFERENCE_WHITE是高光颜色
         vec3 ${methodChromaCorrect}(vec3 color) {
+           color = ${ReScale.methodScaleToMaster}(color);
            float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;
            float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE)).x;
            color = crosstalk(color);
@@ -62,6 +63,7 @@ object ChromaCorrectionBT2446C : ChromaCorrection() {
            color = $methodLchToLab(color);
            color = $methodLabToBT2020(color);
            color = crosstalk_inv(color);
+           color = ${ReScale.methodNormalizeMaster}(color);
            return color;
         }
         """.trimIndent()

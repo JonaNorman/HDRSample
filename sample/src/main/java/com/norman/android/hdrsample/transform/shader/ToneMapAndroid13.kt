@@ -71,10 +71,13 @@ object ToneMapAndroid13 : ToneMap() {
 
         vec3 $methodToneMap(vec3 rgb)
         {
+            rgb = ${ReScale.methodScaleToMaster}(rgb);
             vec3 xyz = $methodBt2020ToXYZ(rgb);
             float gain = lookupTonemapGain(rgb);//maxRgb用曲线调整后的比值作为gain值
             xyz = xyz * gain;
-            return $methodXYZToBt2020(xyz);
+            rgb =  $methodXYZToBt2020(xyz);
+            rgb = ${ReScale.methodNormalizeDisplay}(rgb);
+            return rgb;
         }
         """.trimIndent()
 }

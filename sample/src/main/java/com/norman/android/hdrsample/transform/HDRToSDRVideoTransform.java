@@ -93,7 +93,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         GLESUtil.checkGLError();
         GLES20.glUniform1f(maxContentLuminanceUniform, getInputMaxContentLuminance());
         GLESUtil.checkGLError();
-        GLES20.glUniform1f(currentDisplayLuminanceUniform, screenBrightnessObserver.getBrightnessInfo().brightness * DisplayUtil.getMaxLuminance());
+        GLES20.glUniform1f(currentDisplayLuminanceUniform, screenBrightnessObserver.getBrightnessInfo().brightnessFloat * DisplayUtil.getMaxLuminance());
         GLESUtil.checkGLError();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLESUtil.checkGLError();

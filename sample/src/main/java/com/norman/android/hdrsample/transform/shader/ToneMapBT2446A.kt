@@ -1,6 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
 
 /**
  * 该实现是BT2446中介绍的a方法
@@ -25,8 +26,8 @@ object ToneMapBT2446A : ToneMap() {
 
             /* BT.2446-1-2021 method A */
             vec3 $methodToneMap(vec3 color)
-            {
-                color = ${ReScale.methodScaleNormalize}(color);//输入需要归一化
+            {   
+                color = $methodScaleReferenceWhiteToOne(color);
                 float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 vec3 xp = pow(color, vec3(1.0 / 2.4));
@@ -53,7 +54,6 @@ object ToneMapBT2446A : ToneMap() {
                 /* Convert from Y'Cb'Cr' to R'G'B' (still in BT.2020) */
                 float cg_tmo = -(gcr * cr_tmo + gcb * cb_tmo);
                 color = y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo);
-                color = color*$MAX_DISPLAY_LUMINANCE;//输入的范围要0-MAX_DISPLAY_LUMINANCE
                 return color;
             }
             """.trimIndent()
