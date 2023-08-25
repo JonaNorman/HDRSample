@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * MediaFormat的ColorFormat工具类
+ * 功能1:根据colorFormat判断是哪种YUV420
+ * 功能2:判断colorFormat判断表示编解码器是否支持10位YUV420解码，当前只测试了几款手机，其他手机逻辑不一定正确
+ */
 public class ColorFormatUtil {
 
     //四种YUV420
@@ -22,18 +27,22 @@ public class ColorFormatUtil {
     public @interface YUV420Type {
     }
 
-    // 不同厂商支持的YUV420属性
+    // 不同厂商支持的YUV420属性，参考自https://github.com/Parseus/codecinfo
+
+    //博通
     private static final ColorFormatList BROADCOM_YUV420_LIST = new ColorFormatList(
             new ColorFormat("OMX_COLOR_FormatYUV420_10PackedPlanar", 0x7F00000C),
             new ColorFormat("OMX_COLOR_FormatYUV420_16PackedPlanar", 0x7F00000A),
             new ColorFormat("OMX_COLOR_FormatYUV420_UVSideBySide", 0x7F00000E));
 
+    // 其他
     private static final ColorFormatList OTHER_YUV420_LIST = new ColorFormatList(
             new ColorFormat("OMX_INTEL_COLOR_FormatYUV420PackedSemiPlanar", 0x7FA00E00),
             new ColorFormat("OMX_INTEL_COLOR_FormatYUV420PackedSemiPlanar_Tiled", 0x7FA00F00),
             new ColorFormat("OMX_TI_COLOR_FormatYUV420PackedSemiPlanar", 0x7F000100),
             new ColorFormat("OMX_TI_COLOR_FormatYUV420PackedSemiPlanarInterlaced", 0x7F000001));
 
+    //高通
     private static final ColorFormatList QUALCOMM_YUV420_LIST = new ColorFormatList(
             new ColorFormat("QOMX_COLOR_FormatYUV420PackedSemiPlanar16m2ka", 0x7FA30C02),
             new ColorFormat("QOMX_COLOR_FORMATYUV420PackedSemiPlanar32m", 0x7FA30C04),
@@ -45,6 +54,7 @@ public class ColorFormatUtil {
             new ColorFormat("QOMX_COLOR_FORMATYUV420SemiPlanarP010Venus", 0x7FA30C0A)
     );
 
+    //三星
     private static final ColorFormatList SAMSUNG_YUV420_LIST = new ColorFormatList(
             new ColorFormat("OMX_SEC_COLOR_Format10bitYUV420SemiPlanar", 0x7F000015),
             new ColorFormat("OMX_SEC_COLOR_FormatANBYUV420SemiPlanar", 0x100),
@@ -59,12 +69,14 @@ public class ColorFormatUtil {
             new ColorFormat("OMX_SEC_COLOR_FormatYUV420SemiPlanarInterlace", 0x7F000014)
     );
 
+    //索尼
+
     private static final ColorFormatList SONY_YUV420_LIST = new ColorFormatList(
             new ColorFormat("OMX_COLOR_FormatYUV420MBPackedSemiPlanar", 0x7FFFFFFE),
             new ColorFormat("OMX_STE_COLOR_FormatYUV420PackedSemiPlanarMB", 0x7FA00000)
     );
 
-
+    //Android标准
     private static final ColorFormatList STANDARD_YUV420_LIST = new ColorFormatList(
             new ColorFormat("COLOR_FormatYUV420Flexible", 0x7F420888),
             new ColorFormat("COLOR_FormatYUV420PackedPlanar", 0x14),
@@ -87,20 +99,20 @@ public class ColorFormatUtil {
      */
     static ColorFormatList findYUV420List(String codecName) {
         codecName = codecName.toLowerCase();
-        if (codecName.contains("brcm")) {
+        if (codecName.contains("brcm")) {//博通
             return BROADCOM_YUV420_LIST;
         } else if (codecName.contains("qcom")
                 || codecName.contains("qti")
-                || codecName.contains("ittiam")) {
+                || codecName.contains("ittiam")) {//高通
             return QUALCOMM_YUV420_LIST;
         } else if (codecName.contains("omx.sec")
-                || codecName.contains("exynos")) {
+                || codecName.contains("exynos")) {//三星
             return SAMSUNG_YUV420_LIST;
-        } else if (codecName.contains("omx.st")) {
+        } else if (codecName.contains("omx.st")) {//索尼
             return SONY_YUV420_LIST;
         } else if (codecName.contains("omx.ti")
                 || codecName.contains("intel")
-                || codecName.contains("omx.rk")) {
+                || codecName.contains("omx.rk")) {//其他
             return OTHER_YUV420_LIST;
         } else {
             return STANDARD_YUV420_LIST;
@@ -108,7 +120,7 @@ public class ColorFormatUtil {
     }
 
     /**
-     * 根据解码器名称和colorFormat查找视频是哪种YUV420
+     * 根据解码器名称和colorFormat查找视频是哪种YUV420，如果判断不出来返回0，0表示未知
      * @param codecName
      * @param colorFormat
      * @return
@@ -124,19 +136,19 @@ public class ColorFormatUtil {
         }
         //根据YUV420的名称来查找是哪种YUV420
         String name = yuv420Format.name;
-        if (name.contains("PackedSemiPlanar")) {
+        if (name.contains("PackedSemiPlanar")) {//Y+VU
             return NV21;
-        } else if (name.contains("SemiPlanar")) {
+        } else if (name.contains("SemiPlanar")) {//Y+UV
             return NV12;
-        } else if (name.contains("PackedPlanar")) {
+        } else if (name.contains("PackedPlanar")) {//Y+V+U
             return YV12;
         } else {
-            return YV21;
+            return YV21;// Y+U+V
         }
     }
 
     /**
-     * 根据解码器名称和colorFormat查找解码是否支持10位YUV420，10位YUV420实际是16位存储的
+     * 根据解码器名称和colorFormat查找解码是否支持10位YUV420，10位YUV420实际是16位存储的(不同手机不一定都是这样，现在测试几款手机都是这样，暂且这么认为)
      * @param codecName
      * @param colorFormat
      * @return

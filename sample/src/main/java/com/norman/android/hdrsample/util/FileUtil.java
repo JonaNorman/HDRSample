@@ -10,6 +10,11 @@ import java.io.IOException;
 
 public class FileUtil {
 
+    /**
+     * 获取asset目录文件的文件描述符
+     * @param assetName
+     * @return
+     */
     public static AssetFileDescriptor openAssetFileDescriptor(String assetName) {
         try {
             Context context = AppUtil.getAppContext();

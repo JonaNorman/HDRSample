@@ -34,6 +34,12 @@ public class BufferUtil {
         return growCapacity(byteBuffer, byteBuffer.capacity() * 2);
     }
 
+    /***
+     * 扩容，
+     * @param byteBuffer
+     * @param newCapacity 新的大小
+     * @return
+     */
     public static ByteBuffer growCapacity(ByteBuffer byteBuffer, int newCapacity) {
         final int oloCapacity = byteBuffer.capacity();
         if (newCapacity < oloCapacity) {
@@ -47,9 +53,12 @@ public class BufferUtil {
         final int oldLimit = byteBuffer.limit();
         byteBuffer.clear();
         outBuffer.put(byteBuffer);
+        //保证老的byteBuffer数据位置和原来一样
         byteBuffer.position(oldPos);
         byteBuffer.limit(oldLimit);
+        //保证新的byteBuffer的位置和扩容以前一样
         outBuffer.position(oldPos);
+        outBuffer.position(oldLimit);
         return outBuffer;
     }
 

@@ -53,7 +53,7 @@ public class MediaFormatUtil {
         return mediaFormat.getByteBuffer(name);
     }
 
-    //以下set方法判断值为空不设置是因为在部分手机底层会判断key存在导致空指针
+    //set方法判断值为空就不设置直接return是因为在部分手机底层key存在value为null会直接空指针异常
     public static void setInteger(MediaFormat mediaFormat, String name, int value) {
         if (mediaFormat == null || TextUtils.isEmpty(name)) {
             return;
@@ -109,13 +109,30 @@ public class MediaFormatUtil {
     }
 
 
+    /***
+     * 获取颜色色域
+     * @param mediaFormat
+     * @return
+     */
     public static int getColorStandard(MediaFormat mediaFormat) {
       return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
     }
 
+    /**
+     * 获取颜色范围
+     * @param mediaFormat
+     * @return
+     */
+
     public static int getColorRange(MediaFormat mediaFormat) {
         return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
     }
+
+    /**
+     * 获取颜色传递函数
+     * @param mediaFormat
+     * @return
+     */
     public static int getColorTransfer(MediaFormat mediaFormat) {
         return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
     }

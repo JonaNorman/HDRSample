@@ -1,6 +1,6 @@
 package com.norman.android.hdrsample.exception;
 
-//复写RuntimeException
+
 public class RuntimeException extends java.lang.RuntimeException {
 
     public RuntimeException(String message) {

@@ -11,13 +11,18 @@ import android.opengl.GLException;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 
+/**
+ * OpenGL的方法工具类
+ */
 public class GLESUtil {
 
     private static final String TAG = "GLESUtil";
 
+    //顶点坐标
     private static final float[] POSITION_COORDINATES = {
             -1.0f, -1.0f,//left bottom
             1.0f, -1.0f,//right bottom
@@ -25,6 +30,7 @@ public class GLESUtil {
             1.0f, 1.0f,//right top
     };
 
+    // 纹理坐标，注意纹理坐标本身是从下往上的也就是说相对图像文件是颠倒的
     private static final float[] TEXTURE_COORDINATES = {
             0.0f, 0.0f,//left bottom
             1.0f, 0.0f,//right bottom
@@ -32,6 +38,7 @@ public class GLESUtil {
             1.0f, 1.0f,//right  top
     };
 
+    // 跳到上下的纹理坐标，
     private static final float[] TEXTURE_COORDINATES_UPSIDE_DOWN = {
             0.0f, 1.0f,//left bottom
             1.0f, 1.0f,//right bottom
@@ -40,8 +47,10 @@ public class GLESUtil {
     };
 
 
+    /**
+     * 顶点坐标的位数
+     */
     public static final int FLAT_VERTEX_LENGTH = 2;
-
 
     /**
      * 创建平面的顶点坐标
@@ -66,6 +75,7 @@ public class GLESUtil {
         return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES_UPSIDE_DOWN);
     }
 
+
     public static int createVertexShader(String shaderCode) {
         return compileShaderCode(GLES20.GL_VERTEX_SHADER, shaderCode);
     }
@@ -83,7 +93,8 @@ public class GLESUtil {
             GLES20.glGetShaderiv(shaderObjectId, GLES20.GL_COMPILE_STATUS, status, 0);
             if (status[0] == 0) {
                 String error = GLES20.glGetShaderInfoLog(shaderObjectId);
-                LogUtil.e(TAG, "can not compile shader: " + error+"\n"+shaderCode);
+                LogUtil.w(TAG,  shaderCode);
+                LogUtil.e(TAG, "can not compile shader: \n" + error);
                 GLES20.glDeleteShader(shaderObjectId);
                 return -1;
             }
@@ -105,7 +116,7 @@ public class GLESUtil {
         int[] linkStatus = new int[1];
         GLES20.glGetProgramiv(programId, GLES20.GL_LINK_STATUS, linkStatus, 0);
         if (linkStatus[0] != GLES20.GL_TRUE) {
-            LogUtil.e(TAG,"could not link program: "+GLES20.glGetProgramInfoLog(programId));
+            LogUtil.e(TAG,"could not link program: \n"+GLES20.glGetProgramInfoLog(programId));
         }
         deleteShaderId(vertexShaderId);
         deleteShaderId(fragmentShaderId);
@@ -126,6 +137,10 @@ public class GLESUtil {
         GLES20.glDeleteShader(shaderId);
     }
 
+    /**
+     * 创建2D纹理，插值方式是线性
+     * @return
+     */
     public static int createTextureId() {
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
@@ -137,6 +152,11 @@ public class GLESUtil {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         return texture[0];
     }
+
+    /**
+     * 创建2D纹理，插值方式是Nearest
+     * @return
+     */
 
     public static int createNearestTextureId() {
         int[] texture = new int[1];
@@ -150,6 +170,10 @@ public class GLESUtil {
         return texture[0];
     }
 
+    /**
+     * 创建OES格式的2D纹理，和SurfaceTexture搭配使用
+     * @return
+     */
     public static int createExternalTextureId() {
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
@@ -166,6 +190,10 @@ public class GLESUtil {
         return texture[0];
     }
 
+    /**
+     * 创建3D纹理
+     * @return
+     */
     public static int create3DTextureId() {
         int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
@@ -185,21 +213,59 @@ public class GLESUtil {
         return texture[0];
     }
 
+    /**
+     * 创建纹理
+     * @param width 宽
+     * @param height 高
+     * @return
+     */
     public static int createTextureId(int width, int height) {
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+        //直接传null这样的做法是错误，根据https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml文档描述
+        //传null后纹理的颜色是未知，直接绘制在frameBuffer颜色是乱七八糟的或者花屏，测试出现过前面一个activity的画面数据(大部分情况下部分出现，因为会用frameBuffer重绘)
+        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, byteBuffer);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         return textureId;
     }
 
+    /**
+     * 创建2D纹理，颜色格式是RGBA，位深支持16位，可以用来创建高精度的纹理在HDR的场景下使用
+     * @param width 宽
+     * @param height 高
+     * @param bitDepth 位深  8表示8位RGBA，10表示RGBA1010102(注意alpha位数是2位，视频不需要alpha可以直接用，如果是其他情况还是要用16)， 16表示16位RGBA
+     * @return
+     */
+
     public static int createTextureId(int width, int height,int bitDepth) {
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        if (bitDepth <= 8){
-            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
-        }else  if (bitDepth <= 16){
-            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES30.GL_RGBA16F, width, height, 0, GLES20.GL_RGBA, GLES20.GL_FLOAT, null);
+        //buffer直接传null这样的做法是错误，根据https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml文档描述
+        //传null后纹理的颜色是未知，直接绘制颜色是乱七八糟的或者花屏，测试出现过前面一个activity的画面数据(大部分情况下部分出现，因为会用frameBuffer重绘)
+        if (bitDepth == 8){
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);//rgba4个通道
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
+                    GLES20.GL_RGBA,//纹理内部格式
+                    width, height, 0,
+                    GLES20.GL_RGBA,// buffer的格式
+                    GLES20.GL_UNSIGNED_BYTE,//数据每个通道都是一个无符号字节数
+                    byteBuffer);
+        }else  if (bitDepth ==10){
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);// RGBA1010102，（10+10+10+2)/8 =4
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
+                    GLES30.GL_RGB10_A2,//纹理内部格式
+                    width, height, 0,
+                    GLES20.GL_RGBA,// buffer的格式
+                    GLES30.GL_UNSIGNED_INT_2_10_10_10_REV,//数据通道RGBA1010102
+                    byteBuffer);
+        }else  if (bitDepth == 16){//16位数据
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 8);//每个通道2个字节，4个通道也就是2*4=8
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
+                    GLES30.GL_RGBA16F, width, height, 0,
+                    GLES20.GL_RGBA,
+                    GLES30.GL_HALF_FLOAT,//这个地方传GL_HALF_FLOAT和GL_FLOAT都可以，因为表示的是buffer数据格式
+                    byteBuffer);
         }else {
             throw new IllegalArgumentException("not support bitDepth:"+bitDepth);
         }
@@ -208,6 +274,11 @@ public class GLESUtil {
         return textureId;
     }
 
+    /**
+     * 根据bitmap创建纹理
+     * @param bitmap
+     * @return
+     */
     public static int createTextureId(Bitmap bitmap){
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
@@ -218,7 +289,7 @@ public class GLESUtil {
 
 
     public static void delTextureId(int textureId) {
-        if (textureId <= 0) {
+        if (textureId <= 0) {//textureId从1开始
             return;
         }
         GLES20.glDeleteTextures(1, new int[]{textureId}, 0);
@@ -232,7 +303,7 @@ public class GLESUtil {
     }
 
     public static void deleteFrameBufferId(int bufferId) {
-        if (bufferId <= 0) {
+        if (bufferId <= 0) {//创建的frameBufferId从1开始，0表示默认FrameBuffer关联着WindowSurface，在上面操作就能画在WindowSurface上
             return;
         }
         GLES20.glDeleteFramebuffers(1, new int[]{bufferId}, 0);
@@ -260,9 +331,13 @@ public class GLESUtil {
         GLES20.glDeleteRenderbuffers(1, new int[]{bufferId}, 0);
     }
 
+    /**
+     * 检查OPENGL执行异常，注意glGetError特殊性，检查出来的异常是当前执行的最近一次错误，如果发现有问题对不上，要在报错前面的所有OpenGL方法都加上检查
+     */
+
     public static void checkGLError(){
         int errorCode;
-        while ((errorCode = glGetError()) != GL_NO_ERROR) {
+        while ((errorCode = glGetError()) != GL_NO_ERROR) {//glGetError不断获取会清空这一次错误，直到变成GL_NO_ERROR，所以有异常就直接抛出
             String errorString = GLU.gluErrorString(errorCode);
             if (errorString == null) {
                 errorString = "unknown error";

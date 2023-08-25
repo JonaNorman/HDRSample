@@ -61,7 +61,7 @@ class MessageThread extends android.os.HandlerThread {
             }
             errorCallbackList.clear();
         } finally {
-            for (Future future : futureList) {
+            for (Future future : futureList) {//取消未执行完所有Future，防止一直等待
                 future.cancel(true);
             }
             futureList.clear();
@@ -93,7 +93,7 @@ class MessageThread extends android.os.HandlerThread {
             futureTask = new FutureTask<T>(callable) {
                 @Override
                 protected void setException(Throwable t) {
-                    set(null);
+                    set(null);//这样处理是为了不然错误抛在等待线程，而不是抛在执行线程
                     throw new RuntimeException(t);
                 }
             };
@@ -129,7 +129,7 @@ class MessageThread extends android.os.HandlerThread {
         public T get() {
             try {
                 return futureTask.get();
-            } catch (Exception ignored) {
+            } catch (Exception ignored) {//错误已经抛在执行线程，不需要throw直接catch
             }
             return null;
         }
@@ -138,7 +138,7 @@ class MessageThread extends android.os.HandlerThread {
         public T get(long timeout, TimeUnit unit) {
             try {
                 return futureTask.get(timeout, unit);
-            } catch (Exception ignored) {
+            } catch (Exception ignored) {//错误已经抛在执行线程，不需要throw直接catch
             }
             return null;
         }

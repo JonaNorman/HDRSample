@@ -23,6 +23,9 @@ public class MessageThreadPool {
 
     private final static Map<String, MessageThreadPool> POOL_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * 缓存的线程数量大小
+     */
     public static final int CACHE_POOL_SIZE = 5;
 
     /**
@@ -79,6 +82,7 @@ public class MessageThreadPool {
         Iterator<MessageThread> iterator = threadCache.iterator();
         while (iterator.hasNext()) {
             MessageThread messageThread = iterator.next();
+            //只有缓存线程池中的线程空闲了才可以复用，要不然虽然已经加到线程池中但是还有些任务因为异步关闭可能还在执行中
             if (messageThread.isIdle()) {
                 iterator.remove();
                 messageThread.setName(name);
@@ -105,9 +109,10 @@ public class MessageThreadPool {
         while (iterator.hasNext()) {
             MessageThread thread = iterator.next();
             long duration = SystemClock.elapsedRealtime() - thread.cacheTime;
+            //线程已经终止、超过缓存时间、超过数量限制就清除线程
             if (thread.isTerminated()
                     || threadCache.size() > poolCacheSize
-                    || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {//线程已经终止、超过缓存时间、超过缓存时间就清除线程
+                    || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {
                 iterator.remove();
                 thread.quit();
             }
@@ -115,6 +120,7 @@ public class MessageThreadPool {
         return threadCache.isEmpty();
     }
 
+    //启动清理线程，如果已经在清理中就直接return
     private void startCleanThread() {
         if (cacheCleaning) {
             return;
@@ -126,10 +132,10 @@ public class MessageThreadPool {
             @Override
             public void run() {
                 synchronized (MessageThreadPool.this){
-                    if (cleanCacheThread()) {
+                    if (cleanCacheThread()) {//多余的线程已经清理完毕就关闭自己
                         cacheCleaning = false;
                         handlerThread.quit();
-                    } else {
+                    } else {//轮询清理
                         handler.postDelayed(this, TimeUtil.secondToMill(intervalCleanTime));
                     }
                 }
@@ -137,6 +143,11 @@ public class MessageThreadPool {
         });
     }
 
+    /**
+     * 根据名字获取MessageThread缓存池
+     * @param name
+     * @return
+     */
     public static MessageThreadPool get(String name) {
         MessageThreadPool pool = POOL_MAP.get(name);
         if (pool != null) {

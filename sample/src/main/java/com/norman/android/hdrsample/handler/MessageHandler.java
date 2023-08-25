@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  */
 public interface MessageHandler {
    
-
+    //----------------------Handler已经支持的方法----------------
     boolean post(Runnable r);
 
     boolean postAtTime(Runnable r, long uptimeMillis);
@@ -56,30 +56,91 @@ public interface MessageHandler {
     @RequiresApi(api = Build.VERSION_CODES.Q)
     boolean hasCallbacks(Runnable r);
 
+
+    //---------------------新增方法----------------
+
+    /**
+     * 同步执行方法
+     * @param runnable
+     * @return
+     */
     boolean executeSync(Runnable runnable);
 
+    /**
+     * 同步执行方法
+     * @param runnable
+     * @param timeout
+     * @return
+     */
     boolean executeSync(Runnable runnable, long timeout);
 
+    /**
+     * 是否当前线程
+     * @return
+     */
     boolean isCurrentThread();
+
+    /**
+     * 异步提交callable
+     * @param callable
+     * @return
+     * @param <T>
+     */
 
     <T> Future<T> submit(Callable<T> callable);
 
+    /**
+     * 同步提交callable
+     * @param callable
+     * @return
+     * @param <T>
+     */
     <T> T submitSync(Callable<T> callable);
 
+    /**
+     * 异步提交runnable
+     * @param runnable
+     * @return
+     */
     Future<Boolean> submit(Runnable runnable);
 
+    /**
+     * 等待所有消息执行完成
+     * @return
+     */
     boolean waitAllMessage();
 
+    /**
+     * 移除所有未执行消息
+     */
     void removeAllMessage();
 
+    /**
+     * 取消后续所有消息，前面没有执行完的消息会异步执行完
+     * @return
+     */
     boolean finishSafe();
-
+    /**
+     * 取消后续所有消息，前面没有执行完的消息会同步执行完
+     * @return
+     */
     boolean finishSafeSync();
 
+    /**
+     * 取消后续所有消息，前面没有执行的消息不会执行，正在执行的会异步执行完
+     * @return
+     */
     boolean finish();
-
+    /**
+     * 取消后续所有消息，前面没有执行的消息不会执行，正在执行的会同步执行完
+     * @return
+     */
     boolean finishSync();
 
+    /**
+     * 是否已经关闭
+     * @return
+     */
     boolean isFinish();
 
     interface LifeCycleCallback {

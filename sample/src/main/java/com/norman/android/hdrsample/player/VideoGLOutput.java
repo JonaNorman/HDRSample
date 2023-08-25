@@ -243,6 +243,7 @@ public class VideoGLOutput extends VideoOutput {
         } else {
             frontTarget.setBitDepth(profile10Bit ? 16 : 8);
             frontTarget.setRenderSize(width, height);
+            backTarget.setBitDepth(profile10Bit ? 16 : 8);
             backTarget.setRenderSize(width, height);
             textureRenderer.renderToTarget(frontTarget);
             frontTarget.setColorSpace(colorSpace);

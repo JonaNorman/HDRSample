@@ -3,7 +3,11 @@ package com.norman.android.hdrsample.util;
 import android.text.TextUtils;
 import android.util.Log;
 
+/**
+ * LOG工具类统一设置TAG为HdrSampleLog，方便后续直接搜这个TAG排除其他日志，而方法中的name就替代原先的tag作为其他搜索条件
+ */
 public class LogUtil {
+
     private final static String LOG_NAME = "HdrSampleLog";
 
     public static void v(String name, String message) {

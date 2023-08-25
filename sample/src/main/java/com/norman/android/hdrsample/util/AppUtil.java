@@ -9,6 +9,10 @@ public class AppUtil {
         return APP_CONTEXT;
     }
 
+    /**
+     * 初始化App的Context，方便后续直接获取
+     * @param context
+     */
     public static void init(Context context) {
         if (APP_CONTEXT != null || context == null) {
             return;

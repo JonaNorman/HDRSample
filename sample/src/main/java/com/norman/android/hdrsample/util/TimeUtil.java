@@ -2,6 +2,9 @@ package com.norman.android.hdrsample.util;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 不同单位的时间转换工具类
+ */
 public class TimeUtil {
 
     private static final long SECOND_TO_MICRO_SCALE = 1000_000L;
