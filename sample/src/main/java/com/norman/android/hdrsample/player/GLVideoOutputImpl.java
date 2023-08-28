@@ -205,10 +205,10 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
         GLEnvConfig envConfig = config8Bit;
         if (profile10Bit) {
-            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
-                envConfig = config10Bit;
-            } else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16) {
+            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 || Build.MODEL.equals("MIX 2S")) {//MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
                 envConfig = config16Bit;
+            }else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
+                envConfig = config10Bit;
             }
             if (envConfig == null){
                 envConfig = config8Bit;
