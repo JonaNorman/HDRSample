@@ -5,6 +5,7 @@ import android.media.MediaFormat;
 import android.os.Build;
 import android.view.Surface;
 
+import com.norman.android.hdrsample.opengl.GLEnvConfig;
 import com.norman.android.hdrsample.opengl.GLEnvConfigSimpleChooser;
 import com.norman.android.hdrsample.opengl.GLEnvContext;
 import com.norman.android.hdrsample.opengl.GLEnvContextManager;
@@ -107,7 +108,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     private final int textureSourceType;
 
     @HdrDisplayBitDepth
-    private final   int hdrDisplayBitDepth;
+    private final int hdrDisplayBitDepth;
 
     private final VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
         @Override
@@ -140,12 +141,12 @@ class GLVideoOutputImpl extends GLVideoOutput {
     }
 
     public GLVideoOutputImpl(@TextureSourceType int textureSourceType) {
-        this(textureSourceType,HDR_DISPLAY_BIT_DEPTH_10);
+        this(textureSourceType, HDR_DISPLAY_BIT_DEPTH_10);
     }
 
-    public GLVideoOutputImpl(@TextureSourceType int textureSourceType,@HdrDisplayBitDepth int hdrDisplayBitDepth) {
+    public GLVideoOutputImpl(@TextureSourceType int textureSourceType, @HdrDisplayBitDepth int hdrDisplayBitDepth) {
         this.textureSourceType = textureSourceType;
-        this.hdrDisplayBitDepth =hdrDisplayBitDepth;
+        this.hdrDisplayBitDepth = hdrDisplayBitDepth;
     }
 
     @Override
@@ -184,34 +185,43 @@ class GLVideoOutputImpl extends GLVideoOutput {
     protected void onOutputPrepare(MediaFormat inputFormat) {
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
         GLEnvDisplay glEnvDisplay = GLEnvDisplay.createDisplay();
-        GLEnvConfigSimpleChooser.Builder configBuilder = new GLEnvConfigSimpleChooser.Builder();
+
+        GLEnvConfig config8Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+                .build());
+
+        GLEnvConfig config10Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+                .setRedSize(10)
+                .setGreenSize(10)
+                .setBlueSize(10)
+                .setAlphaSize(2)
+                .build());
+
+        GLEnvConfig config16Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+                .setRedSize(16)
+                .setGreenSize(16)
+                .setBlueSize(16)
+                .setAlphaSize(16)
+                .build());
+
+        GLEnvConfig envConfig = config8Bit;
         if (profile10Bit) {
-            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10){
-                configBuilder.setRedSize(10);
-                configBuilder.setGreenSize(10);
-                configBuilder.setBlueSize(10);
-                configBuilder.setAlphaSize(2);
-            }else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16){
-                configBuilder.setRedSize(16);
-                configBuilder.setGreenSize(16);
-                configBuilder.setBlueSize(16);
-                configBuilder.setAlphaSize(16);
+            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
+                envConfig = config10Bit;
+            } else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16) {
+                envConfig = config16Bit;
             }
-            if (!glEnvDisplay.supportConfig(configBuilder.build())){
-                configBuilder.setRedSize(8);
-                configBuilder.setGreenSize(8);
-                configBuilder.setBlueSize(8);
-                configBuilder.setAlphaSize(8);
+            if (envConfig == null){
+                envConfig = config8Bit;
             }
         }
-        envContextManager = GLEnvContextManager.create(glEnvDisplay,configBuilder.build());
+        envContextManager = GLEnvContextManager.create(glEnvDisplay, envConfig);
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
-        if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO){// 如果是自动判断用哪种方式，支持10位YUV420Buffer就用Buffer模式，不然就用外部纹理模式
+        if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO) {// 如果是自动判断用哪种方式，支持10位YUV420Buffer就用Buffer模式，不然就用外部纹理模式
             // 支持10位YUV420 Buffer
             bufferMode = profile10Bit &&
                     videoDecoder.isSupport10BitYUV420BufferMode();
-        }else {
+        } else {
             bufferMode = textureSourceType == TEXTURE_SOURCE_TYPE_BUFFER;
         }
         if (bufferMode) {
@@ -227,6 +237,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     /**
      * 添加GLVideoTransform
+     *
      * @param videoTransform
      */
     @Override
@@ -238,7 +249,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
         super.onOutputFormatChanged(outputFormat);
         colorRange = MediaFormatUtil.getColorRange(outputFormat);
-        colorSpace = MediaFormatUtil.getInteger(outputFormat,KEY_COLOR_SPACE,COLOR_SPACE_SDR);
+        colorSpace = MediaFormatUtil.getInteger(outputFormat, KEY_COLOR_SPACE, COLOR_SPACE_SDR);
         //MediaExtractor不兼容KEY_HDR10_PLUS_INFO，不论HDR10还是HDR10+出来的都是KEY_HDR_STATIC_INFO，后续看看怎么解决
         ByteBuffer hdrStaticInfo = MediaFormatUtil.getByteBuffer(outputFormat, MediaFormat.KEY_HDR_STATIC_INFO);
         if (hdrStaticInfo != null) {
@@ -271,11 +282,11 @@ class GLVideoOutputImpl extends GLVideoOutput {
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {//用扩展纹理转2D纹理
             if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO ||
-                    textureSourceType == TEXTURE_SOURCE_TYPE_EXT){
+                    textureSourceType == TEXTURE_SOURCE_TYPE_EXT) {
                 // HDR且支持Y2Y才有必要用Y2Y处理
-                textureY2YMode = colorSpace !=COLOR_SPACE_SDR &&
+                textureY2YMode = colorSpace != COLOR_SPACE_SDR &&
                         GLY2YExtensionRenderer.isSupportY2YEXT();
-            }else {
+            } else {
                 textureY2YMode = textureSourceType == TEXTURE_SOURCE_TYPE_Y2Y;
             }
             if (textureY2YMode) {
@@ -318,7 +329,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             screenRenderer = textureRenderer;
         } else {
             // 前面得到的纹理输出到frontTarget上
-            int targetBitDepth = profile10Bit ? (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 ?16:10):8;
+            int targetBitDepth = profile10Bit ? (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 ? 16 : 10) : 8;
             frontTarget.setBitDepth(targetBitDepth);
             backTarget.setBitDepth(targetBitDepth);
             frontTarget.setRenderSize(videoWidth, videoHeight);
@@ -384,7 +395,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             return outputSurface != null && outputSurface.isValid();
         }
 
-        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSpace int  requestColorSpace) {
+        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSpace int requestColorSpace) {
             if (outputSurface == null) {
                 release();
                 return null;
@@ -396,12 +407,12 @@ class GLVideoOutputImpl extends GLVideoOutput {
                 GLEnvDisplay envDisplay = envContext.getEnvDisplay();
                 GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, outputSurface);
                 if (isSupportHDR(outputSurface)) {//判断Surface是否支持HDR
-                    if (requestColorSpace == COLOR_SPACE_BT2020_PQ){
-                        if (envDisplay.isSupportBT2020PQ()){
+                    if (requestColorSpace == COLOR_SPACE_BT2020_PQ) {
+                        if (envDisplay.isSupportBT2020PQ()) {
                             builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_PQ);
                         }
-                    }else if (requestColorSpace == COLOR_SPACE_BT2020_HLG){
-                        if (envDisplay.isSupportBT2020HLG()){
+                    } else if (requestColorSpace == COLOR_SPACE_BT2020_HLG) {
+                        if (envDisplay.isSupportBT2020HLG()) {
                             builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_HLG);
                         }
                     }

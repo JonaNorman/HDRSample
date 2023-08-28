@@ -29,43 +29,51 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
         Boolean recordable;
 
 
-        public void setAlphaSize(int alphaSize) {
+        public Builder setAlphaSize(int alphaSize) {
             this.alphaSize = alphaSize;
+            return this;
         }
 
 
-        public void setBlueSize(int blueSize) {
+        public Builder setBlueSize(int blueSize) {
             this.blueSize = blueSize;
+            return this;
         }
 
 
-        public void setGreenSize(int greenSize) {
+        public Builder setGreenSize(int greenSize) {
             this.greenSize = greenSize;
+            return this;
         }
 
 
-        public void setRedSize(int redSize) {
+        public Builder setRedSize(int redSize) {
             this.redSize = redSize;
+            return this;
         }
 
 
-        public void setDepthSize(int depthSize) {
+        public Builder setDepthSize(int depthSize) {
             this.depthSize = depthSize;
+            return this;
         }
 
 
-        public void setStencilSize(int stencilSize) {
+        public Builder setStencilSize(int stencilSize) {
             this.stencilSize = stencilSize;
+            return this;
         }
 
 
-        public void setSamples(int samples) {
+        public Builder setSamples(int samples) {
             this.samples = samples;
+            return this;
         }
 
 
-        public void setSampleBuffers(int sampleBuffers) {
+        public Builder setSampleBuffers(int sampleBuffers) {
             this.sampleBuffers = sampleBuffers;
+            return this;
         }
 
 
@@ -73,28 +81,32 @@ public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
          * 是否支持OpenGL1.0
          * @param renderGL10 null 表示都可以， true表示要支持，false表示不支持
          */
-        public void setRenderGL10(Boolean renderGL10) {
+        public Builder setRenderGL10(Boolean renderGL10) {
             this.renderGL10 = renderGL10;
+            return this;
         }
 
         /**
          * 是否支持OpenGL2.0
          * @param renderGL20 null 表示都可以， true表示要支持，false表示不支持
          */
-        public void setRenderGL20(Boolean renderGL20) {
+        public Builder setRenderGL20(Boolean renderGL20) {
             this.renderGL20 = renderGL20;
+            return this;
         }
 
         /**
          * 是否支持OpenGL3.0
          * @param renderGL30 null 表示都可以， true表示要支持，false表示不支持
          */
-        public void setRenderGL30(Boolean renderGL30) {
+        public Builder setRenderGL30(Boolean renderGL30) {
             this.renderGL30 = renderGL30;
+            return this;
         }
 
-        public void setRecordable(Boolean recordable) {
+        public Builder setRecordable(Boolean recordable) {
             this.recordable = recordable;
+            return this;
         }
 
         public GLEnvConfigSimpleChooser build() {

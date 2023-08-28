@@ -78,7 +78,7 @@ class EnvConfigImpl implements GLEnvConfig {
 
     ConfigBoolValue colorFixed = new ConfigBoolValue("colorFixed", EGL_COLOR_COMPONENT_TYPE_EXT, EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
 
-    ConfigBoolValue colorFloat = new ConfigBoolValue("colorFixed", EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT, EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
+    ConfigBoolValue colorFloat = new ConfigBoolValue("colorFloat", EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT, EGL_COLOR_COMPONENT_TYPE_FIXED_EXT);
 
     private final EGLConfig eglConfig;
 
