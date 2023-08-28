@@ -165,6 +165,12 @@ class GLYUV420Renderer extends GLRenderer {
      */
 
     private int bufferSize;
+
+
+    /**
+     * UV区域相对于Y的数据偏移
+     */
+    private int lumaBufferSize;
     /**
      * 格式无效的清空下不需要绘制
      */
@@ -247,11 +253,12 @@ class GLYUV420Renderer extends GLRenderer {
 
     /**
      * 设置YUV Buffer的 格式
+     *
      * @param requestStrideWidth buffer对齐以后的宽
      * @param requestSliceHeight buffer对齐以后的高
-     * @param requestBitDepth  buffer的位数
+     * @param requestBitDepth    buffer的位数
      * @param requestDisplayRect buffer的图像实际的显示区域，因为对齐以后图像会有绿边需要裁剪
-     * @param requestYuv420Type yuv420格式
+     * @param requestYuv420Type  yuv420格式
      */
 
     public void setBufferFormat(int requestStrideWidth,
@@ -270,7 +277,7 @@ class GLYUV420Renderer extends GLRenderer {
             bitDepth = requestBitDepth;
             yuv420Type = requestYuv420Type;
             displayRect = requestDisplayRect;
-            formatValid = strideWidth > 0 && sliceHeight > 0 && bitDepth > 0;
+            formatValid = strideWidth > 0 && sliceHeight > 0 && bitDepth > 0 && displayRect != null;
             if (!formatValid) {//格式不对不需要加载纹理
                 bufferAvailable = false;
                 return;
@@ -293,23 +300,34 @@ class GLYUV420Renderer extends GLRenderer {
             }
             int byteCount = (int) Math.ceil(bitDepth / 8.0);//位数除以8向上取整，譬如10其实是16位存储的，每个字节8位，最终就是2字节
             bitMask = byteCount * 8 - bitDepth;//多余的位数最终要移除掉
-            bufferSize = strideWidth * sliceHeight * 3 / 2;//最终要从buffer中读取的数据大小，乘以3/2因为YUV420的数据是strideWidth * sliceHeight表示的是Y平面大小，剩下的UV平面大小各自是1/4，最终大小就是3/2
-            int planeWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
-            int planeHeight = sliceHeight;
 
-            lumaTexture = new PlaneTexture(planeWidth, planeHeight, byteCount);//Y平面
+
+            int videoHeight = displayRect.bottom - displayRect.top + 1;//视频实际的高度
+            int lumaPlaneWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
+            int lumaPlaneHeight = videoHeight;//不用sliceHeight是为了让Y平面和U平面的裁剪区域一样
+            int chromaSize;
+
+            lumaTexture = new PlaneTexture(lumaPlaneWidth, lumaPlaneHeight, byteCount);//Y平面
             if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
                 //NV12和NV21 的UV平面高度和宽度是Y平面的一半，colorCount表示一个通道里面有两个数据也就是UV在一起
-                chromaSemiTexture = new PlaneTexture(planeWidth / 2, planeHeight / 2, byteCount, 2);
+                int chromaSemiWidth = lumaPlaneWidth / 2;
+                int chromaSemiHeight = lumaPlaneHeight / 2;
+                chromaSemiTexture = new PlaneTexture(chromaSemiWidth, chromaSemiHeight, byteCount, 2);
+                chromaSize = chromaSemiTexture.bufferSize;
             } else {
                 //YV12和YV21的宽度和Y平面是一样的，高度是1/4
-                chromaPlanarUTexture = new PlaneTexture(planeWidth, planeHeight / 4, byteCount);
-                chromaPlanarVTexture = new PlaneTexture(planeWidth, planeHeight / 4, byteCount);
+                int chromaWidth = lumaPlaneWidth;
+                int chromaHeight = lumaPlaneHeight / 4;
+                chromaPlanarUTexture = new PlaneTexture(chromaWidth, chromaWidth, byteCount);
+                chromaPlanarVTexture = new PlaneTexture(chromaWidth, chromaHeight, byteCount);
+                chromaSize = chromaPlanarUTexture.bufferSize + chromaPlanarVTexture.bufferSize;
             }
-            float left = displayRect == null ? 0 : displayRect.left * 1.0f / planeWidth;//纹理坐标需要归一化
-            float right = displayRect == null ? 1 : displayRect.right * 1.0f / planeWidth;
-            float top = displayRect == null ? 0 : displayRect.top * 1.0f / planeHeight;
-            float bottom = displayRect == null ? 1 : displayRect.bottom * 1.0f / planeHeight;
+            lumaBufferSize = strideWidth * sliceHeight;
+            bufferSize = lumaBufferSize + chromaSize;//
+            float left = displayRect.left * 1.0f / lumaPlaneWidth;
+            float right = displayRect.right * 1.0f / lumaPlaneWidth;
+            float top = displayRect.top * 1.0f / videoHeight;//
+            float bottom = displayRect.bottom * 1.0f / videoHeight;
 
             // 纹理坐标设置顺序，注意bottom在纹理坐标中0但是现在输入的bottom是1，这样做是因为纹理和图像是上下颠倒的，这样做就不需要手动颠倒了
             //    left bottom
@@ -350,16 +368,16 @@ class GLYUV420Renderer extends GLRenderer {
         lumaTexture.updateBuffer(outputBuffer);
 
         if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
-            int chromaSemiLimit = lumaLimit + chromaSemiTexture.bufferSize;//UV平面需要读取的数据大小
+            int chromaSemiLimit =  lumaBufferSize+chromaSemiTexture.bufferSize ;//UV平面需要读取的数据大小
             outputBuffer.clear();
-            outputBuffer.position(lumaLimit);
+            outputBuffer.position(lumaBufferSize);
             outputBuffer.limit(chromaSemiLimit);
             chromaSemiTexture.updateBuffer(outputBuffer);
 
         } else if (yuv420Type == ColorFormatUtil.YV21) {
-            int chromaPlanarULimit = lumaLimit + chromaPlanarUTexture.bufferSize;//U平面数据大小
+            int chromaPlanarULimit = lumaBufferSize + chromaPlanarUTexture.bufferSize;//U平面数据大小
             outputBuffer.clear();
-            outputBuffer.position(lumaLimit);
+            outputBuffer.position(lumaBufferSize);
             outputBuffer.limit(chromaPlanarULimit);
             chromaPlanarUTexture.updateBuffer(outputBuffer);
 
@@ -369,9 +387,9 @@ class GLYUV420Renderer extends GLRenderer {
             chromaPlanarVTexture.updateBuffer(outputBuffer);
         } else if (yuv420Type == ColorFormatUtil.YV12) {
 
-            int chromaPlanarVLimit = lumaLimit + chromaPlanarVTexture.bufferSize;//V平面数据大小
+            int chromaPlanarVLimit = lumaBufferSize + chromaPlanarVTexture.bufferSize;//V平面数据大小
             outputBuffer.clear();
-            outputBuffer.position(lumaLimit);
+            outputBuffer.position(lumaBufferSize);
             outputBuffer.limit(chromaPlanarVLimit);
 
             chromaPlanarVTexture.updateBuffer(outputBuffer);
@@ -510,7 +528,7 @@ class GLYUV420Renderer extends GLRenderer {
             bufferSize = width * height * byteCount * colorCount;//根据字节数量和通道大小算出最终数据大小
 
             //根据每个通道的字节设置OpenGL对齐大小加速读取，OpenGL对齐大小只能是1、2、4、8
-            int byteWidth = byteCount*width*colorCount;//通道的字节大小*宽度*通道数量
+            int byteWidth = byteCount * width * colorCount;//通道的字节大小*宽度*通道数量
             if (byteWidth % 8 == 0) alignment = 8;
             else if (byteWidth % 4 == 0) alignment = 4;
             else if (byteWidth % 2 == 0) alignment = 2;
