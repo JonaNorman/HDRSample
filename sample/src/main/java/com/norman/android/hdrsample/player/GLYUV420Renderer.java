@@ -148,7 +148,7 @@ class GLYUV420Renderer extends GLRenderer {
      */
     private int strideWidth;
     /**
-     * 字节高度
+     * 对齐高度
      */
     private int sliceHeight;
     /**
@@ -304,7 +304,7 @@ class GLYUV420Renderer extends GLRenderer {
 
             int videoHeight = displayRect.bottom - displayRect.top + 1;//视频实际的高度
             int lumaPlaneWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
-            int lumaPlaneHeight = videoHeight;//不用sliceHeight是为了让Y平面和U平面的裁剪区域一样
+            int lumaPlaneHeight = videoHeight;//不用sliceHeight是为了让Y平面和U平面的高度一样
             int chromaSize;
 
             lumaTexture = new PlaneTexture(lumaPlaneWidth, lumaPlaneHeight, byteCount);//Y平面

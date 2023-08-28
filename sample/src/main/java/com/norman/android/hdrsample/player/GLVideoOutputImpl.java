@@ -28,23 +28,34 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * GLVideoOutput的具体实现
+ * GLVideoOutput的具体实现，先通过外部纹理(OES或Y2Y)或YUV420 Buffer转成2D纹理，然后再用frontTarget和backTarget对纹理
+ * 作TransformT输出一个最终纹理，然后把纹理上屏， 如果最终纹理是PQ或者HLG传递函数，上屏的Surface要配置对应的色域
+ * 注意TextureView在Android13以下配置对应的色域是无效的，只有SurfaceView或者Android以上才有效，这个时候可以转成SDR解决
  */
 class GLVideoOutputImpl extends GLVideoOutput {
 
+    /**
+     * EGLContext管理器
+     */
     private GLEnvContextManager envContextManager;
+    /**
+     *
+     */
     private GLEnvContext envContext;
 
-    private GLTextureSurface videoSurface;//如果是Surface模式，视频就先输出到videoSurface的纹理上
+    /**
+     * 如果是Surface模式，视频就先输出到videoSurface的纹理上
+     */
+    private GLTextureSurface videoSurface;
 
     private final PlayerSurface playerSurface = new PlayerSurface();//对最终渲染的Surface对应的GLWindowSurface的封装
 
     /**
-     * EXTERNAL_OES纹理渲染
+     * OES纹理渲染
      */
     private final GLTextureRenderer externalTextureRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_EXTERNAL_OES);
     /**
-     * Y2YExtension纹理渲染
+     * Y2Y纹理渲染
      */
     private final GLY2YExtensionRenderer y2yExtTextureRenderer = new GLY2YExtensionRenderer();
 
@@ -59,7 +70,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     private final GLYUV420Renderer bufferYUV420Renderer = new GLYUV420Renderer();
 
     /**
-     * 如果是Buffer模式，Buffer转成纹理的对象
+     * 如果是Buffer模式，Buffer转成后的纹理
      */
     private final GLRenderTextureTarget yuv420TextureTarget = new GLRenderTextureTarget();
 
@@ -186,9 +197,11 @@ class GLVideoOutputImpl extends GLVideoOutput {
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
         GLEnvDisplay glEnvDisplay = GLEnvDisplay.createDisplay();
 
+        // 8位
         GLEnvConfig config8Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .build());
 
+        // 10位，注意alpha是2位，视频不需要alpha够用了，其他需要alpha的情况下就不够用了
         GLEnvConfig config10Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .setRedSize(10)
                 .setGreenSize(10)
@@ -196,6 +209,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
                 .setAlphaSize(2)
                 .build());
 
+        //  16位
         GLEnvConfig config16Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .setRedSize(16)
                 .setGreenSize(16)
@@ -205,7 +219,9 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
         GLEnvConfig envConfig = config8Bit;
         if (profile10Bit) {
-            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 || Build.MODEL.equals("MIX 2S")) {//MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
+
+            if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 ||
+                    Build.MODEL.equals("MIX 2S")) {  //MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
                 envConfig = config16Bit;
             }else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
                 envConfig = config10Bit;
@@ -217,8 +233,8 @@ class GLVideoOutputImpl extends GLVideoOutput {
         envContextManager = GLEnvContextManager.create(glEnvDisplay, envConfig);
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
-        if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO) {// 如果是自动判断用哪种方式，支持10位YUV420Buffer就用Buffer模式，不然就用外部纹理模式
-            // 支持10位YUV420 Buffer
+        if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO) {
+            // 支持10位YUV420Buffer就用Buffer模式，不然就用外部纹理模式
             bufferMode = profile10Bit &&
                     videoDecoder.isSupport10BitYUV420BufferMode();
         } else {
@@ -278,7 +294,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
             int sliceHeight = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_SLICE_HEIGHT);
             int yuv420Type = MediaFormatUtil.getInteger(outputFormat, VideoDecoder.KEY_YUV420_TYPE);
-            int bitDepth = strideWidth / videoWidth == 2 ? 10 : 8;// strideWidth表示字节宽度，除以宽就是表示几个字节，10位其实是16位存储，也就是2个字节其实是10bit
+            int bitDepth = strideWidth / videoWidth == 2 ? 10 : 8;// strideWidth表示字节宽度，除以宽就是表示几个字节，10位其实是16位(2个字节)存储
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {//用扩展纹理转2D纹理
             if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO ||
@@ -311,9 +327,8 @@ class GLVideoOutputImpl extends GLVideoOutput {
         }
         GLTextureRenderer textureRenderer;
         if (bufferMode) {
-            // buffer通过bufferYUV420Renderer转成yuv420TextureTarget的纹理，然后textureRenderer在处理这个纹理
+            // buffer通过bufferYUV420Renderer转成2D纹理，2D纹理再去后续处理就能重采样，虽然消耗了一点性能但是方便
             // 注意bufferYUV420Renderer是通过texelFetch获取量化数据的不能重采样，要确保yuv420的图像大小和yuv420TextureTarget图像大小一样
-            // 先输出到纹理上，纹理再去后续处理就能重采样，虽然消耗了一点性能但是方便
             textureRenderer = texture2DRenderer;
             yuv420TextureTarget.setRenderSize(videoWidth, videoHeight);
             bufferYUV420Renderer.renderToTarget(yuv420TextureTarget);
