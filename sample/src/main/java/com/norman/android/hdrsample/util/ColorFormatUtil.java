@@ -132,13 +132,16 @@ public class ColorFormatUtil {
         }
         ColorFormat yuv420Format = yuv420List.findColorFormat(colorFormat);
         if (yuv420Format == null) {
+            yuv420Format = STANDARD_YUV420_LIST.findColorFormat(colorFormat);
+        }
+        if (yuv420Format == null){
             return 0;
         }
         //根据YUV420的名称来查找是哪种YUV420
         String name = yuv420Format.name;
         if (name.contains("PackedSemiPlanar")) {//Y+VU
             return NV21;
-        } else if (name.contains("SemiPlanar")) {//Y+UV
+        } else if (name.contains("SemiPlanar") || name.contains("YUVP010")) {//Y+UV
             return NV12;
         } else if (name.contains("PackedPlanar")) {//Y+V+U
             return YV12;
