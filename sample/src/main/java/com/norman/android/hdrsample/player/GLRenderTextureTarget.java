@@ -26,6 +26,8 @@ class GLRenderTextureTarget extends GLRenderTarget {
     int colorSpace = VideoOutput.COLOR_SPACE_SDR;
 
     int maxContentLuminance;
+    int maxFrameAverageLuminance;
+    int maxMasteringLuminance;
 
     void setBitDepth(int bitDepth) {
         if (this.bitDepth != bitDepth && renderWidth >= 0 && renderHeight >= 0) {
@@ -41,6 +43,14 @@ class GLRenderTextureTarget extends GLRenderTarget {
 
     public void setMaxContentLuminance(int maxContentLuminance) {
         this.maxContentLuminance = maxContentLuminance;
+    }
+
+    public void setMaxFrameAverageLuminance(int maxFrameAverageLuminance) {
+        this.maxFrameAverageLuminance = maxFrameAverageLuminance;
+    }
+
+    public void setMaxMasteringLuminance(int maxMasteringLuminance) {
+        this.maxMasteringLuminance = maxMasteringLuminance;
     }
 
     @Override

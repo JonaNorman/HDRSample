@@ -110,6 +110,8 @@ class GLVideoOutputImpl extends GLVideoOutput {
     private @ColorSpace int colorSpace;
 
     private int maxContentLuminance;
+    private int maxFrameAverageLuminance;
+    private int maxMasteringLuminance;
 
     private @VideoExtractor.ColorRange int colorRange;
 
@@ -282,13 +284,14 @@ class GLVideoOutputImpl extends GLVideoOutput {
             int primaryBChromaticityY = shortBuffer.get(5);;
             int whitePointChromaticityX = shortBuffer.get(6);;
             int whitePointChromaticityY = shortBuffer.get(7);;
-            int maxMasteringLuminance = shortBuffer.get(8);;
+            maxMasteringLuminance = shortBuffer.get(8);;
             int minMasteringLuminance = shortBuffer.get(9);;
-            int maxContentLuminance = shortBuffer.get(10);;
-            int maxFrameAverageLuminance = shortBuffer.get(11);
-            this.maxContentLuminance =   maxFrameAverageLuminance <=0? 1000: maxFrameAverageLuminance;//todo 应该用哪个 maxMasteringLuminance maxContentLuminance maxFrameAverageLuminance
+            maxContentLuminance = shortBuffer.get(10);;
+            maxFrameAverageLuminance = shortBuffer.get(11);
         }else{
+            maxMasteringLuminance = 0;
             maxContentLuminance = 0;
+            maxFrameAverageLuminance =0;
         }
         if (bufferMode) {//用buffer转纹理
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
@@ -354,6 +357,8 @@ class GLVideoOutputImpl extends GLVideoOutput {
             // 标记frontTarget的属性，方便后续处理
             frontTarget.setColorSpace(colorSpace);
             frontTarget.setMaxContentLuminance(maxContentLuminance);
+            frontTarget.setMaxFrameAverageLuminance(maxFrameAverageLuminance);
+            frontTarget.setMaxMasteringLuminance(maxMasteringLuminance);
 
             //用frontTarget和backTarget做中转做Transform的处理
             for (GLVideoTransform videoTransform : transformList) {

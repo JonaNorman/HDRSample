@@ -2,12 +2,7 @@ package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.VIDEO_COLOR_SPACE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_PQ
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 
 /**
@@ -28,7 +23,7 @@ object ToneMapAndroid8 : ToneMap() {
         // Here we're mapping from HDR to SDR content, so interpolate using a
                         // Hermitian polynomial onto the smaller luminance range.
         float toneMapTargetNits(vec3 xyz) {
-            float maxInLumi = $MAX_CONTENT_LUMINANCE;
+            float maxInLumi = $HDR_PEAK_LUMINANCE;
             float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
             float nits = xyz.y;
             // if the max input luminance is less than what we can

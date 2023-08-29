@@ -33,11 +33,28 @@ public abstract class GLVideoTransform  extends GLRenderer {
     }
 
     /**
-     * HDR的MaxContentLuminance在HDR转SDR有用
+     *
      * @return
      */
     protected final  int getInputMaxContentLuminance() {
         return inputTarget.maxContentLuminance;
+    }
+
+    /**
+     *
+     * @return
+     */
+    protected final  int getInputMaxFrameAverageLuminance() {
+        return inputTarget.maxFrameAverageLuminance;
+    }
+
+
+    /**
+     *
+     * @return
+     */
+    protected final  int getInputMaxMasteringLuminance() {
+        return inputTarget.maxMasteringLuminance;
     }
 
 
@@ -62,6 +79,8 @@ public abstract class GLVideoTransform  extends GLRenderer {
             GLRenderTextureTarget outTextureTarget  = (GLRenderTextureTarget) renderTarget;
             outTextureTarget.setColorSpace(inputTarget.colorSpace);
             outTextureTarget.setMaxContentLuminance(inputTarget.maxContentLuminance);
+            outTextureTarget.setMaxFrameAverageLuminance(inputTarget.maxFrameAverageLuminance);
+            outTextureTarget.setMaxMasteringLuminance(inputTarget.maxMasteringLuminance);
             outTextureTarget.setBitDepth(inputTarget.bitDepth);
         }
         super.renderToTarget(renderTarget);
@@ -71,19 +90,16 @@ public abstract class GLVideoTransform  extends GLRenderer {
         transformSuccess = true;
     }
 
-    protected final void success(@VideoOutput.ColorSpace int colorSpace,int maxContentLuminance){
-        transformSuccess = true;
-        if (outputTarget instanceof GLRenderTextureTarget){
-            GLRenderTextureTarget outTextureTarget = (GLRenderTextureTarget) outputTarget;
-            outTextureTarget.setColorSpace(colorSpace);
-            outTextureTarget.setMaxContentLuminance(maxContentLuminance);
-        }
-    }
     protected final void success(@VideoOutput.ColorSpace int colorSpace){
         transformSuccess = true;
         if (outputTarget instanceof GLRenderTextureTarget){
             GLRenderTextureTarget outTextureTarget = (GLRenderTextureTarget) outputTarget;
             outTextureTarget.setColorSpace(colorSpace);
+            if (colorSpace == VideoOutput.COLOR_SPACE_SDR){
+                outTextureTarget.setMaxContentLuminance(0);
+                outTextureTarget.setMaxFrameAverageLuminance(0);
+                outTextureTarget.setMaxMasteringLuminance(0);
+            }
         }
     }
 

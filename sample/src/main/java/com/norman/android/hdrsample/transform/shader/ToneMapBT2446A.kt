@@ -1,6 +1,5 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
 
 /**
@@ -52,7 +51,7 @@ object ToneMapBT2446A : ToneMap() {
             float f(float Y) {
                 Y = pow(Y, 1.0 / 2.4);
 
-                 float pHDR = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE} / 10000.0, 1.0 / 2.4);
+                 float pHDR = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE} / 10000.0, 1.0 / 2.4);
                  float pSDR = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
 
                  float Yp = log(1.0 + (pHDR - 1.0) * Y) / log(pHDR);
@@ -70,7 +69,7 @@ object ToneMapBT2446A : ToneMap() {
             }
 
             vec3 tone_mapping(vec3 YCbCr) {
-                 float W = ${MetaDataParams.MAX_CONTENT_LUMINANCE} / ${MetaDataParams.HDR_REFERENCE_WHITE};
+                 float W = ${MetaDataParams.HDR_PEAK_LUMINANCE} / ${MetaDataParams.HDR_REFERENCE_WHITE};
                 YCbCr /= W;
 
                 float Y  = YCbCr.r;

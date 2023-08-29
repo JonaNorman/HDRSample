@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabTo
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabToLch
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLchToLab
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
 
 /**
  * 色度矫正，该方法是BT2446C方法介绍，对超过HDR参考白的高光去饱和避免压缩高光导致的色调偏移
@@ -55,7 +55,7 @@ object ChromaCorrectionBT2446C : ChromaCorrection() {
         vec3 ${methodChromaCorrect}(vec3 color) {
            color = ${ReScale.methodScaleToMaster}(color);
            float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;
-           float L_max = $methodBt2020ToLab(vec3($MAX_CONTENT_LUMINANCE)).x;
+           float L_max = $methodBt2020ToLab(vec3($HDR_PEAK_LUMINANCE)).x;
            color = crosstalk(color);
            color = $methodBt2020ToLab(color);
            color = $methodLabToLch(color);

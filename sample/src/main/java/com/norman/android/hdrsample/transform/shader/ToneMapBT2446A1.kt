@@ -1,8 +1,5 @@
 package com.norman.android.hdrsample.transform.shader
 
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
-
 /**
  * 该实现是BT2446中介绍的a方法
  * 个人理解，流程大约明白了，具体里面的参数为什么这么设还没不清楚
@@ -116,7 +113,7 @@ object ToneMapBT2446A1 : ToneMap() {
             vec3 $methodToneMap(vec3 color)
             {   
                 color = pq1000(color);
-                float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.MAX_CONTENT_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+                float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
                 vec3 xp = pow(color, vec3(1.0 / 2.4));
                 float y_hdr = dot(luma_coeff, xp);

@@ -43,7 +43,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     private int maxDisplayLuminanceUniform;
     private int currentColorSpaceUniform;
     private int currentDisplayLuminanceUniform;
-    private int maxContentLuminanceUniform;
+    private int hdrPeakLuminanceUniform;
 
 
     public HDRToSDRVideoTransform() {
@@ -91,7 +91,12 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         GLESUtil.checkGLError();
         GLES20.glUniform1i(currentColorSpaceUniform, getInputColorSpace());
         GLESUtil.checkGLError();
-        GLES20.glUniform1f(maxContentLuminanceUniform, getInputMaxContentLuminance());
+        int peakLuminance = Math.min(getInputMaxContentLuminance(),getInputMaxMasteringLuminance());
+        peakLuminance = Math.max(peakLuminance,getInputMaxFrameAverageLuminance());
+        if (peakLuminance ==0){
+            peakLuminance = 1000;
+        }
+        GLES20.glUniform1f(hdrPeakLuminanceUniform, peakLuminance);
         GLESUtil.checkGLError();
         GLES20.glUniform1f(currentDisplayLuminanceUniform, screenBrightnessObserver.getBrightnessInfo().brightnessFloat * DisplayUtil.getMaxLuminance());
         GLESUtil.checkGLError();
@@ -106,7 +111,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.COLOR_SPACE_SDR, 0);
+        success(VideoOutput.COLOR_SPACE_SDR);
     }
 
 
@@ -135,7 +140,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
                 currentDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.CURRENT_DISPLAY_LUMINANCE);
                 GLESUtil.checkGLError();
 
-                maxContentLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.MAX_CONTENT_LUMINANCE);
+                hdrPeakLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.HDR_PEAK_LUMINANCE);
                 GLESUtil.checkGLError();
             }
         });

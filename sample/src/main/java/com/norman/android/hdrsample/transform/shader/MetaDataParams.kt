@@ -7,7 +7,7 @@ object MetaDataParams : GLShaderCode() {
     const val MIN_DISPLAY_LUMINANCE ="MIN_DISPLAY_LUMINANCE"// 最小屏幕亮度
     const val MAX_DISPLAY_LUMINANCE ="MAX_DISPLAY_LUMINANCE"// 最大屏幕亮度
     const val CURRENT_DISPLAY_LUMINANCE ="CURRENT_DISPLAY_LUMINANCE"// 当前亮度
-    const val MAX_CONTENT_LUMINANCE ="MAX_CONTENT_LUMINANCE"// 最大内容亮度
+    const val HDR_PEAK_LUMINANCE ="HDR_PEAK_LUMINANCE"// 最大峰值亮度
     const val VIDEO_COLOR_SPACE ="VIDEO_COLOR_SPACE"//
     const val COLOR_SPACE_BT2020_PQ ="COLOR_SPACE_BT2020_PQ"//
     const val COLOR_SPACE_BT2020_HLG ="COLOR_SPACE_BT2020_HLG"//
@@ -21,7 +21,7 @@ object MetaDataParams : GLShaderCode() {
               uniform float $MIN_DISPLAY_LUMINANCE;// 最大屏幕亮度
               uniform float $MAX_DISPLAY_LUMINANCE;// 最大屏幕亮度
               uniform float $CURRENT_DISPLAY_LUMINANCE;// 当前亮度
-              uniform float $MAX_CONTENT_LUMINANCE;// 最大亮度
+              uniform float $HDR_PEAK_LUMINANCE;// 最大亮度
               uniform int $VIDEO_COLOR_SPACE;// 颜色空间
               #define $COLOR_SPACE_BT2020_PQ ${VideoOutput.COLOR_SPACE_BT2020_PQ}
               #define $COLOR_SPACE_BT2020_HLG ${VideoOutput.COLOR_SPACE_BT2020_HLG}

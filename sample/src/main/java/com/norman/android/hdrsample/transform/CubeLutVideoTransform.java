@@ -175,7 +175,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.COLOR_SPACE_SDR,0);
+        success(VideoOutput.COLOR_SPACE_SDR);
     }
 
 

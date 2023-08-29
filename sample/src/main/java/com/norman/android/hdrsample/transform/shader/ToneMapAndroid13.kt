@@ -4,7 +4,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_HLG
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HLG_MAX_LUMINANCE
-import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_CONTENT_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.VIDEO_COLOR_SPACE
@@ -28,7 +28,7 @@ object ToneMapAndroid13 : ToneMap() {
                 if($VIDEO_COLOR_SPACE == $COLOR_SPACE_BT2020_HLG){//Android原来中有用hlgGamma调整，但是我们这边的OETF已经已经进行OOTF调整，不需要再做一次
                     return maxRGB * $MAX_DISPLAY_LUMINANCE / $HLG_MAX_LUMINANCE;
                 }
-                float maxInLumi = $MAX_CONTENT_LUMINANCE;
+                float maxInLumi = $HDR_PEAK_LUMINANCE;
                 float maxOutLumi = $MAX_DISPLAY_LUMINANCE;
                 float nits = maxRGB;
                 float x1 = maxOutLumi * 0.65;
