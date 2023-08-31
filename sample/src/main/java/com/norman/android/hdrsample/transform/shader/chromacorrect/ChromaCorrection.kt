@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.chromacorrect
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
 

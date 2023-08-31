@@ -28,7 +28,7 @@ public abstract class VideoOutput {
     public static final String KEY_COLOR_SPACE = "color-space";
 
     /**
-     * SDR视频
+     * SDR视频 包含了BT709、BT601
      */
     public static final int COLOR_SPACE_SDR = 0;
 
@@ -43,8 +43,14 @@ public abstract class VideoOutput {
      */
     public static final int COLOR_SPACE_BT2020_HLG = 2;
 
+    /**
+     * BT2020 线性视频
+     */
+    public static final int COLOR_SPACE_BT2020_LINEAR = 3;
 
-    @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG})
+
+
+    @IntDef({COLOR_SPACE_SDR, COLOR_SPACE_BT2020_PQ, COLOR_SPACE_BT2020_HLG,COLOR_SPACE_BT2020_LINEAR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ColorSpace {
     }
@@ -61,7 +67,7 @@ public abstract class VideoOutput {
 
     private boolean frameSkipWait;
     private int frameIndex;
-    private  VideoPlayer videoPlayer;
+    private VideoPlayer videoPlayer;
 
     protected VideoDecoder videoDecoder;
 
@@ -82,6 +88,7 @@ public abstract class VideoOutput {
 
     /**
      * 经过OpenGL中转
+     *
      * @return
      */
     public static GLVideoOutput createGLOutput() {
@@ -91,12 +98,12 @@ public abstract class VideoOutput {
 
     /**
      * 直接用解码到Surface
+     *
      * @return
      */
-    public static AndroidVideoOutput createAndroidOutput() {
-        return new AndroidVideoOutputImpl();
+    public static DirectVideoOutput createAndroidOutput() {
+        return new DirectVideoOutputImpl();
     }
-
 
 
     public abstract void setOutputSurface(Surface surface);
@@ -105,9 +112,9 @@ public abstract class VideoOutput {
     public abstract void setOutputVideoView(VideoView view);
 
 
-
     /**
      * 视频准备解码
+     *
      * @param videoPlayer
      * @param videoExtractor
      * @param videoDecoder
@@ -117,7 +124,7 @@ public abstract class VideoOutput {
                                 VideoExtractor videoExtractor,
                                 VideoDecoder videoDecoder,
                                 MediaFormat inputFormat) {
-        synchronized (syncLock){
+        synchronized (syncLock) {
             this.videoPlayer = videoPlayer;
             this.videoDecoder = videoDecoder;
             this.videoExtractor = videoExtractor;
@@ -161,7 +168,7 @@ public abstract class VideoOutput {
      */
 
     final void onDecodeStop() {
-        synchronized (syncLock){//
+        synchronized (syncLock) {//
             videoDecoder = null;
             videoExtractor = null;
             videoPlayer = null;
@@ -177,6 +184,7 @@ public abstract class VideoOutput {
 
     /**
      * 每一帧数据回调
+     *
      * @param outputBuffer
      * @param presentationTimeUs
      */
@@ -186,6 +194,7 @@ public abstract class VideoOutput {
 
     /**
      * 解码格式回调
+     *
      * @param outputFormat
      */
 
@@ -214,14 +223,14 @@ public abstract class VideoOutput {
         setVideoSize(width, height);
         int colorStandard = MediaFormatUtil.getColorStandard(outputFormat);
         int colorTransfer = MediaFormatUtil.getColorTransfer(outputFormat);
-        if (colorStandard != MediaFormat.COLOR_STANDARD_BT2020) {
-            outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_SDR);
-        } else if (colorTransfer == MediaFormat.COLOR_TRANSFER_HLG) {
+        if (colorStandard == MediaFormat.COLOR_STANDARD_BT2020 && colorTransfer == MediaFormat.COLOR_TRANSFER_HLG) {
             outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_BT2020_HLG);
-        } else if (colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084) {
+        } else if (colorStandard == MediaFormat.COLOR_STANDARD_BT2020 && colorTransfer == MediaFormat.COLOR_TRANSFER_ST2084) {
             outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_BT2020_PQ);
-        } else {//针对BT2020但是没有传递函数的情况，默认设为PQ，不一定对但是有效
-            outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_BT2020_PQ);
+        }else if (colorStandard == MediaFormat.COLOR_STANDARD_BT2020 && colorTransfer == MediaFormat.COLOR_TRANSFER_LINEAR) {
+            outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_BT2020_LINEAR);
+        } else {
+            outputFormat.setInteger(KEY_COLOR_SPACE, COLOR_SPACE_SDR);
         }
         synchronized (syncLock) {
             this.outputFormat = outputFormat;
@@ -234,6 +243,7 @@ public abstract class VideoOutput {
 
     /**
      * 视频大小设置
+     *
      * @param width
      * @param height
      */
@@ -253,13 +263,14 @@ public abstract class VideoOutput {
 
     /**
      * 每帧数据渲染完成回调
+     *
      * @param presentationTimeUs
      */
     final void onDecodeBufferRender(long presentationTimeUs) {
-       boolean render =  onOutputBufferRender(presentationTimeUs);
-       if (render){
-           notifyNextFrame();
-       }
+        boolean render = onOutputBufferRender(presentationTimeUs);
+        if (render) {
+            notifyNextFrame();
+        }
     }
 
 
@@ -291,13 +302,14 @@ public abstract class VideoOutput {
 
     }
 
-    protected  boolean onOutputBufferRender(long presentationTimeUs){
+    protected boolean onOutputBufferRender(long presentationTimeUs) {
         return true;
     }
 
 
     /**
      * 视频格式订阅，如果已经存在会直接回调，不然会解码出格式或者格式变化时回调
+     *
      * @param outputFormatSubscriber
      */
 
@@ -315,6 +327,7 @@ public abstract class VideoOutput {
 
     /**
      * 取消视频格式订阅
+     *
      * @param outputFormatSubscriber
      */
 
@@ -326,6 +339,7 @@ public abstract class VideoOutput {
 
     /**
      * 视频大小订阅，如果已经知道视频大小了会直接回调，不然会解码出大小或者大小变化时回调
+     *
      * @param outputSizeSubscriber
      */
 
@@ -342,6 +356,7 @@ public abstract class VideoOutput {
 
     /**
      * 取消订阅
+     *
      * @param outputSizeSubscriber
      */
 
@@ -411,7 +426,7 @@ public abstract class VideoOutput {
         void onOutputFormatChange(MediaFormat outputFormat);
     }
 
-   public interface OutputSizeSubscriber {
+    public interface OutputSizeSubscriber {
         void onOutputSizeChange(int width, int height);
     }
 

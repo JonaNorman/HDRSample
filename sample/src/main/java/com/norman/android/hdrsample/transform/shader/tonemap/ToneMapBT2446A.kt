@@ -1,5 +1,6 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.tonemap
 
+import com.norman.android.hdrsample.transform.shader.MetaDataParams
 import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
 
 /**

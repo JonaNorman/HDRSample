@@ -20,6 +20,11 @@ public class DisplayUtil {
      * 屏幕最大亮度，实际物理亮度
      */
     private static Float MAX_SCREEN_LUMINANCE = null;
+
+    /**
+     * 屏幕最小亮度，实际物理亮度
+     */
+    private static Float MIN_SCREEN_LUMINANCE = null;
     /**
      * 屏幕最大明度指的是设置里面亮度的最大值，一般是100或者255
      */
@@ -70,12 +75,9 @@ public class DisplayUtil {
             WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
             Display display = windowManager.getDefaultDisplay();
             Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
-            float maxDesiredAverageLuminance = hdrCapabilities.getDesiredMaxAverageLuminance();
             float maxDesiredLuminance = hdrCapabilities.getDesiredMaxLuminance();
-            LogUtil.v(TAG,"screen getDesiredMaxAverageLuminance: "+maxDesiredAverageLuminance);
             LogUtil.v(TAG,"screen getDesiredMaxLuminance: "+maxDesiredLuminance);
-            maxScreenLuminance = Math.max(maxDesiredAverageLuminance, maxScreenLuminance);
-            maxScreenLuminance = Math.max(maxDesiredLuminance, maxScreenLuminance);
+            maxScreenLuminance = maxDesiredLuminance;
             if (maxScreenLuminance <= 0) {
                 MAX_SCREEN_LUMINANCE = DEFAULT_MAX_SCREEN_LUMINANCE;
             } else {
@@ -84,6 +86,24 @@ public class DisplayUtil {
             LogUtil.v(TAG,"MAX_SCREEN_LUMINANCE: "+MAX_SCREEN_LUMINANCE);
         }
         return MAX_SCREEN_LUMINANCE;
+    }
+
+    /**
+     * 最小屏幕亮度
+     * @return
+     */
+    public static synchronized float getMinLuminance() {
+        if (MIN_SCREEN_LUMINANCE == null) {
+            Context context = AppUtil.getAppContext();
+            WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+            Display display = windowManager.getDefaultDisplay();
+            Display.HdrCapabilities hdrCapabilities = display.getHdrCapabilities();
+            float minDesiredLuminance = hdrCapabilities.getDesiredMinLuminance();
+            LogUtil.v(TAG,"screen getDesiredMinLuminance: "+minDesiredLuminance);
+            MIN_SCREEN_LUMINANCE = minDesiredLuminance;
+            LogUtil.v(TAG,"MIN_SCREEN_LUMINANCE: "+MIN_SCREEN_LUMINANCE);
+        }
+        return MIN_SCREEN_LUMINANCE;
     }
 
     /***

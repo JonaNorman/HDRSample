@@ -5,7 +5,7 @@ import android.view.Surface;
 
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 
-class AndroidVideoOutputImpl extends AndroidVideoOutput {
+class DirectVideoOutputImpl extends DirectVideoOutput {
 
     private Surface decoderSurface;
     private VideoView videoView;
@@ -35,8 +35,8 @@ class AndroidVideoOutputImpl extends AndroidVideoOutput {
     };
 
 
-    public static AndroidVideoOutputImpl create() {
-        return new AndroidVideoOutputImpl();
+    public static DirectVideoOutputImpl create() {
+        return new DirectVideoOutputImpl();
     }
 
     @Override

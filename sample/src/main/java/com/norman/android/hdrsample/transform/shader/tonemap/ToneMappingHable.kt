@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.tonemap
 
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE

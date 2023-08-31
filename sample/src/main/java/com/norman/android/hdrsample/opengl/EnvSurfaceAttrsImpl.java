@@ -9,8 +9,11 @@ abstract class EnvSurfaceAttrsImpl extends EnvAttrListImpl implements GLEnvSurfa
      */
     private static final int EGL_GL_COLORSPACE_KHR = 0x309D;
     private static final int EGL_GL_COLORSPACE_SRGB_KHR = 0x3089;
+
     private static final int EGL_GL_COLORSPACE_LINEAR_KHR = 0x308A;
     private static final int EGL_GL_COLORSPACE_BT2020_PQ_EXT = 0x3340;
+
+    private static final int EGL_GL_COLORSPACE_BT2020_LINEAR_EXT = 0x333F;
     private static final int EGL_GL_COLORSPACE_BT2020_HLG_EXT = 0x3540;
 
     private static final int EGL_GL_COLORSPACE_DISPLAY_P3_EXT = 0x3363;
@@ -23,6 +26,7 @@ abstract class EnvSurfaceAttrsImpl extends EnvAttrListImpl implements GLEnvSurfa
         COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_LINEAR, EGL_GL_COLORSPACE_LINEAR_KHR);
         COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_BT2020_PQ, EGL_GL_COLORSPACE_BT2020_PQ_EXT);
         COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_BT2020_HLG, EGL_GL_COLORSPACE_BT2020_HLG_EXT);
+        COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_BT2020_LINEAR, EGL_GL_COLORSPACE_BT2020_LINEAR_EXT);
         COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_DISPLAY_P3, EGL_GL_COLORSPACE_DISPLAY_P3_EXT);
         COLOR_SPACE_MAP.put(GLEnvSurface.EGL_COLOR_SPACE_DISPLAY_P3_PASSTHROUGH, EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT);
     }

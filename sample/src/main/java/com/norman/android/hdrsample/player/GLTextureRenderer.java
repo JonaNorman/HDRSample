@@ -3,64 +3,19 @@ package com.norman.android.hdrsample.player;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 
-import androidx.annotation.IntDef;
+import androidx.annotation.CallSuper;
 
 import com.norman.android.hdrsample.opengl.GLMatrix;
+import com.norman.android.hdrsample.player.shader.TextureFragmentShader;
+import com.norman.android.hdrsample.player.shader.TextureVertexShader;
 import com.norman.android.hdrsample.util.GLESUtil;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.FloatBuffer;
 
 class GLTextureRenderer extends GLRenderer {
 
 
-    public static final int TYPE_TEXTURE_2D = 1;
-
-    public static final int TYPE_TEXTURE_EXTERNAL_OES = 2;
-
-    @IntDef({TYPE_TEXTURE_2D, TYPE_TEXTURE_EXTERNAL_OES})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface TextureType {
-    }
-
-
-    private static final String FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
-            "precision highp float;\n" +
-            "varying highp vec2 textureCoordinate;\n" +
-            "uniform sampler2D inputImageTexture;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-            "    gl_FragColor = textureColor;\n" +
-            "}";
-
-    private static final String EXTERNAL_OES_FRAGMENT_SHADER = "#extension GL_OES_EGL_image_external : require\n" +
-            "precision highp float;\n" +
-            "varying highp vec2 textureCoordinate;\n" +
-            "uniform samplerExternalOES inputImageTexture;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    vec4 textureColor = texture2D(inputImageTexture, textureCoordinate);\n" +
-            "    gl_FragColor = textureColor;\n" +
-            "}";
-
-
-    private static final String VERTEX_SHADER = "precision highp float;\n" +
-            "attribute vec4 position;\n" +
-            "attribute vec4 inputTextureCoordinate;\n" +
-            "uniform mat4 textureMatrix;\n" +
-            "\n" +
-            "varying vec2 textureCoordinate;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    gl_Position = position;\n" +
-            "    textureCoordinate = (textureMatrix*inputTextureCoordinate).xy;\n" +
-            "}";
-
+    private final float[] textureMatrix = new GLMatrix().get();
 
     private final FloatBuffer textureCoordinateBuffer;
     private final FloatBuffer positionCoordinateBuffer;
@@ -75,32 +30,25 @@ class GLTextureRenderer extends GLRenderer {
 
     private int textureId;
 
-    private final int textureType;
+    private final @TextureFragmentShader.TextureType int textureType;
+    private TextureFragmentShader fragmentShader;
+    private TextureVertexShader vertexShader;
 
-    private final float[] textureMatrix = new GLMatrix().get();
 
 
-    public GLTextureRenderer(@TextureType int textureType) {
-        this.textureType = textureType;
+
+    public GLTextureRenderer(@TextureFragmentShader.TextureType int type) {
+        textureType = type;
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();//平面的顶点坐标
         textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();//纹理坐标
     }
 
-
     @Override
     public void onCreate() {
-        this.programId = onCreateProgram();
-        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
-        textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-        textureMatrixUniform = GLES20.glGetUniformLocation(programId, "textureMatrix");
-
-    }
-
-    int onCreateProgram() {
-        return GLESUtil.createProgramId(VERTEX_SHADER,
-                textureType == TYPE_TEXTURE_2D ?
-                FRAGMENT_SHADER : EXTERNAL_OES_FRAGMENT_SHADER);
+        vertexShader = new TextureVertexShader();
+        fragmentShader = new TextureFragmentShader(textureType);
+        programId = GLESUtil.createProgramId(vertexShader.getCode(), fragmentShader.getCode());
+        onProgramChange(programId);
     }
 
 
@@ -114,9 +62,18 @@ class GLTextureRenderer extends GLRenderer {
     }
 
 
+    @CallSuper
+    protected void onProgramChange(int programId) {
+        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, TextureVertexShader.POSITION);
+        textureMatrixUniform = GLES20.glGetUniformLocation(programId, TextureVertexShader.TEXTURE_MATRIX);
+        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, TextureVertexShader.INPUT_TEXTURE_COORDINATE);
+        textureUnitUniform = GLES20.glGetUniformLocation(programId, TextureFragmentShader.INPUT_IMAGE_TEXTURE);
+    }
+
 
     @Override
-    void onRender() {
+    final void onRender() {
+        if (textureId == 0) return;
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
         GLES20.glUseProgram(programId);
@@ -131,27 +88,27 @@ class GLTextureRenderer extends GLRenderer {
                 GLES20.GL_FLOAT, false, 0,
                 textureCoordinateBuffer);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        bindTexture(textureId);
+        if (textureType != TextureFragmentShader.TYPE_TEXTURE_2D) {
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
+        } else {
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
+        }
         GLES20.glUniform1i(textureUnitUniform, 0);
         GLES20.glUniformMatrix4fv(textureMatrixUniform, 1, false, textureMatrix, 0);
-        onDraw();
+        onTextureRender();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glUseProgram(0);
-        bindTexture(0);
-    }
-
-    void onDraw() {
-
-    }
-
-
-    void bindTexture(int textureId) {
-        if (textureType == TYPE_TEXTURE_EXTERNAL_OES) {
+        if (textureType != TextureFragmentShader.TYPE_TEXTURE_2D) {
             GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         } else {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         }
     }
+
+    protected void onTextureRender() {
+
+    }
+
 }

@@ -53,6 +53,12 @@ public interface GLEnvDisplay {
     boolean isSupportBT2020HLG();
 
     /**
+     * 是否支持BT2020 Linear
+     * @return
+     */
+    boolean isSupportBT2020Linear();
+
+    /**
      * 不需要surface就可以执行OpenGL命令
      * @return
      */

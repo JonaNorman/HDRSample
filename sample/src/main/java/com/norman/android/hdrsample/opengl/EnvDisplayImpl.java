@@ -23,6 +23,13 @@ class EnvDisplayImpl implements GLEnvDisplay {
      * BT2020HLG的扩展
      */
     private static final String EXTENSION_COLOR_SPACE_BT2020_HLG = "EGL_EXT_gl_colorspace_bt2020_hlg";
+
+
+    /**
+     * BT2020Linear的扩展
+     */
+    private static final String EXTENSION_COLOR_SPACE_BT2020_LINEAR = "EGL_EXT_gl_colorspace_bt2020_linear";
+
     /**
      * 不需要Surface也可以执行OpenGL命令
      */
@@ -143,6 +150,15 @@ class EnvDisplayImpl implements GLEnvDisplay {
     @Override
     public boolean isSupportBT2020HLG() {
         return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_HLG);
+    }
+
+    /**
+     * 是否支持BT2020 Linear
+     * @return
+     */
+    @Override
+    public boolean isSupportBT2020Linear() {
+        return containEGLExtension(EXTENSION_COLOR_SPACE_BT2020_LINEAR);
     }
 
     /**

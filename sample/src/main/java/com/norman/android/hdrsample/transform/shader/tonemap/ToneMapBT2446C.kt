@@ -1,4 +1,7 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.tonemap
+
+import com.norman.android.hdrsample.transform.shader.ColorConversion
+import com.norman.android.hdrsample.transform.shader.ReScale
 
 /**
  * 该实现是BT2446中的C方法

@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.gamutmap
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToBt709
 
@@ -13,7 +13,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  * https://github.com/ampas/aces-dev/blob/dev/transforms/ctl/lmt/LMT.Academy.ReferenceGamutCompress.ctl
  *
  */
-object GamutMapCompress :GamutMap() {
+object GamutMapCompress : GamutMap() {
 
     override val code: String
         get() = """

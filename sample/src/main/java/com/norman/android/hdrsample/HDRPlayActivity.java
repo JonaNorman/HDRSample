@@ -15,7 +15,10 @@ import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
-import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
+import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection;
+import com.norman.android.hdrsample.transform.shader.gamma.GammaOETF;
+import com.norman.android.hdrsample.transform.shader.gamutmap.GamutMap;
+import com.norman.android.hdrsample.transform.shader.tonemap.ToneMap;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -176,7 +179,10 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void onShaderSelect(HDRToSDRShader hdrToSDRShader) {
-        hdrToSDRVideoTransform.setHdrToSDRShader(hdrToSDRShader);
+    public void onShaderSelect(ChromaCorrection chromaCorrection, ToneMap toneMap, GamutMap gamutMap, GammaOETF gammaOETF) {
+        hdrToSDRVideoTransform.setChromaCorrection(chromaCorrection);
+        hdrToSDRVideoTransform.setToneMap(toneMap);
+        hdrToSDRVideoTransform.setGamutMap(gamutMap);
+        hdrToSDRVideoTransform.setGammaOETF(gammaOETF);
     }
 }

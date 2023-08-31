@@ -1,9 +1,10 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.tonemap
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToXYZ
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodXYZToBt2020
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ReScale
 
 /**
  * Android8的实现，

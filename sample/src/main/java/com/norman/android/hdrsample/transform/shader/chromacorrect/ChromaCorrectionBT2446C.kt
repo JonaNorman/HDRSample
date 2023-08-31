@@ -1,4 +1,4 @@
-package com.norman.android.hdrsample.transform.shader
+package com.norman.android.hdrsample.transform.shader.chromacorrect
 
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt2020ToLab
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabToBT2020
@@ -6,6 +6,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLabTo
 import com.norman.android.hdrsample.transform.shader.ColorConversion.methodLchToLab
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENCE_WHITE
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
+import com.norman.android.hdrsample.transform.shader.ReScale
 
 /**
  * 色度矫正，该方法是BT2446C方法介绍，对超过HDR参考白的高光去饱和避免压缩高光导致的色调偏移

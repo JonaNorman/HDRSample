@@ -11,6 +11,8 @@ import android.opengl.GLException;
 import android.opengl.GLU;
 import android.opengl.GLUtils;
 
+import com.norman.android.hdrsample.exception.GLShaderCompileException;
+
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
@@ -94,9 +96,7 @@ public class GLESUtil {
             if (status[0] == 0) {
                 String error = GLES20.glGetShaderInfoLog(shaderObjectId);
                 LogUtil.w(TAG,  shaderCode);
-                LogUtil.e(TAG, "can not compile shader: \n" + error);
-                GLES20.glDeleteShader(shaderObjectId);
-                return -1;
+                throw new GLShaderCompileException(error);
             }
         }
         return shaderObjectId;

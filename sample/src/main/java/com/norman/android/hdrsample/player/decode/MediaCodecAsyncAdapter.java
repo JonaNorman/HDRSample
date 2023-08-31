@@ -249,7 +249,6 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
     }
 
     private void cleanCodec() {
-        mediaCodec.setCallback(null);
         configured = false;
         paused = false;
         started = false;

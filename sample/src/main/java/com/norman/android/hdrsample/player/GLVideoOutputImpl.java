@@ -53,16 +53,16 @@ class GLVideoOutputImpl extends GLVideoOutput {
     /**
      * OES纹理渲染
      */
-    private final GLTextureRenderer externalTextureRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_EXTERNAL_OES);
+    private final GLTextureRenderer externalTextureRenderer = new GLTextureOESRenderer();
     /**
      * Y2Y纹理渲染
      */
-    private final GLY2YExtensionRenderer y2yExtTextureRenderer = new GLY2YExtensionRenderer();
+    private final GLTextureY2YRenderer y2yExtTextureRenderer = new GLTextureY2YRenderer();
 
     /**
      * 2D纹理渲染
      */
-    private final GLTextureRenderer texture2DRenderer = new GLTextureRenderer(GLTextureRenderer.TYPE_TEXTURE_2D);
+    private final GLTexture2DRenderer texture2DRenderer = new GLTexture2DRenderer();
 
     /**
      * 如果是Buffer模式，就把Buffer根据YUV420的四种格式对应转换成纹理
@@ -177,6 +177,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
         this.playerSurface.setOutputSurface(surface);
     }
 
+
     @Override
     public synchronized void setOutputVideoView(VideoView view) {
         if (videoView == view) {
@@ -225,10 +226,10 @@ class GLVideoOutputImpl extends GLVideoOutput {
             if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 ||
                     Build.MODEL.equals("MIX 2S")) {  //MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
                 envConfig = config16Bit;
-            }else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
+            } else if (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_10) {
                 envConfig = config10Bit;
             }
-            if (envConfig == null){
+            if (envConfig == null) {
                 envConfig = config8Bit;
             }
         }
@@ -277,21 +278,21 @@ class GLVideoOutputImpl extends GLVideoOutput {
             hdrStaticInfo.order(ByteOrder.LITTLE_ENDIAN);
             ShortBuffer shortBuffer = hdrStaticInfo.asShortBuffer();
             int primaryRChromaticityX = shortBuffer.get(0);
-            int primaryRChromaticityY = shortBuffer.get(1);;
-            int primaryGChromaticityX = shortBuffer.get(2);;
-            int primaryGChromaticityY = shortBuffer.get(3);;
-            int primaryBChromaticityX = shortBuffer.get(4);;
-            int primaryBChromaticityY = shortBuffer.get(5);;
-            int whitePointChromaticityX = shortBuffer.get(6);;
-            int whitePointChromaticityY = shortBuffer.get(7);;
-            maxMasteringLuminance = shortBuffer.get(8);;
-            int minMasteringLuminance = shortBuffer.get(9);;
-            maxContentLuminance = shortBuffer.get(10);;
+            int primaryRChromaticityY = shortBuffer.get(1);
+            int primaryGChromaticityX = shortBuffer.get(2);
+            int primaryGChromaticityY = shortBuffer.get(3);
+            int primaryBChromaticityX = shortBuffer.get(4);
+            int primaryBChromaticityY = shortBuffer.get(5);
+            int whitePointChromaticityX = shortBuffer.get(6);
+            int whitePointChromaticityY = shortBuffer.get(7);
+            maxMasteringLuminance = shortBuffer.get(8);
+            int minMasteringLuminance = shortBuffer.get(9);
+            maxContentLuminance = shortBuffer.get(10);
             maxFrameAverageLuminance = shortBuffer.get(11);
-        }else{
+        } else {
             maxMasteringLuminance = 0;
             maxContentLuminance = 0;
-            maxFrameAverageLuminance =0;
+            maxFrameAverageLuminance = 0;
         }
         if (bufferMode) {//用buffer转纹理
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
@@ -304,7 +305,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
                     textureSourceType == TEXTURE_SOURCE_TYPE_EXT) {
                 // HDR且支持Y2Y才有必要用Y2Y处理
                 textureY2YMode = colorSpace != COLOR_SPACE_SDR &&
-                        GLY2YExtensionRenderer.isSupportY2YEXT();
+                        GLTextureY2YRenderer.isSupportY2YEXT();
             } else {
                 textureY2YMode = textureSourceType == TEXTURE_SOURCE_TYPE_Y2Y;
             }
@@ -341,13 +342,14 @@ class GLVideoOutputImpl extends GLVideoOutput {
             videoSurface.updateTexImage();
             videoSurface.getTransformMatrix(textureRenderer.getTextureMatrix());//纹理矩阵能解决绿边问题
         }
+
         GLTextureRenderer screenRenderer;
         int finalColorSpace = colorSpace;
         if (transformList.isEmpty()) {//没有transform直接输出到screen
             screenRenderer = textureRenderer;
         } else {
             // 前面得到的纹理输出到frontTarget上
-            int targetBitDepth = profile10Bit ? (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16 ? 16 : 10) : 8;
+            int targetBitDepth = profile10Bit ? (hdrDisplayBitDepth == HDR_DISPLAY_BIT_DEPTH_16? 16 : 10) : 8;
             frontTarget.setBitDepth(targetBitDepth);
             backTarget.setBitDepth(targetBitDepth);
             frontTarget.setRenderSize(videoWidth, videoHeight);
@@ -374,7 +376,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             finalColorSpace = frontTarget.colorSpace;//
             screenRenderer = texture2DRenderer;
         }
-        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(finalColorSpace);//
+        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(finalColorSpace);
         if (windowSurface == null) {
             return false;
         }
@@ -388,12 +390,15 @@ class GLVideoOutputImpl extends GLVideoOutput {
         return true;
     }
 
+
     class PlayerSurface {
         private GLEnvWindowSurface windowSurface;
 
         private Surface outputSurface;
 
-        private int colorSpace;
+        private int lastColorSpace;
+
+
 
         public synchronized void setOutputSurface(Surface surface) {
             outputSurface = surface;
@@ -422,7 +427,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             }
             if (windowSurface == null ||
                     outputSurface != windowSurface.getSurface() ||
-                    this.colorSpace != requestColorSpace) {//surface不同或者色域不同就要重新创建WindowSurface
+                    this.lastColorSpace != requestColorSpace) {//surface不同或者色域不同就要重新创建WindowSurface
                 release();
                 GLEnvDisplay envDisplay = envContext.getEnvDisplay();
                 GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, outputSurface);
@@ -435,10 +440,14 @@ class GLVideoOutputImpl extends GLVideoOutput {
                         if (envDisplay.isSupportBT2020HLG()) {
                             builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_HLG);
                         }
+                    }else if (requestColorSpace == COLOR_SPACE_BT2020_LINEAR) {
+                        if (envDisplay.isSupportBT2020Linear()) {
+                            builder.setColorSpace(GLEnvSurface.EGL_COLOR_SPACE_BT2020_LINEAR);
+                        }
                     }
                 }
                 windowSurface = builder.build();
-                this.colorSpace = requestColorSpace;
+                this.lastColorSpace = requestColorSpace;
             }
             if (!windowSurface.isValid()) {
                 release();

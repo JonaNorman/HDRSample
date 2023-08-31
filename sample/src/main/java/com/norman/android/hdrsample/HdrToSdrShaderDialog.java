@@ -13,13 +13,12 @@ import android.widget.Spinner;
 import androidx.annotation.NonNull;
 
 import com.norman.android.hdrsample.opengl.GLShaderCode;
-import com.norman.android.hdrsample.transform.shader.ChromaCorrection;
-import com.norman.android.hdrsample.transform.shader.GammaFunction;
-import com.norman.android.hdrsample.transform.shader.GamutMap;
-import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
-import com.norman.android.hdrsample.transform.shader.ToneMap;
+import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection;
+import com.norman.android.hdrsample.transform.shader.gamma.GammaOETF;
+import com.norman.android.hdrsample.transform.shader.gamutmap.GamutMap;
+import com.norman.android.hdrsample.transform.shader.tonemap.ToneMap;
 
-public class HdrToSdrShaderDialog extends Dialog   implements AdapterView.OnItemSelectedListener, View.OnClickListener {
+public class HdrToSdrShaderDialog extends Dialog implements AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     private Spinner spinnerChromaCorrection;
     private Spinner spinnerToneMap;
@@ -34,7 +33,7 @@ public class HdrToSdrShaderDialog extends Dialog   implements AdapterView.OnItem
 
     private GamutMap gamutMap = GamutMap.NONE;
 
-    private GammaFunction gammaFunction = GammaFunction.LINEAR;
+    private GammaOETF gammaOETF = GammaOETF.NONE;
 
     private OnShaderSelectListener onShaderSelectListener;
 
@@ -88,32 +87,30 @@ public class HdrToSdrShaderDialog extends Dialog   implements AdapterView.OnItem
         spinnerDisplayGamma.setAdapter(new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_dropdown_item,
                 new ShaderItem[]{
-                        new ShaderItem(GammaFunction.LINEAR, "线性"),
-                        new ShaderItem(GammaFunction.BT709, "BT709"),
-                        new ShaderItem(GammaFunction.BT1886, "BT1886")
+                        new ShaderItem(GammaOETF.NONE, "无"),
+                        new ShaderItem(GammaOETF.BT1886, "BT1886"),
+                        new ShaderItem(GammaOETF.S170M, "S170M"),
+                        new ShaderItem(GammaOETF.BT709, "BT709"),
                 }));
         findViewById(R.id.btn_ok).setOnClickListener(this);
         findViewById(R.id.btn_cancel).setOnClickListener(this);
-
 
 
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
         ShaderItem shaderItem = (ShaderItem) parent.getItemAtPosition(position);
         GLShaderCode shaderCode = shaderItem.shaderCode;
-        if (shaderCode instanceof ChromaCorrection){
+        if (shaderCode instanceof ChromaCorrection) {
             chromaCorrection = (ChromaCorrection) shaderCode;
-        }else if (shaderCode instanceof ToneMap){
+        } else if (shaderCode instanceof ToneMap) {
             toneMap = (ToneMap) shaderCode;
-        }else if (shaderCode instanceof GamutMap){
+        } else if (shaderCode instanceof GamutMap) {
             gamutMap = (GamutMap) shaderCode;
-        }else if (shaderCode instanceof GammaFunction){
-            gammaFunction = (GammaFunction) shaderCode;
+        } else if (shaderCode instanceof GammaOETF) {
+            gammaOETF = (GammaOETF) shaderCode;
         }
-
     }
 
     @Override
@@ -123,14 +120,13 @@ public class HdrToSdrShaderDialog extends Dialog   implements AdapterView.OnItem
 
     @Override
     public void onClick(View v) {
-        int id =v.getId();
-        if (id == R.id.btn_ok){
-            if (onShaderSelectListener != null){
-                HDRToSDRShader hdrToSDRShader = new HDRToSDRShader(chromaCorrection,toneMap,gamutMap,gammaFunction);
-                onShaderSelectListener.onShaderSelect(hdrToSDRShader);
+        int id = v.getId();
+        if (id == R.id.btn_ok) {
+            if (onShaderSelectListener != null) {
+                onShaderSelectListener.onShaderSelect(chromaCorrection,toneMap,gamutMap,gammaOETF);
             }
             dismiss();
-        }else if (id == R.id.btn_cancel){
+        } else if (id == R.id.btn_cancel) {
             dismiss();
         }
     }
@@ -155,7 +151,10 @@ public class HdrToSdrShaderDialog extends Dialog   implements AdapterView.OnItem
         }
     }
 
-    interface  OnShaderSelectListener{
-        void onShaderSelect(HDRToSDRShader hdrToSDRShader);
+    interface OnShaderSelectListener {
+        void onShaderSelect(ChromaCorrection chromaCorrection,
+                            ToneMap toneMap,
+                            GamutMap gamutMap,
+                            GammaOETF gammaOETF);
     }
 }

@@ -6,6 +6,10 @@ import com.norman.android.hdrsample.player.GLVideoTransform;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
 import com.norman.android.hdrsample.transform.shader.MetaDataParams;
+import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection;
+import com.norman.android.hdrsample.transform.shader.gamma.GammaOETF;
+import com.norman.android.hdrsample.transform.shader.gamutmap.GamutMap;
+import com.norman.android.hdrsample.transform.shader.tonemap.ToneMap;
 import com.norman.android.hdrsample.util.DisplayUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
@@ -41,9 +45,13 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
 
     private ScreenBrightnessObserver screenBrightnessObserver;
     private int maxDisplayLuminanceUniform;
-    private int currentColorSpaceUniform;
     private int currentDisplayLuminanceUniform;
     private int hdrPeakLuminanceUniform;
+
+    private ChromaCorrection chromaCorrection;
+    private ToneMap toneMap;
+    private GamutMap gamutMap;
+    private GammaOETF gammaOETF;
 
 
     public HDRToSDRVideoTransform() {
@@ -64,6 +72,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         if (colorSpace == VideoOutput.COLOR_SPACE_SDR) {
             return;
         }
+        changeShader();
         if (programId <= 0) {
             return;
         }
@@ -89,11 +98,9 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
 
         GLES20.glUniform1f(maxDisplayLuminanceUniform, DisplayUtil.getMaxLuminance());
         GLESUtil.checkGLError();
-        GLES20.glUniform1i(currentColorSpaceUniform, getInputColorSpace());
-        GLESUtil.checkGLError();
-        int peakLuminance = Math.min(getInputMaxContentLuminance(),getInputMaxMasteringLuminance());
-        peakLuminance = Math.max(peakLuminance,getInputMaxFrameAverageLuminance());
-        if (peakLuminance ==0){
+        int peakLuminance = Math.min(getInputMaxContentLuminance(), getInputMaxMasteringLuminance());
+        peakLuminance = Math.max(peakLuminance, getInputMaxFrameAverageLuminance());
+        if (peakLuminance == 0) {
             peakLuminance = 1000;
         }
         GLES20.glUniform1f(hdrPeakLuminanceUniform, peakLuminance);
@@ -115,34 +122,72 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     }
 
 
-    public synchronized void setHdrToSDRShader(HDRToSDRShader shader) {
-        post(() -> {
-            if (hdrToSDRShader == shader) {
-                return;
-            }
-            hdrToSDRShader = shader;
-            GLESUtil.delProgramId(programId);
-            if (hdrToSDRShader != null) {
-                programId = GLESUtil.createProgramId(VERTEX_SHADER, hdrToSDRShader.getCode());
-                positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-                GLESUtil.checkGLError();
-                textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
-                GLESUtil.checkGLError();
-                textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-                GLESUtil.checkGLError();
+    public synchronized void setChromaCorrection(ChromaCorrection chromaCorrection) {
+        this.chromaCorrection = chromaCorrection;
+    }
 
-                maxDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.MAX_DISPLAY_LUMINANCE);
-                GLESUtil.checkGLError();
+    public void setToneMap(ToneMap toneMap) {
+        this.toneMap = toneMap;
+    }
 
-                currentColorSpaceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.VIDEO_COLOR_SPACE);
-                GLESUtil.checkGLError();
+    public void setGamutMap(GamutMap gamutMap) {
+        this.gamutMap = gamutMap;
+    }
 
-                currentDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.CURRENT_DISPLAY_LUMINANCE);
-                GLESUtil.checkGLError();
+    public void setGammaOETF(GammaOETF gammaOETF) {
+        this.gammaOETF = gammaOETF;
+    }
 
-                hdrPeakLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.HDR_PEAK_LUMINANCE);
-                GLESUtil.checkGLError();
-            }
-        });
+
+    private void changeShader() {
+        int colorSpace = getInputColorSpace();
+        if (hdrToSDRShader != null
+                && hdrToSDRShader.colorSpace == colorSpace
+                && hdrToSDRShader.chromaCorrection == chromaCorrection
+                && hdrToSDRShader.toneMap == toneMap
+                && hdrToSDRShader.gamutMap == gamutMap
+                && hdrToSDRShader.gammaOETF == gammaOETF
+
+        ) {
+            return;
+        }
+        GLESUtil.delProgramId(programId);
+        programId = 0;
+        hdrToSDRShader = null;
+        if (chromaCorrection == null ||
+                toneMap == null ||
+                gamutMap == null ||
+                gammaOETF == null) {
+            return;
+        }
+
+        if (chromaCorrection == ChromaCorrection.NONE  &&
+                toneMap == ToneMap.NONE &&
+                gamutMap == GamutMap.NONE &&
+                gammaOETF == GammaOETF.NONE) {
+            return;
+        }
+        hdrToSDRShader = new HDRToSDRShader(colorSpace,
+                chromaCorrection,
+                toneMap,
+                gamutMap,
+                gammaOETF
+        );
+        programId = GLESUtil.createProgramId(VERTEX_SHADER, hdrToSDRShader.getCode());
+        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
+        GLESUtil.checkGLError();
+        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
+        GLESUtil.checkGLError();
+        textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
+        GLESUtil.checkGLError();
+
+        maxDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.MAX_DISPLAY_LUMINANCE);
+        GLESUtil.checkGLError();
+
+        currentDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.CURRENT_DISPLAY_LUMINANCE);
+        GLESUtil.checkGLError();
+
+        hdrPeakLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.HDR_PEAK_LUMINANCE);
+        GLESUtil.checkGLError();
     }
 }
