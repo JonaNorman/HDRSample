@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.opengl;
 
 /***
- * EGL的属性列表， 不需要拼装数组
+ * EGL的属性列表， 实现这个类的目的是为了使用EGL不需要拼装数组
  */
 interface GLEnvAttrList {
     int getAttrib(int key);

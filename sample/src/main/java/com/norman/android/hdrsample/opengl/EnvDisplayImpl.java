@@ -31,7 +31,7 @@ class EnvDisplayImpl implements GLEnvDisplay {
     private static final String EXTENSION_COLOR_SPACE_BT2020_LINEAR = "EGL_EXT_gl_colorspace_bt2020_linear";
 
     /**
-     * 不需要Surface也可以执行OpenGL命令
+     * 不需要Surface也可以执行OpenGL命令的扩展
      */
     private static final String EGL_KHR_surfaceless_context = "EGL_KHR_surfaceless_context";
 

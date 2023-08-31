@@ -32,7 +32,7 @@ public class GLESUtil {
             1.0f, 1.0f,//right top
     };
 
-    // 纹理坐标，注意纹理坐标本身是从下往上的也就是说相对图像文件是颠倒的
+    // 纹理坐标，注意纹理坐标本身是从下往上的也就是说相对图像文件本身是颠倒的
     private static final float[] TEXTURE_COORDINATES = {
             0.0f, 0.0f,//left bottom
             1.0f, 0.0f,//right bottom
@@ -40,7 +40,7 @@ public class GLESUtil {
             1.0f, 1.0f,//right  top
     };
 
-    // 跳到上下的纹理坐标，
+    //上下颠倒纹理坐标
     private static final float[] TEXTURE_COORDINATES_UPSIDE_DOWN = {
             0.0f, 1.0f,//left bottom
             1.0f, 1.0f,//right bottom
@@ -50,7 +50,7 @@ public class GLESUtil {
 
 
     /**
-     * 顶点坐标的位数
+     * 平面顶点坐标的位数
      */
     public static final int FLAT_VERTEX_LENGTH = 2;
 
@@ -77,11 +77,21 @@ public class GLESUtil {
         return BufferUtil.createDirectFloatBuffer(TEXTURE_COORDINATES_UPSIDE_DOWN);
     }
 
+    /**
+     * 创建VertexShader
+     * @param shaderCode
+     * @return
+     */
 
     public static int createVertexShader(String shaderCode) {
         return compileShaderCode(GLES20.GL_VERTEX_SHADER, shaderCode);
     }
 
+    /**
+     * 创建FragmentShader
+     * @param shaderCode
+     * @return
+     */
     public static int createFragmentShader(String shaderCode) {
         return compileShaderCode(GLES20.GL_FRAGMENT_SHADER, shaderCode);
     }
@@ -110,6 +120,7 @@ public class GLESUtil {
         int programId = GLESUtil.createProgramId();
         int vertexShaderId = GLESUtil.createVertexShader(vertCode);
         int fragmentShaderId = GLESUtil.createFragmentShader(fragCode);
+        // 把vertexShader和fragmentShader关联在program上
         GLES20.glAttachShader(programId, vertexShaderId);
         GLES20.glAttachShader(programId, fragmentShaderId);
         GLES20.glLinkProgram(programId);
@@ -118,20 +129,21 @@ public class GLESUtil {
         if (linkStatus[0] != GLES20.GL_TRUE) {
             LogUtil.e(TAG,"could not link program: \n"+GLES20.glGetProgramInfoLog(programId));
         }
+        //虽然删除了ShaderId但是program还是可以运行的
         deleteShaderId(vertexShaderId);
         deleteShaderId(fragmentShaderId);
         return programId;
     }
 
     public static void delProgramId(int programId) {
-        if (programId <= 0) {
+        if (programId <= 0) {// programId从1开始
             return;
         }
         GLES20.glDeleteProgram(programId);
     }
 
     public static void deleteShaderId(int shaderId) {
-        if (shaderId <= 0) {
+        if (shaderId <= 0) {//shaderId从1开始
             return;
         }
         GLES20.glDeleteShader(shaderId);
@@ -223,7 +235,7 @@ public class GLESUtil {
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
         //直接传null这样的做法是错误，根据https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml文档描述
-        //传null后纹理的颜色是未知，直接绘制在frameBuffer颜色是乱七八糟的或者花屏，测试出现过前面一个activity的画面数据(大部分情况下部分出现，因为会用frameBuffer重绘)
+        //传null后纹理的颜色是未知，直接绘制在frameBuffer颜色是乱七八糟的或者花屏，测试出现过前面一个activity的画面数据(大部分情况下部分出现，因为没有直接用，而是用frameBuffer重绘后再去绘制)
         ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);
         GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, width, height, 0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, byteBuffer);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
@@ -241,15 +253,13 @@ public class GLESUtil {
     public static int createTextureId(int width, int height,int bitDepth) {
         int textureId = createTextureId();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId);
-        //buffer直接传null这样的做法是错误，根据https://www.khronos.org/registry/OpenGL-Refpages/es2.0/xhtml/glTexImage2D.xml文档描述
-        //传null后纹理的颜色是未知，直接绘制颜色是乱七八糟的或者花屏，测试出现过前面一个activity的画面数据(大部分情况下部分出现，因为会用frameBuffer重绘)
         if (bitDepth == 8){
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);//rgba4个通道
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
                     GLES20.GL_RGBA,//纹理内部格式
                     width, height, 0,
                     GLES20.GL_RGBA,// buffer的格式
-                    GLES20.GL_UNSIGNED_BYTE,//数据每个通道都是一个无符号字节数
+                    GLES20.GL_UNSIGNED_BYTE,//数据每个通道都是一个无符号字节数也就是8位
                     byteBuffer);
         }else  if (bitDepth ==10){
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 4);// RGBA1010102，（10+10+10+2)/8 =4
@@ -257,14 +267,14 @@ public class GLESUtil {
                     GLES30.GL_RGB10_A2,//纹理内部格式
                     width, height, 0,
                     GLES20.GL_RGBA,// buffer的格式
-                    GLES30.GL_UNSIGNED_INT_2_10_10_10_REV,//数据通道RGBA1010102
+                    GLES30.GL_UNSIGNED_INT_2_10_10_10_REV,//数据通道RGBA1010102也就是10位
                     byteBuffer);
         }else  if (bitDepth == 16){//16位数据
             ByteBuffer byteBuffer = ByteBuffer.allocateDirect(width * height * 8);//每个通道2个字节，4个通道也就是2*4=8
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
                     GLES30.GL_RGBA16F, width, height, 0,
                     GLES20.GL_RGBA,
-                    GLES30.GL_HALF_FLOAT,//这个地方传GL_HALF_FLOAT和GL_FLOAT都可以，因为表示的是buffer数据格式
+                    GLES30.GL_HALF_FLOAT,//这个地方传GL_HALF_FLOAT和GL_FLOAT都可以，16F用GL_HALF_FLOAT够用了
                     byteBuffer);
         }else {
             throw new IllegalArgumentException("not support bitDepth:"+bitDepth);
@@ -309,6 +319,11 @@ public class GLESUtil {
         GLES20.glDeleteFramebuffers(1, new int[]{bufferId}, 0);
     }
 
+    /**
+     * 关联frameBuffer和texture，画在frameBuffer的内容就会跑到texture上
+     * @param frameBufferId
+     * @param textureId
+     */
     public static void attachTexture(int frameBufferId,int textureId){
         if (frameBufferId<=0 || textureId<=0)return;
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId);

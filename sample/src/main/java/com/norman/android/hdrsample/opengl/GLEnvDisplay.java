@@ -59,7 +59,8 @@ public interface GLEnvDisplay {
     boolean isSupportBT2020Linear();
 
     /**
-     * 不需要surface就可以执行OpenGL命令
+     * 是否支持不需要surface就可以执行OpenGL命令，  //不需要创建Surface下也可以makeSurface
+     *             // 注意如果这个时候绑定FrameBuffer0会报错，只有makeCurrent其他Surface绑定FrameBuffer0才有用
      * @return
      */
 

@@ -29,7 +29,6 @@ public interface GLEnvPbufferSurface extends GLEnvSurface {
             this.envConfig = envConfig;
             setWidth(width);
             setHeight(height);
-
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfigChooser envConfigChooser, int width, int height) {

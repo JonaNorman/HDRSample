@@ -2,10 +2,8 @@ package com.norman.android.hdrsample.util;
 
 import android.media.MediaFormat;
 
-import androidx.annotation.IntDef;
+import com.norman.android.hdrsample.player.extract.VideoExtractor;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,15 +14,6 @@ import java.util.Map;
  */
 public class ColorMatrixUtil {
 
-    public static final int COLOR_RANGE_LIMITED = MediaFormat.COLOR_RANGE_LIMITED;
-    public static final int COLOR_RANGE_FULL = MediaFormat.COLOR_RANGE_FULL;
-
-    @IntDef({
-            COLOR_RANGE_LIMITED,
-            COLOR_RANGE_FULL
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ColorRange {}
 
     private static final Map<Integer, ColorMatrix> YUV_TO_RGB_MATRIX_MAP = new HashMap<>();
     // 参考https://github.com/google/skia/blob/main/src/core/SkYUVMath.cpp
@@ -82,7 +71,7 @@ public class ColorMatrixUtil {
      * @param colorRange 范围
      * @return
      */
-    public static float[] getYuvToRgbMatrix(int bitDepth,@ColorRange int colorRange){
+    public static float[] getYuvToRgbMatrix(int bitDepth,@VideoExtractor.ColorRange int colorRange){
         ColorMatrix colorMatrix = YUV_TO_RGB_MATRIX_MAP.get(bitDepth);
         if(colorMatrix == null){
             throw new NullPointerException("not support bitDepth "+bitDepth+" colorRange"+colorRange);

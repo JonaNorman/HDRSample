@@ -5,7 +5,7 @@ import android.opengl.Matrix;
 import androidx.annotation.NonNull;
 
 /**
- *OpenGL Matrix的封装，set开头的方法会把数据替换调，其他方法是可以连续调用的
+ *OpenGL Matrix的封装，set开头的方法会把数据替换掉，其他方法是可以连续调用生效
  */
 public class GLMatrix implements Cloneable {
 
@@ -36,6 +36,19 @@ public class GLMatrix implements Cloneable {
     }
 
 
+    /**
+     * 设置摄像头
+     * @param eyeX
+     * @param eyeY
+     * @param eyeZ
+     * @param centerX
+     * @param centerY
+     * @param centerZ
+     * @param upX
+     * @param upY
+     * @param upZ
+     * @return
+     */
 
     public GLMatrix setLookAt(float eyeX, float eyeY, float eyeZ,
                               float centerX, float centerY, float centerZ, float upX, float upY,
@@ -44,6 +57,13 @@ public class GLMatrix implements Cloneable {
         return this;
     }
 
+    /**
+     * 设置摄像头
+     * @param eye
+     * @param center
+     * @param up
+     * @return
+     */
     public GLMatrix setLookAt(float[] eye,
                               float[] center,
                               float[] up) {
@@ -56,10 +76,29 @@ public class GLMatrix implements Cloneable {
         return this;
     }
 
+    /**
+     * 透视投影
+     * @param fovy
+     * @param aspect
+     * @param zNear
+     * @param zFar
+     * @return
+     */
     public GLMatrix setPerspective(float fovy, float aspect, float zNear, float zFar) {
         Matrix.perspectiveM(currentMatrix, 0, fovy, aspect, zNear, zFar);
         return this;
     }
+
+    /**
+     * 正交投影
+     * @param left
+     * @param right
+     * @param bottom
+     * @param top
+     * @param near
+     * @param far
+     * @return
+     */
 
     public GLMatrix setOrtho(float left, float right, float bottom, float top, float near, float far) {
         Matrix.orthoM(currentMatrix, 0, left, right, bottom, top, near, far);
@@ -163,6 +202,10 @@ public class GLMatrix implements Cloneable {
         return this;
     }
 
+    /**
+     * 还原
+     * @return
+     */
 
     public GLMatrix reset() {
         Matrix.setIdentityM(currentMatrix, 0);
@@ -267,16 +310,26 @@ public class GLMatrix implements Cloneable {
     }
 
 
+    /**
+     * 转置矩阵
+     */
 
     public void transpose(){
         Matrix.transposeM(tempMatrix, 0, currentMatrix, 0);
         copyMM(tempMatrix,currentMatrix);
     }
 
+    /**
+     * 把矩阵应用在点上
+     * @param point
+     */
     public void mapPoints(float[] point) {
         multiplyMV(point, currentMatrix, point);
     }
-
+    /**
+     * 把矩阵应用在点上
+     * @param point
+     */
     public void mapPoints(float[] resultPoint, float[] point) {
         multiplyMV(resultPoint, currentMatrix, point);
     }
@@ -287,7 +340,7 @@ public class GLMatrix implements Cloneable {
         return new GLMatrix(currentMatrix);
     }
 
-    // Matrix.multiplyMM原生方法result和left、right同一个引用，通过新建一个矩阵做中转解决
+    // Matrix.multiplyMM原生方法result和left、right不能使用同一个引用，通过新建一个矩阵做中转解决
     void multiplyMM(float[] result, float[] left, float[] right) {
         boolean useTemp = result == left || result == right;
         if (!useTemp) {
@@ -298,7 +351,7 @@ public class GLMatrix implements Cloneable {
         copyMM(tempMatrix,result);
     }
 
-    // Matrix.multiplyMV原生方法resultPoint和point同一个引用，通过新建一个数组做中转解决
+    // Matrix.multiplyMV原生方法resultPoint和point不能使用同一个引用，通过新建一个数组做中转解决
 
     void multiplyMV(float[] resultPoint, float[] matrix, float[] point) {
         boolean useTemp = resultPoint == point;

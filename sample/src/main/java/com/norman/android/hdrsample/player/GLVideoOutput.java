@@ -20,33 +20,33 @@ public abstract class GLVideoOutput extends VideoOutput {
     /**
      * YUV420 Buffer中转纹理
      */
-    public static final int TEXTURE_SOURCE_TYPE_BUFFER = 1;
+    public static final int TEXTURE_SOURCE_BUFFER = 1;
     /**
      * 从OES纹理或Y2Y纹理转成2D纹理
      */
-    public static final int TEXTURE_SOURCE_TYPE_EXT = 2;
+    public static final int TEXTURE_SOURCE_EXT = 2;
     /**
      * 从Y2Y纹理转成2D纹理
      */
-    public static final int TEXTURE_SOURCE_TYPE_Y2Y = 3;
+    public static final int TEXTURE_SOURCE_Y2Y = 3;
 
     /**
      * 从OES纹理转成2D纹理
      */
-    public static final int TEXTURE_SOURCE_TYPE_OES = 4;
+    public static final int TEXTURE_SOURCE_OES = 4;
 
     /**
-     * 视频的纹理类型
+     * 视频的纹理来源
      */
 
-    @IntDef({TEXTURE_SOURCE_TYPE_AUTO, TEXTURE_SOURCE_TYPE_BUFFER, TEXTURE_SOURCE_TYPE_EXT, TEXTURE_SOURCE_TYPE_Y2Y, TEXTURE_SOURCE_TYPE_OES})
+    @IntDef({TEXTURE_SOURCE_TYPE_AUTO, TEXTURE_SOURCE_BUFFER, TEXTURE_SOURCE_EXT, TEXTURE_SOURCE_Y2Y, TEXTURE_SOURCE_OES})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface TextureSourceType {
+    public @interface TextureSource {
     }
 
 
     /**
-     * 最终显示HDR纹理时用10位(如果不支持，会自动切成8位)，视频正常用10位就够了，但是alpha只有2位，如果希望加大alpha，可以选择HDR_DISPLAY_BIT_DEPTH_16
+     * Surface支持HDR显示时用10位(如果不支持，会自动切成8位)，视频正常用10位就够了，但是alpha只有2位，如果希望加大alpha，可以选择HDR_DISPLAY_BIT_DEPTH_16
      * 如果发现部分手机不支持SurfaceView直接加载HDR，也可以尝试改成HDR_DISPLAY_BIT_DEPTH_16
      */
 
@@ -64,39 +64,4 @@ public abstract class GLVideoOutput extends VideoOutput {
 
     public abstract void addVideoTransform(GLVideoTransform videoTransform);
 
-    public static GLVideoOutput create() {
-        return new GLVideoOutputImpl();
-    }
-
-    public static GLVideoOutput create(@TextureSourceType int textureSourceType) {
-        return new GLVideoOutputImpl(textureSourceType);
-    }
-
-
-    public static class Builder {
-
-        @TextureSourceType
-        int textureSoureceType;
-
-        @HdrDisplayBitDepth
-        int hdrDisplayBitDepth;
-
-
-        public Builder() {
-
-        }
-
-
-        public void setTextureSoureceType(@TextureSourceType int textureSoureceType) {
-            this.textureSoureceType = textureSoureceType;
-        }
-
-        public void setHdrDisplayBitDepth(int hdrDisplayBitDepth) {
-            this.hdrDisplayBitDepth = hdrDisplayBitDepth;
-        }
-
-        public GLVideoOutput build() {
-            return new GLVideoOutputImpl(textureSoureceType);
-        }
-    }
 }

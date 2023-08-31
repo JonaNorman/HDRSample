@@ -31,6 +31,10 @@ public class GLTextureSurface extends Surface {
         return surfaceTexture.isAttached();
     }
 
+    /**
+     * 每一帧数据更新的回调
+     * @param listener
+     */
     public void setOnFrameAvailableListener(OnFrameAvailableListener listener) {
         surfaceTexture.setOnFrameAvailableListener(surfaceTexture -> listener.onFrameAvailable(GLTextureSurface.this));
     }

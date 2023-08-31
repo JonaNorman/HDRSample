@@ -26,6 +26,9 @@ public interface GLEnvWindowSurface extends GLEnvSurface {
      */
     void setPresentationTime(long presentationNs);
 
+    /**
+     * 交换前后台Buffer，渲染当前操作的Buffer
+     */
     void swapBuffers();
 
     Surface getSurface();

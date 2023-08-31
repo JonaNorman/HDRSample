@@ -19,8 +19,16 @@ public interface FileSource {
     interface Descriptor {
         FileDescriptor getFileDescriptor();
 
+        /**
+         * 文件长度
+         * @return
+         */
         long getLength();
 
+        /**
+         * 文件开始点的偏移值
+         * @return
+         */
         long getStartOffset();
 
         /**

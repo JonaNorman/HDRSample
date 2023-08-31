@@ -14,7 +14,6 @@ import androidx.annotation.NonNull;
 import com.norman.android.hdrsample.exception.IORuntimeException;
 import com.norman.android.hdrsample.opengl.GLEnvThreadManager;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
-import com.norman.android.hdrsample.util.ColorFormatUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.LogUtil;
 
@@ -51,13 +50,13 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 bufferInfo = new MediaCodec.BufferInfo();
                 bufferInfo.flags = MediaCodec.BUFFER_FLAG_END_OF_STREAM;
             }
-            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                //数据结束的标记是数据大小要置空
+            if ((bufferInfo.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {//数据结束的标记
+                //数据大小要置空
                 bufferInfo.offset = 0;
                 bufferInfo.size = 0;
                 inputEndStream = true;
             }
-            // 送入编解码解码数据
+            // 送入编解码处理数据
             codec.queueInputBuffer(index, bufferInfo.offset, bufferInfo.size, bufferInfo.presentationTimeUs, bufferInfo.flags);
         }
 
@@ -65,7 +64,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index, @NonNull MediaCodec.BufferInfo info) {
             ByteBuffer outputBuffer = codec.getOutputBuffer(index);
             if (outputBuffer == null) return;
-            // 获取输出数据，要把buffer的数据位置写好，方便后续读取
+            // 获取输出数据，要把buffer的数据位置写好，方便后续读取，就不用传递MediaCodec.BufferInfo了
             outputBuffer.clear();
             outputBuffer.position(info.offset);
             outputBuffer.limit(info.offset + info.size);
@@ -82,7 +81,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 callBack.onOutputBufferEndOfStream();
             } else {
                 if (render) {
-                    callBack.onOutputBufferRender(info.presentationTimeUs);
+                    callBack.onOutputBufferComplete(info.presentationTimeUs);
                 }
             }
         }
@@ -170,7 +169,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         MediaCodecInfo mediaCodecInfo = mediaCodec.getCodecInfo();
         MediaCodecInfo.CodecCapabilities codecCapabilities = mediaCodecInfo.getCapabilitiesForType(mimeType);
         for (int colorFormat : codecCapabilities.colorFormats) {
-            if (ColorFormatUtil.isSupport10BitYUV420(mediaCodecInfo.getName(), colorFormat)) {
+            if (ColorFormatHelper.isSupport10BitYUV420(mediaCodecInfo.getName(), colorFormat)) {
                 return true;
             }
         }
@@ -231,7 +230,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         mediaCodec.reset();
-        cleanCodec();
+        cleanup();
     }
 
     public synchronized void stop() {
@@ -245,10 +244,10 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
             return;
         }
         mediaCodec.stop();
-        cleanCodec();
+        cleanup();
     }
 
-    private void cleanCodec() {
+    private void cleanup() {
         configured = false;
         paused = false;
         started = false;
@@ -328,7 +327,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         }
         released = true;
         mediaCodec.release();
-        cleanCodec();
+        cleanup();
     }
 
     public synchronized void setOutputSurface(Surface surface) {
@@ -475,7 +474,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
          * 一帧数据渲染完的回调
          * @param presentationTimeUs
          */
-        void onOutputBufferRender(long presentationTimeUs);
+        void onOutputBufferComplete(long presentationTimeUs);
 
         /**
          * 结束到编解码的数据结束标记
@@ -531,7 +530,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
         private static int THREAD_HOLDER_COUNT;
 
         /**
-         * 建立一个OpenGL线程创建纹理ID，多个Surface同时引用一个线程
+         * 建立一个OpenGL线程创建纹理ID，多个纹理ID同时引用一个线程
          *
          * @return
          */
@@ -559,7 +558,7 @@ class MediaCodecAsyncAdapter extends MediaCodec.Callback {
                 if (THREAD_HOLDER_COUNT == 0) {//纹理的线程占有引用数量为0就销毁线程
                     ENV_THREAD_MANAGER.release();
                 } else {
-                    ENV_THREAD_MANAGER.post(new Runnable() {//删除纹理ID
+                    ENV_THREAD_MANAGER.post(new Runnable() {//删除纹理ID，删除纹理需要在创建的线程中
                         @Override
                         public void run() {
                             GLESUtil.delTextureId(getTextureId());

@@ -1,33 +1,23 @@
 package com.norman.android.hdrsample.player;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 abstract class GLRenderer {
     boolean create = false;
 
     GLRenderTarget outputTarget;
 
-    Queue<Runnable> postQueue =  new LinkedList<>();
-
+    /**
+     * 渲染到目标
+     * @param renderTarget
+     */
     synchronized void renderToTarget(GLRenderTarget renderTarget) {
         outputTarget = renderTarget;
         renderTarget.startRender();
-        if (!create){
+        if (!create){//没有创建会创建
             create = true;
             onCreate();
         }
-        while (!postQueue.isEmpty()) {
-             Runnable runnable =  postQueue.poll();
-             runnable.run();
-        }
-
         onRender();
         renderTarget.finishRender();
-    }
-
-    protected synchronized void  post(Runnable runnable){
-        postQueue.add(runnable);
     }
 
 

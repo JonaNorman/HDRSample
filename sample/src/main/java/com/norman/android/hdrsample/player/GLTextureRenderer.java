@@ -12,6 +12,9 @@ import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.FloatBuffer;
 
+/**
+ * 支持3种格式 2D OES Y2Y渲染到frameBuffer上
+ */
 class GLTextureRenderer extends GLRenderer {
 
 

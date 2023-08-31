@@ -31,6 +31,7 @@ class MessageHandlerImpl implements MessageHandler {
             if (lifeCycleCallback != null) {
                 lifeCycleCallback.onHandlerError(exception);
             }
+            //发生错误，Handler的状态还是在运行中的，要真正关闭
             finish();
         }
     };
@@ -40,7 +41,7 @@ class MessageHandlerImpl implements MessageHandler {
 
     private final Runnable finishCallbackRunnable = new Runnable() {
         @Override
-        public void run() {
+        public void run() {//
             if (!hasStart) {
                 return;
             }
@@ -339,6 +340,7 @@ class MessageHandlerImpl implements MessageHandler {
             if (hasFinish) {
                 return false;
             }
+            // onFinish回调处理
             if (isCurrentThread()) {
                 finishCallbackRunnable.run();
             } else {

@@ -27,7 +27,7 @@ public interface Decoder {
     void configure(Decoder.Configuration configuration);
 
     /**
-     * configure后才能start
+     * 启动，configure后才能start
      */
 
     void start();
@@ -43,7 +43,7 @@ public interface Decoder {
     void resume();
 
     /**
-     * 刷新数据(start后才有效)，在拖动视频进度条可以使用
+     * 刷新数据(start后才有效)，会清空正在解码的数据，在拖动视频进度条可以使用
      */
     void flush();
 
@@ -58,7 +58,7 @@ public interface Decoder {
     void reset();
 
     /**
-     * 销毁，create就可以调用
+     * 销毁，create后就可以调用
      */
 
     void destroy();
@@ -111,13 +111,38 @@ public interface Decoder {
 
     interface CallBack {
 
+        /**
+         * 送入解码器解码的数据已经准备，可以往这里送入未解码的数据
+         * @param byteBuffer
+         * @return
+         */
         MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer byteBuffer);
 
+        /**
+         * 解码一帧数据完成的回调
+         * @param outputBuffer
+         * @param presentationTimeUs 微妙
+         * @return true表示这帧数据是要渲染要处理的，false表示略过这帧数据
+         */
         boolean onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs);
 
+        /**
+         * 解码数据已经渲染上去或者完成
+         * 如果{@link  Decoder.CallBack#onOutputBufferAvailable(ByteBuffer, long)}返回false就不会回调这个方法
+         *
+         * @param presentationTimeUs
+         */
         void onOutputBufferRender(long presentationTimeUs);
 
+        /**
+         * 解码已经结束，表示已经接收到解码结束的标记
+         */
         void onOutputBufferEndOfStream();
+
+        /**
+         * 解码格式变化
+         * @param format
+         */
 
         void onOutputFormatChanged(MediaFormat format);
 

@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.opengl;
 
 /**
- * EGL的config配置选择器简单实现，注意选取出来的配置大于等于要求的配置，譬如选取的RGBA8888不支持，出来的可能就是RGBA16161616
+ * EGL的config配置选择器简单实现，注意选取出来的配置大于等于要求的配置，譬如选取的RGBA8888,出来的可能就是RGBA16161616
  */
 public interface GLEnvConfigSimpleChooser extends GLEnvConfigChooser {
 

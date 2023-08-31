@@ -13,6 +13,11 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
+/**
+ * 播放器解码的基础类
+ * @param <D>
+ * @param <E>
+ */
 abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends PlayerImpl implements Player {
     private static final String KEY_CSD_0 = "csd-0";
     private static final String KEY_CSD_1 = "csd-1";
@@ -74,6 +79,9 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
 
 
     protected void onPlayPrepare() {
+        if(fileSource == null){
+            throw new NullPointerException("file is null, please setSource");
+        }
         extractor.setSource(fileSource);
         if (!extractor.isAvailable()) {
             throw new RuntimeException("file can not play");
@@ -110,7 +118,7 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
 
     protected void onPlayStop() {
         decoder.destroy();
-        extractor.seekPreSync(0);
+        extractor.seekPreSync(0);//停止以后把时间重新设置到0，方便后续重新start
     }
 
 
@@ -130,7 +138,7 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
         @Override
         public MediaCodec.BufferInfo onInputBufferAvailable(ByteBuffer inputBuffer) {
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-            extractor.read(inputBuffer, bufferInfo);
+            extractor.read(inputBuffer, bufferInfo);//读取一帧时间去解码
             extractor.advance();
             return bufferInfo;
         }

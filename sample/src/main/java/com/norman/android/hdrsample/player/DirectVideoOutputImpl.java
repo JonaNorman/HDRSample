@@ -35,10 +35,6 @@ class DirectVideoOutputImpl extends DirectVideoOutput {
     };
 
 
-    public static DirectVideoOutputImpl create() {
-        return new DirectVideoOutputImpl();
-    }
-
     @Override
     public synchronized void setOutputSurface(Surface surface) {
         setOutputVideoView(null);// videoView和Surface只能同时设置一个

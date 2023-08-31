@@ -16,7 +16,9 @@ class EnvContextManagerImpl implements GLEnvContextManager {
     public EnvContextManagerImpl(GLEnvContext envContext) {
         this.envContext = envContext;
         envDisplay = envContext.getEnvDisplay();
-        if (envDisplay.isSupportSurfacelessContext()) {//不需要创建Surface下也可以makeSurface
+        if (envDisplay.isSupportSurfacelessContext()) {
+            //不需要创建Surface下也可以makeSurface
+            // 注意如果这个时候绑定FrameBuffer0会报错，只有makeCurrent其他Surface绑定FrameBuffer0才有用
             eglSurface = EGL14.EGL_NO_SURFACE;
         } else {
             GLEnvSurface envSurface =GLEnvPbufferSurface.create(envContext,1,1);

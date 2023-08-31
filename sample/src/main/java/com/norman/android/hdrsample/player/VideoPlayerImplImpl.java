@@ -124,6 +124,9 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
         return videoOutput;
     }
 
+    /**
+     * 保证时间同步
+     */
     static class TimeSyncer {
         private long firstSystemTimeUs;
         private long firstPlayTimeUs;

@@ -38,6 +38,11 @@ public interface GLEnvContext {
 
     void makeCurrent(GLEnvSurface envSurface);
 
+    /**
+     * 把Surface设置为当前环境的渲染目标
+     * @param eglSurface
+     */
+
     void makeCurrent(EGLSurface eglSurface);
 
     /**
@@ -110,12 +115,12 @@ public interface GLEnvContext {
             setClientVersion(OPENGL_ES_VERSION_3);
         }
 
-        public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig) {
-           this(envDisplay,envConfig,EGL14.EGL_NO_CONTEXT);
-        }
-
         public Builder(GLEnvDisplay envDisplay, GLEnvConfigChooser configChooser) {
             this(envDisplay,envDisplay.chooseConfig(configChooser));
+        }
+
+        public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig) {
+            this(envDisplay,envConfig,EGL14.EGL_NO_CONTEXT);
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfig envConfig, EGLContext eglContext) {

@@ -117,7 +117,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     private VideoView videoView;
 
-    @TextureSourceType
+    @TextureSource
     private final int textureSourceType;
 
     @HdrDisplayBitDepth
@@ -153,11 +153,11 @@ class GLVideoOutputImpl extends GLVideoOutput {
         this(TEXTURE_SOURCE_TYPE_AUTO);
     }
 
-    public GLVideoOutputImpl(@TextureSourceType int textureSourceType) {
+    public GLVideoOutputImpl(@TextureSource int textureSourceType) {
         this(textureSourceType, HDR_DISPLAY_BIT_DEPTH_10);
     }
 
-    public GLVideoOutputImpl(@TextureSourceType int textureSourceType, @HdrDisplayBitDepth int hdrDisplayBitDepth) {
+    public GLVideoOutputImpl(@TextureSource int textureSourceType, @HdrDisplayBitDepth int hdrDisplayBitDepth) {
         this.textureSourceType = textureSourceType;
         this.hdrDisplayBitDepth = hdrDisplayBitDepth;
     }
@@ -241,7 +241,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             bufferMode = profile10Bit &&
                     videoDecoder.isSupport10BitYUV420BufferMode();
         } else {
-            bufferMode = textureSourceType == TEXTURE_SOURCE_TYPE_BUFFER;
+            bufferMode = textureSourceType == TEXTURE_SOURCE_BUFFER;
         }
         if (bufferMode) {
             videoDecoder.setOutputMode(VideoDecoder.BUFFER_MODE);
@@ -302,12 +302,12 @@ class GLVideoOutputImpl extends GLVideoOutput {
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {//用扩展纹理转2D纹理
             if (textureSourceType == TEXTURE_SOURCE_TYPE_AUTO ||
-                    textureSourceType == TEXTURE_SOURCE_TYPE_EXT) {
+                    textureSourceType == TEXTURE_SOURCE_EXT) {
                 // HDR且支持Y2Y才有必要用Y2Y处理
                 textureY2YMode = colorSpace != COLOR_SPACE_SDR &&
                         GLTextureY2YRenderer.isSupportY2YEXT();
             } else {
-                textureY2YMode = textureSourceType == TEXTURE_SOURCE_TYPE_Y2Y;
+                textureY2YMode = textureSourceType == TEXTURE_SOURCE_Y2Y;
             }
             if (textureY2YMode) {
                 y2yExtTextureRenderer.setBitDepth(profile10Bit ? 10 : 8);

@@ -6,20 +6,22 @@ import android.media.MediaFormat;
 import android.os.Build;
 import android.view.Surface;
 
-import com.norman.android.hdrsample.util.ColorFormatUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
- * 视频解码器的实现
+ * Android视频硬解的实现
  */
 class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
 
     MediaCodecAsyncAdapter mediaCodecAdapter;
 
+    /**
+     * 解码到Surface上
+     */
     Surface outputSurface;
 
     private @OutputMode int outputMode = VideoDecoder.BUFFER_MODE;
@@ -41,11 +43,13 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         mediaCodecAdapter.setOutputSurface(outputSurface);
         MediaFormat inputFormat = configuration.mediaFormat;
         if (outputMode == BUFFER_MODE){
-            //buffer模式下如果支持Android13的YUVP010就设置COLOR_FormatYUVP010，不然就是设置YUV420格式
+            //buffer模式下如果支持Android13 YUVP010就设置COLOR_FormatYUVP010，不然就是设置YUV420格式
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     mediaCodecAdapter.isSupportColorFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
+                //YUVP010表示10位YUV420，这种格式10位用16位存储需要位移，并且是NV12
                 inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010);
             } else {
+                // COLOR_FormatYUV420Flexible表示要求解码的是YUV420，无论是四种YUV420的哪一种都可以
                 inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
             }
         }else {
@@ -58,9 +62,11 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
 
     @Override
     public synchronized void setOutputSurface(Surface surface) {
-        outputSurface = surface;//
-        if (mediaCodecAdapter != null) {//mediaCodecAdapter为null表示Configure前设置Surface，不为null表示动态改吧Surface
+        if (mediaCodecAdapter != null) {//已经启动后动态修改Surface
+            outputSurface = surface;
             mediaCodecAdapter.setOutputSurface(surface);
+        }else {//这个时候的Surface会在configure时设置进去
+            outputSurface = surface;//
         }
     }
 
@@ -159,7 +165,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         }
 
         @Override
-        public void onOutputBufferRender(long presentationTimeUs) {
+        public void onOutputBufferComplete(long presentationTimeUs) {
             callBack.onOutputBufferRender(presentationTimeUs);
         }
 
@@ -167,7 +173,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         public void onOutputFormatChanged(MediaFormat format) {
             // 根据解码器名称和colorFormat查找视频是哪种YUV420，把YUV420格式写入到format方便后续读取
             int colorFormat = MediaFormatUtil.getInteger(format,MediaFormat.KEY_COLOR_FORMAT);
-            format.setInteger(KEY_YUV420_TYPE, ColorFormatUtil.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
+            format.setInteger(KEY_YUV420_TYPE, ColorFormatHelper.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
             callBack.onOutputFormatChanged(format);
         }
 

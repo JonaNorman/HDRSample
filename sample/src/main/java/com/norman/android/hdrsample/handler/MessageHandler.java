@@ -69,7 +69,7 @@ public interface MessageHandler {
     /**
      * 同步执行方法
      * @param runnable
-     * @param timeout
+     * @param timeout 毫秒
      * @return
      */
     boolean executeSync(Runnable runnable, long timeout);
@@ -153,7 +153,7 @@ public interface MessageHandler {
         }
 
         /**
-         * 在finish和错误异常时被调用
+         * 在finish和错误异常时被调用，如果都没有调用过onHandlerStart不会被调用
          */
         default void onHandlerFinish() {//
     

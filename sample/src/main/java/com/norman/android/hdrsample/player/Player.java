@@ -15,7 +15,14 @@ public interface Player {
      */
     void setSource(FileSource fileSource);
 
+    /**
+     * 准备，新建线程配置解码器
+     */
     void prepare();
+
+    /**
+     * 开始播放，没有prepare也会自动prepare后启动播放器，如果暂停会自动resume
+     */
 
     void play();
 
@@ -26,7 +33,14 @@ public interface Player {
      */
     void seek(float timeSecond);
 
+    /**
+     * 暂停
+     */
     void pause();
+
+    /**
+     * 停止播放，要重新启动，需要调用prepare
+     */
 
     void stop();
 
@@ -65,10 +79,17 @@ public interface Player {
     void setRepeat(boolean repeat);
 
     interface Callback {
+        /**
+         * 播放中的回调
+         * @param timeSecond 秒
+         */
 
          void onPlayProcess(float timeSecond);
 
-         void onPlayEnd();
+        /**
+         * 整个文件播放完成回调
+         */
+        void onPlayEnd();
 
          void onPlayError(Exception exception);
     }

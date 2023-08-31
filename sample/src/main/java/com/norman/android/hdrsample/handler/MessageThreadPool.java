@@ -82,7 +82,7 @@ public class MessageThreadPool {
         Iterator<MessageThread> iterator = threadCache.iterator();
         while (iterator.hasNext()) {
             MessageThread messageThread = iterator.next();
-            //只有缓存线程池中的线程空闲了才可以复用，要不然虽然已经加到线程池中但是还有些任务因为异步关闭可能还在执行中
+            //只有缓存线程池中的线程空闲了才可以复用，要不然有些任务还在异步执行中
             if (messageThread.isIdle()) {
                 iterator.remove();
                 messageThread.setName(name);
@@ -109,7 +109,7 @@ public class MessageThreadPool {
         while (iterator.hasNext()) {
             MessageThread thread = iterator.next();
             long duration = SystemClock.elapsedRealtime() - thread.cacheTime;
-            //线程已经终止、超过缓存时间、超过数量限制就清除线程
+            //线程已经终止、超过数量限制、超过缓存时间就清除线程
             if (thread.isTerminated()
                     || threadCache.size() > poolCacheSize
                     || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {

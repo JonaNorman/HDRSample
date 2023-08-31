@@ -3,13 +3,42 @@ package com.norman.android.hdrsample.player.decode;
 
 abstract class DecoderImpl implements Decoder {
 
+    /**
+     * 根据MediaCodec的生命周期创建状态值
+     */
+
+    /**
+     * 类new以后未创建的状态
+     */
     private static final int DECODE_UNINITIALIZED = 0;
+    /**
+     * 创建Codec后
+     */
     private static final int DECODE_CREATE = 1;
+    /**
+     * 配置Codec后
+     */
     private static final int DECODE_CONFIGURE = 2;
+    /**
+     * 启动
+     */
     private static final int DECODE_START = 3;
+    /**
+     * 暂停
+     */
     private static final int DECODE_PAUSE = 4;
+    /**
+     * 恢复
+     */
     private static final int DECODE_RESUME = 5;
+    /**
+     * 已经销毁，还可以重新create
+     */
     private static final int DECODE_DESTROY = 6;
+
+    /**
+     * 释放这个类，不能重新create
+     */
     private static final int DECODE_RELEASE = 7;
 
     private int state = DECODE_UNINITIALIZED;

@@ -41,15 +41,15 @@ class GLRenderTextureTarget extends GLRenderTarget {
     }
 
 
-    public void setMaxContentLuminance(int maxContentLuminance) {
+    protected void setMaxContentLuminance(int maxContentLuminance) {
         this.maxContentLuminance = maxContentLuminance;
     }
 
-    public void setMaxFrameAverageLuminance(int maxFrameAverageLuminance) {
+    protected void setMaxFrameAverageLuminance(int maxFrameAverageLuminance) {
         this.maxFrameAverageLuminance = maxFrameAverageLuminance;
     }
 
-    public void setMaxMasteringLuminance(int maxMasteringLuminance) {
+    protected void setMaxMasteringLuminance(int maxMasteringLuminance) {
         this.maxMasteringLuminance = maxMasteringLuminance;
     }
 
@@ -58,6 +58,12 @@ class GLRenderTextureTarget extends GLRenderTarget {
         createFrameBuffer(renderWidth, renderHeight, bitDepth);
     }
 
+    /**
+     * 根据位数和宽高创建纹理并绑定到frameBuffer
+     * @param renderWidth
+     * @param renderHeight
+     * @param bitDepth
+     */
     void createFrameBuffer(int renderWidth, int renderHeight, int bitDepth) {
         GLESUtil.delTextureId(textureId);
         GLESUtil.deleteFrameBufferId(frameBufferId);

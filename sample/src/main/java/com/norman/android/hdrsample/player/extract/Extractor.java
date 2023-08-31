@@ -18,7 +18,7 @@ public interface Extractor {
     void setSource(FileSource fileSource);
 
     /**
-     * 是否可用
+     * 是否可用，在setSource后可以当前视频或者音频是否存在
      * @return
      */
 
@@ -47,7 +47,7 @@ public interface Extractor {
     void seekNextSync(long timeUs);
 
     /**
-     * 读取buffer
+     * 读取一帧buffer
      * @param buffer
      * @param bufferInfo
      */
@@ -57,12 +57,17 @@ public interface Extractor {
     void read(ByteBuffer buffer, int offset, MediaCodec.BufferInfo bufferInfo);
 
     /**
-     * 后续是否还存在数据
-     * @return
+     * 指向后面一帧
+     * @return 后续是否还存在数据
      */
 
     boolean advance();
     String getMimeType();
+
+    /**
+     * 时间长度
+     * @return 微妙
+     */
     long getDurationUs();
 
     int getMaxInputSize();

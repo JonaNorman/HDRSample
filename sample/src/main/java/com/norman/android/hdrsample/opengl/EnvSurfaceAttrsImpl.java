@@ -8,15 +8,37 @@ abstract class EnvSurfaceAttrsImpl extends EnvAttrListImpl implements GLEnvSurfa
      * 颜色空间扩展
      */
     private static final int EGL_GL_COLORSPACE_KHR = 0x309D;
+    /**
+     * srgb的扩展
+     */
     private static final int EGL_GL_COLORSPACE_SRGB_KHR = 0x3089;
+    /**
+     * srgb linear的扩展
+     */
 
     private static final int EGL_GL_COLORSPACE_LINEAR_KHR = 0x308A;
+    /**
+     * bt2020 传递函数为PQ的扩展
+     */
     private static final int EGL_GL_COLORSPACE_BT2020_PQ_EXT = 0x3340;
 
+    /**
+     * bt2020 传递函数为线性的扩展
+     */
+
     private static final int EGL_GL_COLORSPACE_BT2020_LINEAR_EXT = 0x333F;
+
+    /**
+     * bt2020 传递函数为HLG的扩展
+     */
     private static final int EGL_GL_COLORSPACE_BT2020_HLG_EXT = 0x3540;
 
+    /**
+     * 色域P3的扩展
+     */
+
     private static final int EGL_GL_COLORSPACE_DISPLAY_P3_EXT = 0x3363;
+
     private static final int EGL_GL_COLORSPACE_DISPLAY_P3_PASSTHROUGH_EXT = 0x3490;
 
     private static final SparseArray<Integer> COLOR_SPACE_MAP = new SparseArray<>();

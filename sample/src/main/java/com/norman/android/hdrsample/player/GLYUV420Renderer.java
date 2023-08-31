@@ -1,10 +1,12 @@
 package com.norman.android.hdrsample.player;
 
 import android.graphics.Rect;
+import android.media.MediaFormat;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
-import com.norman.android.hdrsample.util.ColorFormatUtil;
+import com.norman.android.hdrsample.player.decode.VideoDecoder;
+import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.ColorMatrixUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
@@ -183,7 +185,7 @@ class GLYUV420Renderer extends GLRenderer {
 
     private boolean bufferAvailable;
 
-    @ColorFormatUtil.YUV420Type
+    @VideoDecoder.YUV420Type
     private int yuv420Type;
 
     /**
@@ -242,7 +244,7 @@ class GLYUV420Renderer extends GLRenderer {
 
     private int yuv420TypeUniform;
 
-    private @ColorMatrixUtil.ColorRange int colorRange = ColorMatrixUtil.COLOR_RANGE_LIMITED;
+    private @VideoExtractor.ColorRange int colorRange = MediaFormat.COLOR_RANGE_LIMITED;
 
     private int programId;
 
@@ -265,7 +267,7 @@ class GLYUV420Renderer extends GLRenderer {
                                 int requestSliceHeight,
                                 int requestBitDepth,
                                 Rect requestDisplayRect,
-                                @ColorFormatUtil.YUV420Type int requestYuv420Type) {
+                                @VideoDecoder.YUV420Type int requestYuv420Type) {
 
         if (sliceHeight != requestSliceHeight
                 || strideWidth != requestStrideWidth
@@ -308,7 +310,7 @@ class GLYUV420Renderer extends GLRenderer {
             int chromaSize;
 
             lumaTexture = new PlaneTexture(lumaPlaneWidth, lumaPlaneHeight, byteCount);//Y平面
-            if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
+            if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
                 //NV12和NV21 的UV平面高度和宽度是Y平面的一半，colorCount表示一个通道里面有两个数据也就是UV在一起
                 int chromaSemiWidth = lumaPlaneWidth / 2;
                 int chromaSemiHeight = lumaPlaneHeight / 2;
@@ -367,14 +369,14 @@ class GLYUV420Renderer extends GLRenderer {
         outputBuffer.limit(lumaLimit);
         lumaTexture.updateBuffer(outputBuffer);
 
-        if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
+        if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
             int chromaSemiLimit =  lumaBufferSize+chromaSemiTexture.bufferSize ;//UV平面需要读取的数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaBufferSize);
             outputBuffer.limit(chromaSemiLimit);
             chromaSemiTexture.updateBuffer(outputBuffer);
 
-        } else if (yuv420Type == ColorFormatUtil.YV21) {
+        } else if (yuv420Type == VideoDecoder.YV21) {
             int chromaPlanarULimit = lumaBufferSize + chromaPlanarUTexture.bufferSize;//U平面数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaBufferSize);
@@ -385,7 +387,7 @@ class GLYUV420Renderer extends GLRenderer {
             outputBuffer.position(chromaPlanarULimit);
             outputBuffer.limit(chromaPlanarULimit + chromaPlanarVTexture.bufferSize);//V平面数据大小
             chromaPlanarVTexture.updateBuffer(outputBuffer);
-        } else if (yuv420Type == ColorFormatUtil.YV12) {
+        } else if (yuv420Type == VideoDecoder.YV12) {
 
             int chromaPlanarVLimit = lumaBufferSize + chromaPlanarVTexture.bufferSize;//V平面数据大小
             outputBuffer.clear();
@@ -452,7 +454,7 @@ class GLYUV420Renderer extends GLRenderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lumaTexture.textureId);
         GLES20.glUniform1i(lumaTextureUniform, 0);
         GLES20.glUniform2f(lumaSizeUniform, lumaTexture.width, lumaTexture.height);
-        if (yuv420Type == ColorFormatUtil.NV12 || yuv420Type == ColorFormatUtil.NV21) {
+        if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, chromaSemiTexture.textureId);
             GLES20.glUniform1i(chromaSemiTextureUniform, 1);

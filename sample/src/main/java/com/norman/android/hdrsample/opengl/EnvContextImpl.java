@@ -79,7 +79,6 @@ class EnvContextImpl implements GLEnvContext {
         if (!EGL14.eglDestroyContext(envDisplay.getEGLDisplay(), eglContext)) {
             GLEnvException.checkError();
         }
-
     }
 
     @Override

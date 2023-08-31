@@ -25,7 +25,6 @@ class MessageThread extends android.os.HandlerThread {
         super(name);
     }
 
-
     public void addErrorCallback(ErrorCallback errorCallback) {
         errorCallbackList.add(errorCallback);
     }
@@ -34,6 +33,10 @@ class MessageThread extends android.os.HandlerThread {
         errorCallbackList.remove(errorCallback);
     }
 
+    /**
+     * 线程是否已经结束
+     * @return
+     */
     public boolean isTerminated() {
         return getState() == State.TERMINATED;
     }
@@ -93,7 +96,7 @@ class MessageThread extends android.os.HandlerThread {
             futureTask = new FutureTask<T>(callable) {
                 @Override
                 protected void setException(Throwable t) {
-                    set(null);//这样处理是为了不然错误抛在等待线程，而不是抛在执行线程
+                    set(null);//这样处理是为了不把错误抛在等待线程，而是抛在执行线程
                     throw new RuntimeException(t);
                 }
             };

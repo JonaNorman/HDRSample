@@ -128,7 +128,7 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
                     && config.getSamples() >= samples
                     && (config.isWindowSurface() == windowSurface)
                     && (config.isPBufferSurface() == pbufferSurface)
-                    && (renderGL10 == null || config.isRenderGL10() == renderGL10)
+                    && (renderGL10 == null || config.isRenderGL10() == renderGL10)// null 表示对这个属性不要求
                     && (renderGL20 == null || config.isRenderGL20() == renderGL20)
                     && (renderGL30 == null || config.isRenderGL30() == renderGL30)
                     && (recordable == null || config.isRecordable() == recordable)) {
@@ -136,7 +136,6 @@ class EnvConfigSimpleChooserImpl implements GLEnvConfigSimpleChooser {
             }
         }
         findConfigs.sort(CONFIG_COMPARATOR);
-
         return findConfigs.size() > 0 ? findConfigs.get(0) : null;
     }
 

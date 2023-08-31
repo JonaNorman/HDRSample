@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * 播放器的显示View
+ * 视频播放器的显示View，支持两种SurfaceView和TextureView无缝切换
  */
 public class VideoView extends FrameLayout {
 
@@ -103,6 +103,7 @@ public class VideoView extends FrameLayout {
         if (aspectRatio <= 0) return;
         this.aspectRatio = aspectRatio;
         View view = currentView;
+        //注意这里要用当前的View去requestLayout，不能用VideoView去requestLayout
         if (Looper.getMainLooper() == Looper.myLooper()) {
             view.requestLayout();
         } else {
@@ -284,17 +285,38 @@ public class VideoView extends FrameLayout {
 
     interface SurfaceSubscriber {
 
+        /**
+         * Surface创建
+         * @param surface
+         * @param width
+         * @param height
+         */
+
         default void onSurfaceAvailable(Surface surface, int width, int height) {
 
         }
 
+        /**
+         * SurfaceView第一次打开或者退到后台重新打开会调用这个方法，可以在内部等待画面出来，不然画面还没加载完成SurfaceView已经绘制了会黑屏
+         * TextureView无需关心这个方法
+         */
         default void onSurfaceRedraw() {
 
         }
 
+        /**
+         * 大小回调
+         * @param width
+         * @param height
+         */
+
         default void onSurfaceSizeChange(int width, int height) {
 
         }
+
+        /**
+         * 销毁，退到页面会回调
+         */
 
         default void onSurfaceDestroy() {
 

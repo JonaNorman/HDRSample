@@ -1,9 +1,5 @@
-package com.norman.android.hdrsample.util;
+package com.norman.android.hdrsample.player.decode;
 
-import androidx.annotation.IntDef;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,19 +9,9 @@ import java.util.List;
  * 功能1:根据colorFormat判断是哪种YUV420
  * 功能2:判断colorFormat判断表示编解码器是否支持10位YUV420解码，当前只测试了几款手机，其他手机逻辑不一定正确
  */
-public class ColorFormatUtil {
+class ColorFormatHelper {
 
     //四种YUV420
-
-    public static final int YV21 = 1;// Y+U+V
-    public static final int YV12 = 2;//Y+V+U
-    public static final int NV12 = 3;//Y+UV
-    public static final int NV21 = 4;//Y+VU
-
-    @IntDef({YV21, YV12, NV12, NV21})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface YUV420Type {
-    }
 
     // 不同厂商支持的YUV420属性，参考自https://github.com/Parseus/codecinfo
 
@@ -131,7 +117,7 @@ public class ColorFormatUtil {
             return 0;
         }
         ColorFormat yuv420Format = yuv420List.findColorFormat(colorFormat);
-        if (yuv420Format == null) {
+        if (yuv420Format == null) {//兜底
             yuv420Format = STANDARD_YUV420_LIST.findColorFormat(colorFormat);
         }
         if (yuv420Format == null){
@@ -140,13 +126,13 @@ public class ColorFormatUtil {
         //根据YUV420的名称来查找是哪种YUV420
         String name = yuv420Format.name;
         if (name.contains("PackedSemiPlanar")) {//Y+VU
-            return NV21;
-        } else if (name.contains("SemiPlanar") || name.contains("YUVP010")) {//Y+UV
-            return NV12;
+            return VideoDecoder.NV21;
+        } else if (name.contains("SemiPlanar") || name.contains("YUVP010")) {//Y+UV YUVP010根据文档是NV12
+            return VideoDecoder.NV12;
         } else if (name.contains("PackedPlanar")) {//Y+V+U
-            return YV12;
+            return VideoDecoder.YV12;
         } else {
-            return YV21;// Y+U+V
+            return VideoDecoder.YV21;// Y+U+V
         }
     }
 

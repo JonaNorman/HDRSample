@@ -3,6 +3,9 @@ package com.norman.android.hdrsample.player.shader
 import androidx.annotation.IntDef
 import com.norman.android.hdrsample.opengl.GLShaderCode
 
+/**
+ * 纹理VertexShader
+ */
 class TextureVertexShader : GLShaderCode() {
 
 

@@ -95,20 +95,36 @@ public abstract class VideoOutput {
         return new GLVideoOutputImpl();
     }
 
+    /**
+     * 经过OpenGL中转
+     *
+     * @return
+     */
+    public static GLVideoOutput createGLOutput(@GLVideoOutput.TextureSource int textureSource) {
+        return new GLVideoOutputImpl(textureSource);
+    }
+
 
     /**
      * 直接用解码到Surface
      *
      * @return
      */
-    public static DirectVideoOutput createAndroidOutput() {
+    public static DirectVideoOutput createDirectOutput() {
         return new DirectVideoOutputImpl();
     }
 
 
+    /**
+     * 设置最终渲染到Surface上，和setOutputVideoView互斥，只能设置一个
+     * @param surface
+     */
     public abstract void setOutputSurface(Surface surface);
 
-
+    /**
+     * 设置最终渲染到VideoView上，和setOutputSurface互斥，只能设置一个
+     * @param view
+     */
     public abstract void setOutputVideoView(VideoView view);
 
 
@@ -151,7 +167,7 @@ public abstract class VideoOutput {
      */
 
     final void onDecodePause() {
-        skipWaitFrame();
+        skipWaitFrame();//暂停时跳过等待着的线程，防止一直卡在那里
         onOutputPause();
     }
 
@@ -302,6 +318,12 @@ public abstract class VideoOutput {
 
     }
 
+    /**
+     * 渲染完成回调
+     * @param presentationTimeUs
+     * @return
+     */
+
     protected boolean onOutputBufferRender(long presentationTimeUs) {
         return true;
     }
@@ -376,6 +398,7 @@ public abstract class VideoOutput {
 
     /**
      * 同步等待下一帧完成
+     * @param waitSecond 秒
      */
     public void waitNextFrame(float waitSecond) {
         long waitTime = TimeUtil.secondToMill(waitSecond);
@@ -385,9 +408,10 @@ public abstract class VideoOutput {
             synchronized (syncLock) {
                 VideoPlayer player = videoPlayer;
                 long remainTime = waitTime - (SystemClock.elapsedRealtime() - startTime);
-                boolean needWait = remainTime > 0 && player != null &&
-                        player.isPlaying() &&
-                        oldFrameIndex == frameIndex && !frameSkipWait;
+                boolean needWait = remainTime > 0 && //超时不需要等待
+                        player != null && player.isPlaying() &&//没有播放不需要等待
+                        oldFrameIndex == frameIndex //下一帧没有渲染完成不需要等待
+                        && !frameSkipWait;//等待可以跳过
                 if (!needWait) {
                     frameSkipWait = false;
                     return;
@@ -423,10 +447,19 @@ public abstract class VideoOutput {
     }
 
     public interface OutputFormatSubscriber {
+        /**
+         * 视频格式变化回调
+         * @param outputFormat
+         */
         void onOutputFormatChange(MediaFormat outputFormat);
     }
 
     public interface OutputSizeSubscriber {
+        /**
+         * 视频大小回调
+         * @param width
+         * @param height
+         */
         void onOutputSizeChange(int width, int height);
     }
 

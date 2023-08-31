@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 class EnvAttrListImpl implements GLEnvAttrList,Cloneable {
     private  SparseIntArray attributeArr = new SparseIntArray();
     /**
-     * true表示getAttribArray时候会重新更新数据
+     * 数据是否要求更新true表示getAttribArray时候会重新更新数据
      */
     private boolean requireUpdate = true;
     private int[] attrib;

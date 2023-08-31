@@ -53,7 +53,7 @@ abstract class PlayerImpl implements Player {
             public void run() {
                 onPlayPrepare();
                 Iterator<Runnable> iterator = pendRunnableList.iterator();
-                while (iterator.hasNext()) {
+                while (iterator.hasNext()) {//把没有prepare之前post的方法启动，保证时序性
                     Runnable runnable = iterator.next();
                     iterator.remove();
                     runnable.run();
@@ -190,6 +190,9 @@ abstract class PlayerImpl implements Player {
     protected abstract void onPlayRelease();
 
 
+    /**
+     * 对Callback回调调用的封装，保证调用在Handler的线程中
+     */
     static class CallBackHandler {
 
         private final Handler defaultHandler;

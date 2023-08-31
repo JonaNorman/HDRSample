@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
@@ -51,7 +52,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
         hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
-        GLVideoOutput videoOutput = GLVideoOutput.create(GLVideoOutput.TEXTURE_SOURCE_TYPE_BUFFER);
+        GLVideoOutput videoOutput = VideoOutput.createGLOutput(GLVideoOutput.TEXTURE_SOURCE_BUFFER);
         videoPlayer = VideoPlayer.create(videoOutput);
 //        1.mp4
 //        2.mp4  //
