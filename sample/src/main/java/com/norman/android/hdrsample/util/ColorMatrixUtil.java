@@ -1,8 +1,6 @@
 package com.norman.android.hdrsample.util;
 
-import android.media.MediaFormat;
-
-import com.norman.android.hdrsample.player.extract.VideoExtractor;
+import com.norman.android.hdrsample.player.color.ColorRange;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,12 +69,12 @@ public class ColorMatrixUtil {
      * @param colorRange 范围
      * @return
      */
-    public static float[] getYuvToRgbMatrix(int bitDepth,@VideoExtractor.ColorRange int colorRange){
+    public static float[] getYuvToRgbMatrix(int bitDepth,@ColorRange int colorRange){
         ColorMatrix colorMatrix = YUV_TO_RGB_MATRIX_MAP.get(bitDepth);
         if(colorMatrix == null){
             throw new NullPointerException("not support bitDepth "+bitDepth+" colorRange"+colorRange);
         }
-        return colorRange == MediaFormat.COLOR_RANGE_FULL ?
+        return colorRange == ColorRange.COLOR_RANGE_FULL ?
                 colorMatrix.fullMatrix :
                 colorMatrix.limitMatrix;
     }

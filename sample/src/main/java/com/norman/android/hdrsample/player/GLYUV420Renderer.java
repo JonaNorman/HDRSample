@@ -1,12 +1,11 @@
 package com.norman.android.hdrsample.player;
 
 import android.graphics.Rect;
-import android.media.MediaFormat;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
+import com.norman.android.hdrsample.player.color.ColorRange;
 import com.norman.android.hdrsample.player.color.YUV420Type;
-import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.player.shader.YUV420FragmentShader;
 import com.norman.android.hdrsample.player.shader.YUV420VertexShader;
 import com.norman.android.hdrsample.util.ColorMatrixUtil;
@@ -120,7 +119,7 @@ class GLYUV420Renderer extends GLRenderer {
     private int bitDepthUniform;
     private int bitMaskUniform;
 
-    private @VideoExtractor.ColorRange int colorRange = MediaFormat.COLOR_RANGE_LIMITED;
+    private @ColorRange int colorRange = ColorRange.COLOR_RANGE_LIMITED;
 
     private int programId;
 

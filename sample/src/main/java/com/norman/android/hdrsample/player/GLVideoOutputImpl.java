@@ -14,7 +14,7 @@ import com.norman.android.hdrsample.opengl.GLEnvSurface;
 import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
-import com.norman.android.hdrsample.player.extract.VideoExtractor;
+import com.norman.android.hdrsample.player.color.ColorRange;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
@@ -113,7 +113,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     private int maxFrameAverageLuminance;
     private int maxMasteringLuminance;
 
-    private @VideoExtractor.ColorRange int colorRange;
+    private @ColorRange int colorRange;
 
     private VideoView videoView;
 

@@ -1,9 +1,8 @@
 package com.norman.android.hdrsample.player;
 
-import android.media.MediaFormat;
 import android.opengl.GLES20;
 
-import com.norman.android.hdrsample.player.extract.VideoExtractor;
+import com.norman.android.hdrsample.player.color.ColorRange;
 import com.norman.android.hdrsample.player.shader.TextureFragmentShader;
 import com.norman.android.hdrsample.util.ColorMatrixUtil;
 
@@ -16,7 +15,7 @@ class GLTextureY2YRenderer extends GLTextureRenderer {
 
     private int yuvToRgbMatrixUniform;
 
-    private @VideoExtractor.ColorRange int colorRange = MediaFormat.COLOR_RANGE_LIMITED;
+    private @ColorRange int colorRange = ColorRange.COLOR_RANGE_LIMITED;
 
 
     private int bitDepth = 8;
@@ -27,7 +26,7 @@ class GLTextureY2YRenderer extends GLTextureRenderer {
     }
 
 
-    public void setColorRange(@VideoExtractor.ColorRange int colorRange) {
+    public void setColorRange(@ColorRange int colorRange) {
         this.colorRange = colorRange;
     }
 
