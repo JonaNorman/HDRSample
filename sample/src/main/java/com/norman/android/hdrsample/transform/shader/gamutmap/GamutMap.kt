@@ -22,12 +22,12 @@ abstract class GamutMap: GLShaderCode() {
         }
 
         @JvmField
-        val  ADAPTIVE_L0_CUSP = GamutMapAdaptiveL0Cusp
+        val  ADAPTIVE_L0_CUSP = GamutMapAdaptiveL0Cusp()
 
         @JvmField
-        val  CLIP = GamutMapClip
+        val  CLIP = GamutMapClip()
 
         @JvmField
-        val  COMPRESS = GamutMapCompress
+        val  COMPRESS = GamutMapCompress()
     }
 }

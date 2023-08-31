@@ -17,7 +17,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale
  * https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
  * https://www.itu.int/dms_pub/itu-r/opb/rep/R-REP-BT.2390-10-2021-PDF-E.pdf
  */
-object ToneMapAndroid8 : ToneMap() {
+class ToneMapAndroid8 : ToneMap() {
     override val code: String
         get() = """
             

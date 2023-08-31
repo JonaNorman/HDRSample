@@ -16,7 +16,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenc
  *
  * //
  */
-object ToneMapBT2446A : ToneMap() {
+class ToneMapBT2446A : ToneMap() {
     override val code: String
         get() = """
             const float a = 0.2627002120112671;

@@ -8,7 +8,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenc
 // https://blog.csdn.net/a360940265a/article/details/124671992
 // Filmic curve by John Hable, Also known as the "Uncharted 2 curve".
 // http://filmicworlds.com/blog/filmic-tonemapping-operators/
-object ToneMappingHable : ToneMap() {
+class ToneMappingHable : ToneMap() {
     override val code: String
         get() = """
             const float A = 0.15;   // Shoulder Strength

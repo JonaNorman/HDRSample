@@ -22,20 +22,20 @@ abstract class ToneMap: GLShaderCode() {
         }
 
         @JvmField
-        val  ANDROID8 = ToneMapAndroid8
+        val  ANDROID8 = ToneMapAndroid8()
 
         @JvmField
-        val  ANDROID13 = ToneMapAndroid13
+        val  ANDROID13 = ToneMapAndroid13()
 
         @JvmField
-        val  BT2446A = ToneMapBT2446A
+        val  BT2446A = ToneMapBT2446A()
 
         @JvmField
-        val  BT2446C = ToneMapBT2446C
+        val  BT2446C = ToneMapBT2446C()
 
 
         @JvmField
-        val  HABLE = ToneMappingHable
+        val  HABLE = ToneMappingHable()
     }
 
 

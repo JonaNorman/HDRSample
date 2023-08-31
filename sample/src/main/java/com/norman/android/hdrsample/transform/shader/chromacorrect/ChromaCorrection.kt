@@ -22,6 +22,6 @@ abstract class ChromaCorrection : GLShaderCode() {
         }
 
         @JvmField
-        val BT2446C = ChromaCorrectionBT2446C
+        val BT2446C = ChromaCorrectionBT2446C()
     }
 }

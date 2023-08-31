@@ -19,7 +19,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale
  * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/bt2446c.glsl
  */
 
-object ToneMapBT2446C : ToneMap() {
+class ToneMapBT2446C : ToneMap() {
     override val code: String
         get() = """
           const float ip = 58.535;   // linear length 输入是绝对值，把hdr-toys中的0.58535乘100，

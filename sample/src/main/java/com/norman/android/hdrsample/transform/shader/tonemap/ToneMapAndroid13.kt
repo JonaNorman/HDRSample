@@ -22,7 +22,7 @@ import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayOETF
  */
 //参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
 
-object ToneMapAndroid13 : ToneMap() {
+class ToneMapAndroid13 : ToneMap() {
 
     val pqDisplayOETF = PQDisplayOETF()
     override val code: String

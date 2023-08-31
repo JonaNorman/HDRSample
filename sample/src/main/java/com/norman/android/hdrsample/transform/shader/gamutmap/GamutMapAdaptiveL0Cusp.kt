@@ -9,7 +9,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  *   // https://wenku.baidu.com/view/7ffc40bf02768e9950e738b8?bfetype=new&_wkts_=1692340094511
  *
  */
-object GamutMapAdaptiveL0Cusp : GamutMap() {
+class GamutMapAdaptiveL0Cusp : GamutMap() {
 
     override val code: String
         get() = """

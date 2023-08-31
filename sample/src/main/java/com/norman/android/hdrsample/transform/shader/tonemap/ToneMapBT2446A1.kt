@@ -17,7 +17,7 @@ import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayOETF
  *
  * //
  */
-object ToneMapBT2446A1 : ToneMap() {
+class ToneMapBT2446A1 : ToneMap() {
 
     val pqDisplayEOTF = PQDisplayEOTF()
     val pqDisplayOETF = PQDisplayOETF()

@@ -13,7 +13,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
  * https://github.com/ampas/aces-dev/blob/dev/transforms/ctl/lmt/LMT.Academy.ReferenceGamutCompress.ctl
  *
  */
-object GamutMapCompress : GamutMap() {
+class GamutMapCompress : GamutMap() {
 
     override val code: String
         get() = """
