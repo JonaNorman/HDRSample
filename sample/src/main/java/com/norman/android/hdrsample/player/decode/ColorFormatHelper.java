@@ -1,5 +1,7 @@
 package com.norman.android.hdrsample.player.decode;
 
+import com.norman.android.hdrsample.player.color.YUV420Type;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,13 +128,13 @@ class ColorFormatHelper {
         //根据YUV420的名称来查找是哪种YUV420
         String name = yuv420Format.name;
         if (name.contains("PackedSemiPlanar")) {//Y+VU
-            return VideoDecoder.NV21;
+            return YUV420Type.NV21;
         } else if (name.contains("SemiPlanar") || name.contains("YUVP010")) {//Y+UV YUVP010根据文档是NV12
-            return VideoDecoder.NV12;
+            return YUV420Type.NV12;
         } else if (name.contains("PackedPlanar")) {//Y+V+U
-            return VideoDecoder.YV12;
+            return YUV420Type.YV12;
         } else {
-            return VideoDecoder.YV21;// Y+U+V
+            return YUV420Type.YV21;// Y+U+V
         }
     }
 

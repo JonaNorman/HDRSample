@@ -4,6 +4,8 @@ import android.view.Surface;
 
 import androidx.annotation.IntDef;
 
+import com.norman.android.hdrsample.player.color.YUV420Type;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -16,16 +18,6 @@ public interface VideoDecoder extends Decoder {
      * 解码时会在OutputFormat中增加这行属性，表示解码出来的视频是哪种YUV420 {@link YUV420Type}
      */
     String KEY_YUV420_TYPE = "yuv420-type";
-
-    int YV21 = 1;// Y+U+V
-    int YV12 = 2;//Y+V+U
-    int NV12 = 3;//Y+UV
-    int NV21 = 4;//Y+VU
-
-    @IntDef({YV21, YV12, NV12, NV21})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface YUV420Type {
-    }
 
     /**
      * buffer解码

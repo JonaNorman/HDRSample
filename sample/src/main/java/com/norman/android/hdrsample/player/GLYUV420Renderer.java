@@ -5,8 +5,10 @@ import android.media.MediaFormat;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
-import com.norman.android.hdrsample.player.decode.VideoDecoder;
+import com.norman.android.hdrsample.player.color.YUV420Type;
 import com.norman.android.hdrsample.player.extract.VideoExtractor;
+import com.norman.android.hdrsample.player.shader.YUV420FragmentShader;
+import com.norman.android.hdrsample.player.shader.YUV420VertexShader;
 import com.norman.android.hdrsample.util.ColorMatrixUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
 
@@ -20,130 +22,6 @@ import java.util.Objects;
  * https://juejin.cn/post/7206577654933520444   不同YUV420格式转纹理的计算方式，下方代码是文章的优化版
  */
 class GLYUV420Renderer extends GLRenderer {
-
-    private static final String VERTEX_SHADER = "#version 300 es\n" +
-            "in vec4 position;\n" +
-            "in vec4 inputTextureCoordinate;\n" +
-            "out vec2 textureCoordinate;\n" +
-            "void main() {\n" +
-            "    gl_Position =position;\n" +
-            "    textureCoordinate =inputTextureCoordinate.xy;\n" +
-            "}";
-
-    private static final String FRAGMENT_SHADER = "#version 300 es\n" +
-            "#define YV21 1\n" +
-            "#define YV12 2\n" +
-            "#define NV12 3\n" +
-            "#define NV21 4\n" +
-            "\n" +
-            "precision highp float;\n" +
-            "precision highp int;\n" +
-            "\n" +
-            "uniform highp usampler2D lumaTexture;\n" +//Y平面
-            "uniform highp usampler2D chromaSemiTexture;\n" +//NV21和NV12的UV平面，因为两个数据是在一起的，所以合在一个纹理里
-            "uniform highp usampler2D chromaPlanarUTexture;\n" +//YV12和YV12的U平面，U和V是分开的
-            "uniform highp usampler2D chromaPlanarVTexture;\n" +//YV12和YV12的V平面，U和V是分开的
-            "\n" +
-            "uniform vec2 lumaSize;\n" +//Y亮度平面的大小
-            "uniform vec2 chromaPlanarUSize;\n" +//YV12和YV12的U平面大小
-            "uniform vec2 chromaPlanarVSize;\n" +//YV12和YV12的V平面大小
-            "uniform vec2 chromaSemiSize;\n" +//NV21和NV12的UV平面大小
-            "\n" +
-            "uniform mat4 yuvToRgbMatrix;\n" +//YUV转RGB矩阵
-            "uniform int bitDepth;\n" +//深度
-            "uniform int bitMask;\n" +//10位纹理其实是16位位移后的数据，所以需要位移回去，8位时bitMask是0，10位时bitmask是6
-            "uniform int yuv420Type;\n" +
-            "\n" +
-            "in  vec2 textureCoordinate;\n" +
-            "out vec4 outColor;\n" +
-            "\n" +
-            "#define MAX_COLOR_VALUE  (pow(2.0,float(bitDepth))-1.0)\n" +//位深决定颜色的最大值，8位是255，10是1023，注意是0开始的所以要减去1
-            "\n" +
-            "vec3 yuvToRgb(vec3 yuv){\n" +
-            "    vec4 color = yuvToRgbMatrix *vec4(yuv, 1.0);\n" +
-            "    return color.rgb;\n" +
-            "}\n" +
-            "\n" +
-            "float normalizedColor(uint color){\n" +
-            "    return float(color>>bitMask)/MAX_COLOR_VALUE;\n" +
-            "}\n" +
-            "\n" +
-            "\n" +
-            "vec2 normalizedColor(uvec2 color){\n" +//usampler2D获取的颜色是无符号量化的数据，需要归一化
-            "    return vec2(color>>bitMask)/MAX_COLOR_VALUE;\n" +//后续矩阵处理了范围问题10位limit range就不是除以940，除以1023归一化就可以
-            "}\n" +
-            "\n" +
-            "ivec2 quantizedCoord(vec2 coord, vec2 size){\n" +//coord坐标是归一化的，usampler2D访问纹理需要用实际的尺寸大小
-            "    return ivec2(coord*(size-1.0)+0.5);\n" +//不直接乘以size是因为个人觉得纹理访问其实取的是中间值
-            "}\n" +
-            "\n" +
-            "float getLumaColor(vec2 textureCoord){\n" +
-            "    uint color = texelFetch(lumaTexture, quantizedCoord(textureCoord, lumaSize), 0).x;\n" +
-            "    return normalizedColor(color);\n" +
-            "}\n" +
-            "\n" +
-            "vec2 getChromaSemiColor(vec2 textureCoord){\n" +
-            "    uvec2 color = texelFetch(chromaSemiTexture, quantizedCoord(textureCoord, chromaSemiSize), 0).xy;\n" +
-            "    return normalizedColor(color);\n" +
-            "}\n" +
-            "\n" +
-            "float getChromaPlanarUColor(vec2 textureCoord){\n" +
-            "    uint color = texelFetch(chromaPlanarUTexture, quantizedCoord(textureCoord, chromaPlanarUSize), 0).x;\n" +
-            "    return normalizedColor(color);\n" +
-            "}\n" +
-            "\n" +
-            "\n" +
-            "float getChromaPlanarVColor(vec2 textureCoord){\n" +
-            "    uint color = texelFetch(chromaPlanarVTexture, quantizedCoord(textureCoord, chromaPlanarVSize), 0).x;\n" +
-            "    return normalizedColor(color);\n" +
-            "}\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "vec3 getYV21Color(vec2 textureCoord){\n" +
-            "    float y = getLumaColor(textureCoord);\n" +
-            "    float u =  getChromaPlanarUColor(textureCoord);\n" +
-            "    float v =  getChromaPlanarVColor(textureCoord);\n" +
-            "    return vec3(y, u, v);\n" +
-            "}\n" +
-            "\n" +
-            "vec3 getYV12Color(vec2 textureCoord){\n" +
-            "    float y = getLumaColor(textureCoord);\n" +
-            "    float u =  getChromaPlanarUColor(textureCoord);\n" +
-            "    float v =  getChromaPlanarVColor(textureCoord);\n" +
-            "    return vec3(y, u, v);\n" +
-            "\n" +
-            "}\n" +
-            "\n" +
-            "vec3 getNV12Color(vec2 textureCoord){\n" +
-            "    float y = getLumaColor(textureCoord);\n" +
-            "    vec2 uv =  getChromaSemiColor(textureCoord);\n" +
-            "    return vec3(y, uv);\n" +
-            "\n" +
-            "}\n" +
-            "\n" +
-            "vec3 getNV21Color(vec2 textureCoord){\n" +
-            "    float y = getLumaColor(textureCoord);\n" +
-            "    vec2 vu =  getChromaSemiColor(textureCoord);\n" +
-            "    return vec3(y, vu.yx);\n" +//vu变成uv需要换一下xy
-            "}\n" +
-            "\n" +
-            "\n" +
-            "\n" +
-            "void main() {\n" +
-            "    vec3 yuv = vec3(0.0);\n" +
-            "    if (yuv420Type == YV21){ //i420  Y+U+V\n" +
-            "        yuv = getYV21Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == YV12){\n" +//YV12 Y+V+U
-            "        yuv = getYV12Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == NV12){ \n" +//NV12  Y+UV
-            "        yuv = getNV12Color(textureCoordinate);\n" +
-            "    } else if (yuv420Type == NV21){ \n" +///NV21 Y+VU
-            "        yuv = getNV21Color(textureCoordinate);\n" +
-            "    }\n" +
-            "    outColor.rgb =yuvToRgb(yuv);\n" +
-            "    outColor.a = 1.0;\n" +
-            "}";
 
     /**
      * YUV420 buffer数据对齐以后的字节宽度
@@ -170,7 +48,7 @@ class GLYUV420Renderer extends GLRenderer {
 
 
     /**
-     * UV区域相对于Y的数据偏移
+     * UV区域相对于Y的数据偏移，lumaBufferSize大于等于chromaSemiTexture的size，多出的size是对齐的绿边数据
      */
     private int lumaBufferSize;
     /**
@@ -185,7 +63,7 @@ class GLYUV420Renderer extends GLRenderer {
 
     private boolean bufferAvailable;
 
-    @VideoDecoder.YUV420Type
+    @YUV420Type
     private int yuv420Type;
 
     /**
@@ -242,11 +120,12 @@ class GLYUV420Renderer extends GLRenderer {
     private int bitDepthUniform;
     private int bitMaskUniform;
 
-    private int yuv420TypeUniform;
-
     private @VideoExtractor.ColorRange int colorRange = MediaFormat.COLOR_RANGE_LIMITED;
 
     private int programId;
+
+    private YUV420FragmentShader fragmentShader;
+    private YUV420VertexShader vertexShader = new YUV420VertexShader();
 
     public GLYUV420Renderer() {
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
@@ -267,7 +146,7 @@ class GLYUV420Renderer extends GLRenderer {
                                 int requestSliceHeight,
                                 int requestBitDepth,
                                 Rect requestDisplayRect,
-                                @VideoDecoder.YUV420Type int requestYuv420Type) {
+                                @YUV420Type int requestYuv420Type) {
 
         if (sliceHeight != requestSliceHeight
                 || strideWidth != requestStrideWidth
@@ -306,11 +185,11 @@ class GLYUV420Renderer extends GLRenderer {
 
             int videoHeight = displayRect.bottom - displayRect.top + 1;//视频实际的高度
             int lumaPlaneWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
-            int lumaPlaneHeight = videoHeight;//不用sliceHeight是为了让Y平面和U平面的高度一样
+            int lumaPlaneHeight = videoHeight;//不用sliceHeight是因为videoHeight是不包含真正的高度，可以不用对高进行绿边裁剪
             int chromaSize;
 
             lumaTexture = new PlaneTexture(lumaPlaneWidth, lumaPlaneHeight, byteCount);//Y平面
-            if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
+            if (yuv420Type == YUV420Type.NV12 || yuv420Type == YUV420Type.NV21) {
                 //NV12和NV21 的UV平面高度和宽度是Y平面的一半，colorCount表示一个通道里面有两个数据也就是UV在一起
                 int chromaSemiWidth = lumaPlaneWidth / 2;
                 int chromaSemiHeight = lumaPlaneHeight / 2;
@@ -369,14 +248,14 @@ class GLYUV420Renderer extends GLRenderer {
         outputBuffer.limit(lumaLimit);
         lumaTexture.updateBuffer(outputBuffer);
 
-        if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
-            int chromaSemiLimit =  lumaBufferSize+chromaSemiTexture.bufferSize ;//UV平面需要读取的数据大小
+        if (yuv420Type == YUV420Type.NV12 || yuv420Type == YUV420Type.NV21) {
+            int chromaSemiLimit = lumaBufferSize + chromaSemiTexture.bufferSize;//UV平面需要读取的数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaBufferSize);
             outputBuffer.limit(chromaSemiLimit);
             chromaSemiTexture.updateBuffer(outputBuffer);
 
-        } else if (yuv420Type == VideoDecoder.YV21) {
+        } else if (yuv420Type == YUV420Type.YV21) {
             int chromaPlanarULimit = lumaBufferSize + chromaPlanarUTexture.bufferSize;//U平面数据大小
             outputBuffer.clear();
             outputBuffer.position(lumaBufferSize);
@@ -387,7 +266,7 @@ class GLYUV420Renderer extends GLRenderer {
             outputBuffer.position(chromaPlanarULimit);
             outputBuffer.limit(chromaPlanarULimit + chromaPlanarVTexture.bufferSize);//V平面数据大小
             chromaPlanarVTexture.updateBuffer(outputBuffer);
-        } else if (yuv420Type == VideoDecoder.YV12) {
+        } else if (yuv420Type == YUV420Type.YV12) {
 
             int chromaPlanarVLimit = lumaBufferSize + chromaPlanarVTexture.bufferSize;//V平面数据大小
             outputBuffer.clear();
@@ -406,25 +285,31 @@ class GLYUV420Renderer extends GLRenderer {
 
     @Override
     protected void onCreate() {
-        programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
-        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
 
-        lumaTextureUniform = GLES20.glGetUniformLocation(programId, "lumaTexture");
-        chromaSemiTextureUniform = GLES20.glGetUniformLocation(programId, "chromaSemiTexture");
-        chromaPlanarUTextureUniform = GLES20.glGetUniformLocation(programId, "chromaPlanarUTexture");
-        chromaPlanarVTextureUniform = GLES20.glGetUniformLocation(programId, "chromaPlanarVTexture");
 
-        lumaSizeUniform = GLES20.glGetUniformLocation(programId, "lumaSize");
-        chromaPlanarUSizeUniform = GLES20.glGetUniformLocation(programId, "chromaPlanarUSize");
-        chromaPlanarVSizeUniform = GLES20.glGetUniformLocation(programId, "chromaPlanarVSize");
-        chromaSemiSizeUniform = GLES20.glGetUniformLocation(programId, "chromaSemiSize");
+    }
 
-        yuvToRgbMatrixUniform = GLES20.glGetUniformLocation(programId, "yuvToRgbMatrix");
-        bitDepthUniform = GLES20.glGetUniformLocation(programId, "bitDepth");
-        bitMaskUniform = GLES20.glGetUniformLocation(programId, "bitMask");
-        yuv420TypeUniform = GLES20.glGetUniformLocation(programId, "yuv420Type");
 
+    protected void changeProgram() {
+        GLESUtil.delProgramId(programId);
+        fragmentShader = new YUV420FragmentShader(yuv420Type);
+        programId = GLESUtil.createProgramId(vertexShader.getCode(), fragmentShader.getCode());
+        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, YUV420VertexShader.POSITION);
+        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, YUV420VertexShader.INPUT_TEXTURE_COORDINATE);
+
+        lumaTextureUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.LUMA_TEXTURE);
+        chromaSemiTextureUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_SEMI_TEXTURE);
+        chromaPlanarUTextureUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_PLANAR_U_TEXTURE);
+        chromaPlanarVTextureUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_PLANAR_V_TEXTURE);
+
+        lumaSizeUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.LUMA_SIZE);
+        chromaPlanarUSizeUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_PLANAR_U_SIZE);
+        chromaPlanarVSizeUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_PLANAR_V_SIZE);
+        chromaSemiSizeUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.CHROMA_SEMI_SIZE);
+
+        yuvToRgbMatrixUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.YUV_TO_RGB_MATRIX);
+        bitDepthUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.BIT_DEPTH);
+        bitMaskUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.BIT_MASK);
     }
 
 
@@ -432,6 +317,9 @@ class GLYUV420Renderer extends GLRenderer {
     void onRender() {
         if (!bufferAvailable) {
             return;
+        }
+        if (fragmentShader == null || fragmentShader.getYuv420Type() != yuv420Type) {
+            changeProgram();
         }
         GLES20.glUseProgram(programId);
         positionCoordinateBuffer.clear();
@@ -454,7 +342,7 @@ class GLYUV420Renderer extends GLRenderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lumaTexture.textureId);
         GLES20.glUniform1i(lumaTextureUniform, 0);
         GLES20.glUniform2f(lumaSizeUniform, lumaTexture.width, lumaTexture.height);
-        if (yuv420Type == VideoDecoder.NV12 || yuv420Type == VideoDecoder.NV21) {
+        if (yuv420Type == YUV420Type.NV12 || yuv420Type == YUV420Type.NV21) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, chromaSemiTexture.textureId);
             GLES20.glUniform1i(chromaSemiTextureUniform, 1);
@@ -477,7 +365,6 @@ class GLYUV420Renderer extends GLRenderer {
                 0);
         GLES20.glUniform1i(bitDepthUniform, bitDepth);
         GLES20.glUniform1i(bitMaskUniform, bitMask);
-        GLES20.glUniform1i(yuv420TypeUniform, yuv420Type);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
