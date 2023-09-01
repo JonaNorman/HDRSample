@@ -8,6 +8,7 @@ import com.norman.android.hdrsample.exception.IORuntimeException;
 import com.norman.android.hdrsample.util.BufferUtil;
 import com.norman.android.hdrsample.util.FileUtil;
 import com.norman.android.hdrsample.util.GLESUtil;
+import com.norman.android.hdrsample.util.LogUtil;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -194,7 +195,7 @@ public class CubeLutBuffer {
                     matchIndex++;
                     //开始匹配RGB数据
                     if (matchStateRGBBuffer == MATCH_RUNNING) {
-                        //找到空格和换行表示前面的float读取完成了可以加到rgbBuffer中了
+                        //找到空格、换行、读取到最后表示前面的float读取完成了可以加到rgbBuffer中了
                         if (readByte == BYTE_LINE || readByte == BYTE_SPACE) {
                             if (floatState != FLOAT_STATE_SIGN){//只有不是在找符号位，数据才是有效的
                                 //根据符号位、整数位、小数位、指数位计算float的数据
@@ -303,6 +304,7 @@ public class CubeLutBuffer {
                                 titleOrSizeMatchBuffer.flip();//写入索引改成读取索引
                                 // buffer中有效的数据转化成title
                                 title = new String(titleOrSizeMatchBuffer.array(), titleOrSizeMatchBuffer.position(), titleOrSizeMatchBuffer.limit()).trim();
+                                title =   title.replaceAll("^\"|\"$", "");//去除前后的引号
                                 matchStateTitle = MATCH_COMPLETE;//title匹配完成
                                 matchStateNextLine = MATCH_RUNNING;//开始找下一行
                                 titleOrSizeMatchBuffer.clear();
@@ -387,6 +389,15 @@ public class CubeLutBuffer {
                 }
             }
 
+            // 最后有可能数字没加入到Buffer中
+
+            if (floatState != FLOAT_STATE_SIGN){
+                float finalValue =  floatValueSignPart * floatValuePart * (float)Math.pow(10, floatExponentSignPart*floatExponentPart);
+                rgbBuffer.putFloat(finalValue);
+            }
+            if (rgbBuffer.hasRemaining()){
+                LogUtil.w("cubeLut rgbBuffer load fail, there is still data not written");
+            }
 
         } catch (IOException e) {
             throw  new IORuntimeException(e);
