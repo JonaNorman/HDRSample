@@ -279,7 +279,6 @@ public class GLESUtil {
         }else {
             throw new IllegalArgumentException("not support bitDepth:"+bitDepth);
         }
-        GLESUtil.checkGLError();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         return textureId;
     }

@@ -3,8 +3,6 @@ package com.norman.android.hdrsample.transform;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
-import com.norman.android.hdrsample.handler.Future;
-import com.norman.android.hdrsample.handler.MessageHandler;
 import com.norman.android.hdrsample.player.GLVideoTransform;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.util.GLESUtil;
@@ -40,9 +38,8 @@ public class CubeLutVideoTransform extends GLVideoTransform {
             "\n" +
             "void main() {\n" +
             "\n" +
-            "    // Based on \\\\\\\\GPU Gems 2 — Chapter 24. Using Lookup Tables to Accelerate Color Transformations\\\\\\\\\n" +
-            "    // More info and credits @ http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter24.html\n" +
             "    // 解决OpenGL时线性插值在边缘处的精度问题\n" +
+            "    // http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter24.html\n" +
             "    vec4 rawColor = texture(inputImageTexture, textureCoordinate);\n" +
             "    vec3 scale = vec3((cubeLutSize - 1.0) / cubeLutSize);\n" +
             "    vec3 offset = vec3(1.0 / (2.0 * cubeLutSize));\n" +
@@ -70,7 +67,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     private int cubeLutSizeUniform;
 
 
-    private volatile Future<CubeLut3D> lut3DFuture;
+    private  CubeLut3D lut3DFuture;
 
 
     public CubeLutVideoTransform() {
@@ -95,11 +92,9 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
             return false;
         }
-        Future<CubeLut3D> future = lut3DFuture;
-        if (future != null && future.get() != currentCube) {
-            currentCube = future.get();
+        if (lut3DFuture != currentCube) {
+            currentCube = lut3DFuture;
             GLESUtil.delTextureId(lutTextureId);
-            GLESUtil.checkGLError();
             lutTextureId = 0;
             lutSize = 0;
             lutEnable = false;
@@ -107,23 +102,20 @@ public class CubeLutVideoTransform extends GLVideoTransform {
                 ByteBuffer byteBuffer = currentCube.buffer;
                 byteBuffer.rewind();
                 lutTextureId = GLESUtil.create3DTextureId();
-                GLESUtil.checkGLError();
                 GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
-                GLESUtil.checkGLError();
-                GLES30.glTexImage3D(GLES30.GL_TEXTURE_3D, 0, GLES30.GL_RGB16F, currentCube.size, currentCube.size, currentCube.size, 0, GLES30.GL_RGB, GLES30.GL_FLOAT, byteBuffer);
-                GLESUtil.checkGLError();
+                GLES30.glTexImage3D(GLES30.GL_TEXTURE_3D,
+                        0, GLES30.GL_RGB16F,
+                        currentCube.size,
+                        currentCube.size,
+                        currentCube.size,
+                        0,
+                        GLES30.GL_RGB,
+                        GLES30.GL_FLOAT,
+                        byteBuffer);
                 GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
-                GLESUtil.checkGLError();
                 lutSize = currentCube.size;
                 lutEnable = true;
             }
-        } else if (future == null && currentCube != null) {
-            currentCube = null;
-            GLESUtil.delTextureId(lutTextureId);
-            GLESUtil.checkGLError();
-            lutTextureId = 0;
-            lutSize = 0;
-            lutEnable = false;
         }
         return lutEnable;
     }
@@ -134,52 +126,33 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         clearColor();
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
-        GLESUtil.checkGLError();
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
-        GLESUtil.checkGLError();
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
-        GLESUtil.checkGLError();
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
-        GLESUtil.checkGLError();
         GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
-        GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLESUtil.checkGLError();
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getInputTextureId());
-        GLESUtil.checkGLError();
         GLES20.glUniform1i(textureUnitUniform, 0);
-        GLESUtil.checkGLError();
-
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
-        GLESUtil.checkGLError();
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
-        GLESUtil.checkGLError();
         GLES20.glUniform1i(cubeLutTextureUniform, 1);
-        GLESUtil.checkGLError();
         GLES20.glUniform1f(cubeLutSizeUniform, lutSize);
-        GLESUtil.checkGLError();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-        GLESUtil.checkGLError();
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
-        GLESUtil.checkGLError();
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
-        GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
-        GLESUtil.checkGLError();
 
     }
 
 
-    public void setCubeLutForAsset(String asset) {
+    public synchronized void setCubeLutForAsset(String asset) {
         if (asset == null) {
             lut3DFuture = null;
             return;
         }
-        MessageHandler messageHandler = MessageHandler.obtain();
-        lut3DFuture = messageHandler.submit(() -> CubeLut3D.createForAsset(asset));
-        messageHandler.finishSafe();
+        lut3DFuture = CubeLut3D.createForAsset(asset);
     }
 }

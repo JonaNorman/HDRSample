@@ -68,6 +68,7 @@ abstract class GLRenderer {
         onRender();
         onRenderFinish();
         GLES20.glUseProgram(0);
+        GLESUtil.checkGLError();
         renderSuccess = true;
     }
 
