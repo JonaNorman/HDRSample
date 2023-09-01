@@ -121,14 +121,10 @@ class GLYUV420Renderer extends GLRenderer {
 
     private @ColorRange int colorRange = ColorRange.LIMITED;
 
-    private int programId;
-
-    private YUV420FragmentShader fragmentShader;
-    private YUV420VertexShader vertexShader = new YUV420VertexShader();
-
     public GLYUV420Renderer() {
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
         textureCoordinateBuffer = GLESUtil.createTextureFlatBufferUpsideDown();
+        setVertexShader(new YUV420VertexShader());
     }
 
     /**
@@ -152,6 +148,9 @@ class GLYUV420Renderer extends GLRenderer {
                 || bitDepth != requestBitDepth
                 || yuv420Type != requestYuv420Type
                 || Objects.equals(requestDisplayRect, displayRect)) {//相同的清空下不需要重新创建纹理
+            if (yuv420Type != requestYuv420Type){
+                setFrameShader(new YUV420FragmentShader(requestYuv420Type));
+            }
             strideWidth = requestStrideWidth;
             sliceHeight = requestSliceHeight;
             bitDepth = requestBitDepth;
@@ -282,17 +281,9 @@ class GLYUV420Renderer extends GLRenderer {
         }
     }
 
+
     @Override
-    protected void onCreate() {
-
-
-    }
-
-
-    protected void changeProgram() {
-        GLESUtil.delProgramId(programId);
-        fragmentShader = new YUV420FragmentShader(yuv420Type);
-        programId = GLESUtil.createProgramId(vertexShader.getCode(), fragmentShader.getCode());
+    protected void onProgramChange(int programId) {
         positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, YUV420VertexShader.POSITION);
         textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, YUV420VertexShader.INPUT_TEXTURE_COORDINATE);
 
@@ -311,16 +302,13 @@ class GLYUV420Renderer extends GLRenderer {
         bitMaskUniform = GLES20.glGetUniformLocation(programId, YUV420FragmentShader.BIT_MASK);
     }
 
+    @Override
+    protected boolean onRenderStart() {
+        return bufferAvailable;
+    }
 
     @Override
-    void onRender() {
-        if (!bufferAvailable) {
-            return;
-        }
-        if (fragmentShader == null || fragmentShader.getYuv420Type() != yuv420Type) {
-            changeProgram();
-        }
-        GLES20.glUseProgram(programId);
+    protected void onRender() {
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
@@ -367,7 +355,6 @@ class GLYUV420Renderer extends GLRenderer {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
-        GLES20.glUseProgram(0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);//虽然glActiveTexture有多次，但是绑定纹理回去就只要调用一次就行，不需要多次glActiveTexture
     }
 

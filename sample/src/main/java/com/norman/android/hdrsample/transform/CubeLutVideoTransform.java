@@ -69,8 +69,6 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
     private int cubeLutSizeUniform;
 
-    private int programId;
-
 
     private volatile Future<CubeLut3D> lut3DFuture;
 
@@ -78,28 +76,24 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     public CubeLutVideoTransform() {
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
         textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();
+        setVertexShader(VERTEX_SHADER);
+        setFrameShader(FRAGMENT_SHADER);
     }
 
     @Override
-    protected void onCreate() {
-        this.programId = GLESUtil.createProgramId(VERTEX_SHADER, FRAGMENT_SHADER);
+    protected void onProgramChange(int programId) {
         positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-        GLESUtil.checkGLError();
         textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
-        GLESUtil.checkGLError();
         textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-        GLESUtil.checkGLError();
         cubeLutTextureUniform = GLES20.glGetUniformLocation(programId, "cubeLutTexture");
-        GLESUtil.checkGLError();
         cubeLutSizeUniform = GLES20.glGetUniformLocation(programId, "cubeLutSize");
-        GLESUtil.checkGLError();
     }
 
     @Override
-    protected void onTransform() {
+    protected boolean onTransformStart() {
         int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR){
-            return;
+        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
+            return false;
         }
         Future<CubeLut3D> future = lut3DFuture;
         if (future != null && future.get() != currentCube) {
@@ -123,7 +117,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
                 lutSize = currentCube.size;
                 lutEnable = true;
             }
-        }else if (future == null && currentCube !=  null){
+        } else if (future == null && currentCube != null) {
             currentCube = null;
             GLESUtil.delTextureId(lutTextureId);
             GLESUtil.checkGLError();
@@ -131,13 +125,15 @@ public class CubeLutVideoTransform extends GLVideoTransform {
             lutSize = 0;
             lutEnable = false;
         }
-        if (!lutEnable) {
-            return;
-        }
+        return lutEnable;
+    }
+
+    @Override
+    protected void onTransform() {
+        setOutputColorSpace(VideoOutput.ColorSpace.VIDEO_SDR);
         clearColor();
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
-        GLES20.glUseProgram(programId);
         GLESUtil.checkGLError();
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLESUtil.checkGLError();
@@ -168,19 +164,17 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLESUtil.checkGLError();
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLESUtil.checkGLError();
-        GLES20.glUseProgram(0);
-        GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.ColorSpace.VIDEO_SDR);
+
     }
 
 
     public void setCubeLutForAsset(String asset) {
-        if (asset == null){
+        if (asset == null) {
             lut3DFuture = null;
             return;
         }

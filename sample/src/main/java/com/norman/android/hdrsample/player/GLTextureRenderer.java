@@ -28,30 +28,18 @@ class GLTextureRenderer extends GLRenderer {
     private int textureUnitUniform;
     private int textureMatrixUniform;
 
-    private int programId;
-
 
     private int textureId;
 
     private final @TextureFragmentShader.TextureType int textureType;
-    private TextureFragmentShader fragmentShader;
-    private TextureVertexShader vertexShader;
-
-
 
 
     public GLTextureRenderer(@TextureFragmentShader.TextureType int type) {
         textureType = type;
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();//平面的顶点坐标
         textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();//纹理坐标
-    }
-
-    @Override
-    public void onCreate() {
-        vertexShader = new TextureVertexShader();
-        fragmentShader = new TextureFragmentShader(textureType);
-        programId = GLESUtil.createProgramId(vertexShader.getCode(), fragmentShader.getCode());
-        onProgramChange(programId);
+        setVertexShader(new TextureVertexShader());
+        setFrameShader(new TextureFragmentShader(textureType));
     }
 
 
@@ -64,8 +52,8 @@ class GLTextureRenderer extends GLRenderer {
         return textureMatrix;
     }
 
-
     @CallSuper
+    @Override
     protected void onProgramChange(int programId) {
         positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, TextureVertexShader.POSITION);
         textureMatrixUniform = GLES20.glGetUniformLocation(programId, TextureVertexShader.TEXTURE_MATRIX);
@@ -73,13 +61,16 @@ class GLTextureRenderer extends GLRenderer {
         textureUnitUniform = GLES20.glGetUniformLocation(programId, TextureFragmentShader.INPUT_IMAGE_TEXTURE);
     }
 
+    @Override
+    protected boolean onRenderStart() {
+        return textureId > 0;
+    }
 
     @Override
-    final void onRender() {
-        if (textureId == 0) return;
+    protected void onRender() {
+
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
-        GLES20.glUseProgram(programId);
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glVertexAttribPointer(positionCoordinateAttribute,
                 GLESUtil.FLAT_VERTEX_LENGTH,
@@ -102,7 +93,6 @@ class GLTextureRenderer extends GLRenderer {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
-        GLES20.glUseProgram(0);
         if (textureType != TextureFragmentShader.TYPE_TEXTURE_2D) {
             GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureId);
         } else {

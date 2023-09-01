@@ -5,4 +5,14 @@ package com.norman.android.hdrsample.opengl
  */
 abstract class GLShaderCode{
       abstract val code:String
+      override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as GLShaderCode
+
+            return code == other.code
+      }
+
+
 }

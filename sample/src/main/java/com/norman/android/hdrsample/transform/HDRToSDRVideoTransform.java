@@ -39,8 +39,6 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     private int textureCoordinateAttribute;
     private int textureUnitUniform;
 
-    private int programId;
-
     private HDRToSDRShader hdrToSDRShader;
 
     private ScreenBrightnessObserver screenBrightnessObserver;
@@ -53,11 +51,14 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     private GamutMap gamutMap;
     private GammaOETF gammaOETF;
 
+    private boolean shaderChange;
+
 
     public HDRToSDRVideoTransform() {
         positionCoordinateBuffer = GLESUtil.createPositionFlatBuffer();
         textureCoordinateBuffer = GLESUtil.createTextureFlatBuffer();
         screenBrightnessObserver = new ScreenBrightnessObserver();
+        setVertexShader(VERTEX_SHADER);
     }
 
     @Override
@@ -65,22 +66,55 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         screenBrightnessObserver.listen();
     }
 
+    @Override
+    protected boolean onTransformStart() {
+        if (chromaCorrection == null ||
+                toneMap == null ||
+                gamutMap == null ||
+                gammaOETF == null) {
+            return false;
+        }
+
+        if (chromaCorrection == ChromaCorrection.NONE &&
+                toneMap == ToneMap.NONE &&
+                gamutMap == GamutMap.NONE &&
+                gammaOETF == GammaOETF.NONE) {
+            return false;
+        }
+        int colorSpace = getInputColorSpace();
+        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
+            return false;
+        }
+        if (shaderChange || (hdrToSDRShader != null &&
+                hdrToSDRShader.colorSpace != colorSpace)) {
+            hdrToSDRShader = new HDRToSDRShader(getInputColorSpace(),
+                    chromaCorrection,
+                    toneMap,
+                    gamutMap,
+                    gammaOETF
+            );
+            setFrameShader(hdrToSDRShader);
+            shaderChange  =false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void onProgramChange(int programId) {
+        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
+        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
+        textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
+        maxDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.MAX_DISPLAY_LUMINANCE);
+        currentDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.CURRENT_DISPLAY_LUMINANCE);
+        hdrPeakLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.HDR_PEAK_LUMINANCE);
+    }
 
     @Override
     protected synchronized void onTransform() {
-        int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
-            return;
-        }
-        changeShader();
-        if (programId <= 0) {
-            return;
-        }
+        setOutputColorSpace(VideoOutput.ColorSpace.VIDEO_SDR);
         clearColor();
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
-        GLES20.glUseProgram(programId);
-        GLESUtil.checkGLError();
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLESUtil.checkGLError();
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
@@ -113,81 +147,38 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         GLESUtil.checkGLError();
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
         GLESUtil.checkGLError();
-        GLES20.glUseProgram(0);
-        GLESUtil.checkGLError();
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.ColorSpace.VIDEO_SDR);
+
     }
 
 
     public synchronized void setChromaCorrection(ChromaCorrection chromaCorrection) {
-        this.chromaCorrection = chromaCorrection;
-    }
-
-    public void setToneMap(ToneMap toneMap) {
-        this.toneMap = toneMap;
-    }
-
-    public void setGamutMap(GamutMap gamutMap) {
-        this.gamutMap = gamutMap;
-    }
-
-    public void setGammaOETF(GammaOETF gammaOETF) {
-        this.gammaOETF = gammaOETF;
-    }
-
-
-    private void changeShader() {
-        int colorSpace = getInputColorSpace();
-        if (hdrToSDRShader != null
-                && hdrToSDRShader.colorSpace == colorSpace
-                && hdrToSDRShader.chromaCorrection == chromaCorrection
-                && hdrToSDRShader.toneMap == toneMap
-                && hdrToSDRShader.gamutMap == gamutMap
-                && hdrToSDRShader.gammaOETF == gammaOETF
-
-        ) {
-            return;
+        if (this.chromaCorrection != chromaCorrection) {
+            this.chromaCorrection = chromaCorrection;
+            shaderChange = true;
         }
-        GLESUtil.delProgramId(programId);
-        programId = 0;
-        hdrToSDRShader = null;
-        if (chromaCorrection == null ||
-                toneMap == null ||
-                gamutMap == null ||
-                gammaOETF == null) {
-            return;
+    }
+
+    public synchronized void setToneMap(ToneMap toneMap) {
+        if (this.toneMap != toneMap) {
+            this.toneMap = toneMap;
+            shaderChange = true;
         }
+    }
 
-        if (chromaCorrection == ChromaCorrection.NONE  &&
-                toneMap == ToneMap.NONE &&
-                gamutMap == GamutMap.NONE &&
-                gammaOETF == GammaOETF.NONE) {
-            return;
+    public synchronized void setGamutMap(GamutMap gamutMap) {
+        if (this.gamutMap != gamutMap) {
+            this.gamutMap = gamutMap;
+            shaderChange = true;
         }
-        hdrToSDRShader = new HDRToSDRShader(colorSpace,
-                chromaCorrection,
-                toneMap,
-                gamutMap,
-                gammaOETF
-        );
-        programId = GLESUtil.createProgramId(VERTEX_SHADER, hdrToSDRShader.getCode());
-        positionCoordinateAttribute = GLES20.glGetAttribLocation(programId, "position");
-        GLESUtil.checkGLError();
-        textureCoordinateAttribute = GLES20.glGetAttribLocation(programId, "inputTextureCoordinate");
-        GLESUtil.checkGLError();
-        textureUnitUniform = GLES20.glGetUniformLocation(programId, "inputImageTexture");
-        GLESUtil.checkGLError();
+    }
 
-        maxDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.MAX_DISPLAY_LUMINANCE);
-        GLESUtil.checkGLError();
-
-        currentDisplayLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.CURRENT_DISPLAY_LUMINANCE);
-        GLESUtil.checkGLError();
-
-        hdrPeakLuminanceUniform = GLES20.glGetUniformLocation(programId, MetaDataParams.HDR_PEAK_LUMINANCE);
-        GLESUtil.checkGLError();
+    public synchronized void setGammaOETF(GammaOETF gammaOETF) {
+        if (this.gammaOETF != gammaOETF) {
+            this.gammaOETF = gammaOETF;
+            shaderChange = true;
+        }
     }
 }

@@ -364,7 +364,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             //用frontTarget和backTarget做中转做Transform的处理
             for (GLVideoTransform videoTransform : transformList) {
                 videoTransform.renderToTarget(frontTarget, backTarget);
-                if (videoTransform.transformSuccess) {//如果标记不处理，就不用中转，这样才一次纹理绘制
+                if (videoTransform.renderSuccess) {//如果绘制成功了，才中转纹理
                     GLRenderTextureTarget temp = frontTarget;
                     frontTarget = backTarget;
                     backTarget = temp;
