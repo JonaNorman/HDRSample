@@ -3,13 +3,17 @@ package com.norman.android.hdrsample.transform;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
-import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.player.GLVideoTransform;
+import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.util.GLESUtil;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+/**
+ * 直接使用3D纹理加载CubeLut数据，和@see <a href="https://github.com/google/ExoPlayer/blob/release-v2/library/effect/src/main/assets/shaders/fragment_shader_lut_es2.glsl#L23"/> ExoPlayer</a> 的LUT区别
+ * 1. 不需要手动手动去插值处理更方便
+ * 2. 不使用Bitmap直接使用ByteBuffer加载CUBE文件
+ */
 public class CubeLutVideoTransform extends GLVideoTransform {
 
     private static final int VERTEX_LENGTH = 2;
@@ -39,7 +43,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
             "void main() {\n" +
             "\n" +
             "    // 解决OpenGL时线性插值在边缘处的精度问题\n" +
-            "    // http://http.developer.nvidia.com/GPUGems2/gpugems2_chapter24.html\n" +
+            "    // https://zhuanlan.zhihu.com/p/302608139\n" +
             "    vec4 rawColor = texture(inputImageTexture, textureCoordinate);\n" +
             "    vec3 scale = vec3((cubeLutSize - 1.0) / cubeLutSize);\n" +
             "    vec3 offset = vec3(1.0 / (2.0 * cubeLutSize));\n" +
@@ -53,7 +57,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
     private boolean lutEnable;
 
-    private CubeLut3D currentCube;
+    private CubeLutBuffer currentCube;
 
     private FloatBuffer textureCoordinateBuffer;
     private FloatBuffer positionCoordinateBuffer;
@@ -67,7 +71,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     private int cubeLutSizeUniform;
 
 
-    private  CubeLut3D cubeLut3D;
+    private CubeLutBuffer cubeLutBuffer;
 
 
     public CubeLutVideoTransform() {
@@ -92,27 +96,14 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         if (colorSpace == ColorSpace.VIDEO_SDR) {
             return false;
         }
-        if (cubeLut3D != currentCube) {
-            currentCube = cubeLut3D;
+        if (cubeLutBuffer != currentCube) {
+            currentCube = cubeLutBuffer;
             GLESUtil.delTextureId(lutTextureId);
             lutTextureId = 0;
             lutSize = 0;
             lutEnable = false;
             if (currentCube != null) {
-                ByteBuffer byteBuffer = currentCube.buffer;
-                byteBuffer.rewind();
-                lutTextureId = GLESUtil.create3DTextureId();
-                GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
-                GLES30.glTexImage3D(GLES30.GL_TEXTURE_3D,
-                        0, GLES30.GL_RGB16F,
-                        currentCube.size,
-                        currentCube.size,
-                        currentCube.size,
-                        0,
-                        GLES30.GL_RGB,
-                        GLES30.GL_FLOAT,
-                        byteBuffer);
-                GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
+                lutTextureId = currentCube.createTextureId();
                 lutSize = currentCube.size;
                 lutEnable = true;
             }
@@ -132,10 +123,12 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
 
+        // 原始图像纹理
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getInputTextureId());
         GLES20.glUniform1i(textureUnitUniform, 0);
 
+        // CubeLut纹理
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
         GLES20.glUniform1i(cubeLutTextureUniform, 1);
@@ -152,9 +145,9 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
     public synchronized void setCubeLut(String asset) {
         if (asset == null) {
-            cubeLut3D = null;
+            cubeLutBuffer = null;
             return;
         }
-        cubeLut3D = CubeLut3D.createForAsset(asset);
+        cubeLutBuffer = CubeLutBuffer.loadAsset(asset);
     }
 }
