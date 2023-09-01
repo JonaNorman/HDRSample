@@ -182,7 +182,7 @@ class GLYUV420Renderer extends GLRenderer {
             bitMask = byteCount * 8 - bitDepth;//多余的位数最终要移除掉
 
 
-            int videoHeight = displayRect.bottom - displayRect.top + 1;//视频实际的高度
+            int videoHeight = displayRect.bottom - displayRect.top;//视频实际的高度
             int lumaPlaneWidth = strideWidth / byteCount;//strideWidth是字节宽度，除以字节大小就是Y平面的实际大小
             int lumaPlaneHeight = videoHeight;//不用sliceHeight是因为videoHeight是不包含真正的高度，可以不用对高进行绿边裁剪
             int chromaSize;
