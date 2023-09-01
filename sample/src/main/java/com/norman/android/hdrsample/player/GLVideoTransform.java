@@ -95,7 +95,7 @@ public abstract class GLVideoTransform  extends GLRenderer {
         if (outputTarget instanceof GLRenderTextureTarget){
             GLRenderTextureTarget outTextureTarget = (GLRenderTextureTarget) outputTarget;
             outTextureTarget.setColorSpace(colorSpace);
-            if (colorSpace == VideoOutput.COLOR_SPACE_SDR){
+            if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR){
                 outTextureTarget.setMaxContentLuminance(0);
                 outTextureTarget.setMaxFrameAverageLuminance(0);
                 outTextureTarget.setMaxMasteringLuminance(0);

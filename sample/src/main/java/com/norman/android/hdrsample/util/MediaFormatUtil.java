@@ -4,6 +4,10 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.text.TextUtils;
 
+import com.norman.android.hdrsample.player.color.ColorRange;
+import com.norman.android.hdrsample.player.color.ColorStandard;
+import com.norman.android.hdrsample.player.color.ColorTransfer;
+
 import java.nio.ByteBuffer;
 
 public class MediaFormatUtil {
@@ -114,8 +118,9 @@ public class MediaFormatUtil {
      * @param mediaFormat
      * @return
      */
+    @ColorStandard
     public static int getColorStandard(MediaFormat mediaFormat) {
-      return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
+      return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, ColorStandard.BT709);
     }
 
     /**
@@ -123,9 +128,9 @@ public class MediaFormatUtil {
      * @param mediaFormat
      * @return
      */
-
+    @ColorRange
     public static int getColorRange(MediaFormat mediaFormat) {
-        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
+        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_RANGE, ColorRange.LIMITED);
     }
 
     /**
@@ -133,7 +138,38 @@ public class MediaFormatUtil {
      * @param mediaFormat
      * @return
      */
+    @ColorTransfer
     public static int getColorTransfer(MediaFormat mediaFormat) {
-        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
+        return  MediaFormatUtil.getInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, ColorTransfer.SDR_VIDEO);
+    }
+
+    /***
+     * 设置颜色色域
+     * @param mediaFormat
+     * @return
+     */
+
+    public static void setColorStandard(MediaFormat mediaFormat,@ColorStandard int colorStandard) {
+          MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_COLOR_STANDARD, colorStandard);
+    }
+
+    /***
+     * 设置颜色范围
+     * @param mediaFormat
+     * @return
+     */
+
+    public static void setColorRange(MediaFormat mediaFormat,@ColorRange int colorRange) {
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_COLOR_RANGE, colorRange);
+    }
+
+    /***
+     * 设置传递函数
+     * @param mediaFormat
+     * @return
+     */
+
+    public static void setColorTransfer(MediaFormat mediaFormat,@ColorTransfer int colorTransfer) {
+        MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
     }
 }

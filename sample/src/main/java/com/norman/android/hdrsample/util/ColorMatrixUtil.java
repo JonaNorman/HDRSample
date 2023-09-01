@@ -74,7 +74,7 @@ public class ColorMatrixUtil {
         if(colorMatrix == null){
             throw new NullPointerException("not support bitDepth "+bitDepth+" colorRange"+colorRange);
         }
-        return colorRange == ColorRange.COLOR_RANGE_FULL ?
+        return colorRange == ColorRange.FULL ?
                 colorMatrix.fullMatrix :
                 colorMatrix.limitMatrix;
     }

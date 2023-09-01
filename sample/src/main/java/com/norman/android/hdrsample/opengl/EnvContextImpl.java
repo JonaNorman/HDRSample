@@ -90,7 +90,7 @@ class EnvContextImpl implements GLEnvContext {
     static class AttrListImpl extends EnvAttrListImpl implements AttrList {
 
         @Override
-        public void setClientVersion(@OpenGLESVersion int version) {
+        public void setClientVersion(@GLEnvVersion int version) {
             setAttrib(EGL14.EGL_CONTEXT_CLIENT_VERSION, version);
         }
 

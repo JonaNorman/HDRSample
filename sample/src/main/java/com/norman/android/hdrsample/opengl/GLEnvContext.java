@@ -5,24 +5,11 @@ import android.opengl.EGL14;
 import android.opengl.EGLContext;
 import android.opengl.EGLSurface;
 
-import androidx.annotation.IntDef;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 
 /**
  * EGLContext的封装
  */
 public interface GLEnvContext {
-    int OPENGL_ES_VERSION_1 = 1;
-    int OPENGL_ES_VERSION_2 = 2;
-    int OPENGL_ES_VERSION_3 = 3;
-
-    @IntDef({OPENGL_ES_VERSION_1, OPENGL_ES_VERSION_2, OPENGL_ES_VERSION_3})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface OpenGLESVersion {
-    }
 
 
     EGLContext getEGLContext();
@@ -60,7 +47,7 @@ public interface GLEnvContext {
         return builder.build();
     }
 
-    static GLEnvContext create(@OpenGLESVersion int version) {
+    static GLEnvContext create(@GLEnvVersion int version) {
         GLEnvContext.Builder builder = new GLEnvContext.Builder();
         builder.setClientVersion(version);
         return builder.build();
@@ -81,7 +68,7 @@ public interface GLEnvContext {
         return builder.build();
     }
 
-    static GLEnvContext create(@OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
+    static GLEnvContext create(@GLEnvVersion int version, GLEnvConfigChooser configChooser) {
         GLEnvContext.Builder builder = new GLEnvContext.Builder(configChooser);
         builder.setClientVersion(version);
         return builder.build();
@@ -112,7 +99,7 @@ public interface GLEnvContext {
             this.envDisplay = GLEnvDisplay.createDisplay();
             this.envConfig = envDisplay.chooseConfig(configChooser);
             this.shareContext = shareContext;
-            setClientVersion(OPENGL_ES_VERSION_3);
+            setClientVersion(GLEnvVersion.VERSION_3);
         }
 
         public Builder(GLEnvDisplay envDisplay, GLEnvConfigChooser configChooser) {
@@ -127,7 +114,7 @@ public interface GLEnvContext {
             this.envDisplay = envDisplay;
             this.envConfig = envConfig;
             this.shareContext = eglContext;
-            setClientVersion(OPENGL_ES_VERSION_3);
+            setClientVersion(GLEnvVersion.VERSION_3);
         }
 
 
@@ -135,7 +122,7 @@ public interface GLEnvContext {
          * OpenGL版本号
          * @param version
          */
-        public void setClientVersion(@OpenGLESVersion int version) {
+        public void setClientVersion(@GLEnvVersion int version) {
             contextAttribArray.setClientVersion(version);
         }
 
@@ -158,6 +145,6 @@ public interface GLEnvContext {
      * EGLContext的属性列表
      */
     interface AttrList extends GLEnvAttrList {
-        void setClientVersion(@OpenGLESVersion int version);
+        void setClientVersion(@GLEnvVersion int version);
     }
 }

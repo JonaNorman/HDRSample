@@ -98,7 +98,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     @Override
     protected void onTransform() {
         int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.COLOR_SPACE_SDR){
+        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR){
             return;
         }
         Future<CubeLut3D> future = lut3DFuture;
@@ -175,7 +175,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.COLOR_SPACE_SDR);
+        success(VideoOutput.ColorSpace.VIDEO_SDR);
     }
 
 

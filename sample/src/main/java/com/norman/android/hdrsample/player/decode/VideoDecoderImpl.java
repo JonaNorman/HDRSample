@@ -24,7 +24,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
      */
     Surface outputSurface;
 
-    private @OutputMode int outputMode = VideoDecoder.BUFFER_MODE;
+    private @OutputMode int outputMode = OutputMode.BUFFER_MODE;
 
     private String codecMimeType;
 
@@ -42,7 +42,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         }
         mediaCodecAdapter.setOutputSurface(outputSurface);
         MediaFormat inputFormat = configuration.mediaFormat;
-        if (outputMode == BUFFER_MODE){
+        if (outputMode == OutputMode.BUFFER_MODE){
             //buffer模式下如果支持Android13 YUVP010就设置COLOR_FormatYUVP010，不然就是设置YUV420格式
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                     mediaCodecAdapter.isSupportColorFormat(MediaCodecInfo.CodecCapabilities.COLOR_FormatYUVP010)) {
@@ -56,7 +56,7 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
             // Surface模式下要设置COLOR_FormatSurface
             inputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT,  MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
         }
-        mediaCodecAdapter.configure(configuration.mediaFormat, outputMode == SURFACE_MODE, new MediaCodecCallBackWrapper(mediaCodecAdapter,configuration.callBack ));
+        mediaCodecAdapter.configure(configuration.mediaFormat, outputMode == OutputMode.SURFACE_MODE, new MediaCodecCallBackWrapper(mediaCodecAdapter,configuration.callBack ));
     }
 
 

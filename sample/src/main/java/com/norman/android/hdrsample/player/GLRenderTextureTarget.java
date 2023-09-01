@@ -23,7 +23,7 @@ class GLRenderTextureTarget extends GLRenderTarget {
     int bitDepth = 8;
 
     @VideoOutput.ColorSpace
-    int colorSpace = VideoOutput.COLOR_SPACE_SDR;
+    int colorSpace = VideoOutput.ColorSpace.VIDEO_SDR;
 
     int maxContentLuminance;
     int maxFrameAverageLuminance;

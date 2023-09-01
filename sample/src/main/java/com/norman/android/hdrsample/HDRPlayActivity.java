@@ -52,7 +52,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
         hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
-        GLVideoOutput videoOutput = VideoOutput.createGLOutput(GLVideoOutput.TEXTURE_SOURCE_BUFFER);
+        GLVideoOutput videoOutput = VideoOutput.createGLOutput(GLVideoOutput.TextureSource.BUFFER);
         videoPlayer = VideoPlayer.create(videoOutput);
 //        1.mp4
 //        2.mp4  //

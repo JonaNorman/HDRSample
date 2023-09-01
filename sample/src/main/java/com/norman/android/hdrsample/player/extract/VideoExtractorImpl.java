@@ -5,6 +5,9 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 
 import com.norman.android.hdrsample.exception.IORuntimeException;
+import com.norman.android.hdrsample.player.color.ColorRange;
+import com.norman.android.hdrsample.player.color.ColorStandard;
+import com.norman.android.hdrsample.player.color.ColorTransfer;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
@@ -22,9 +25,9 @@ class VideoExtractorImpl implements VideoExtractor {
     private int frameRate;
     private int profile;
     private int profileLevel;
-    private int colorStandard;
-    private int colorRange;
-    private int colorTransfer;
+    private @ColorStandard int colorStandard;
+    private @ColorRange int colorRange;
+    private @ColorTransfer int colorTransfer;
     private ByteBuffer csd0Buffer;
     private ByteBuffer csd1Buffer;
     private MediaExtractor extractor;
@@ -67,9 +70,9 @@ class VideoExtractorImpl implements VideoExtractor {
                 profile = MediaFormatUtil.getInteger(format, MediaFormat.KEY_PROFILE);
                 profileLevel = MediaFormatUtil.getInteger(format, MediaFormat.KEY_LEVEL);
                 maxInputSize = MediaFormatUtil.getInteger(format, MediaFormat.KEY_MAX_INPUT_SIZE);
-                colorStandard = MediaFormatUtil.getInteger(format, MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
-                colorRange = MediaFormatUtil.getInteger(format, MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
-                colorTransfer = MediaFormatUtil.getInteger(format, MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
+                colorStandard = MediaFormatUtil.getColorStandard(format);
+                colorRange = MediaFormatUtil.getColorRange(format);
+                colorTransfer = MediaFormatUtil.getColorTransfer(format);
                 extractor.selectTrack(i);
                 hasVideo = true;
                 break;

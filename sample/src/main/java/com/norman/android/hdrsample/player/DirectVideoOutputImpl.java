@@ -50,7 +50,7 @@ class DirectVideoOutputImpl extends DirectVideoOutput {
 
     @Override
     protected void onOutputPrepare(MediaFormat inputFormat) {
-        videoDecoder.setOutputMode(VideoDecoder.SURFACE_MODE);
+        videoDecoder.setOutputMode(VideoDecoder.OutputMode.SURFACE_MODE);
         videoDecoder.setOutputSurface(decoderSurface);
     }
 

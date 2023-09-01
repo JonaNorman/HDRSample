@@ -15,7 +15,7 @@ class GLTextureY2YRenderer extends GLTextureRenderer {
 
     private int yuvToRgbMatrixUniform;
 
-    private @ColorRange int colorRange = ColorRange.COLOR_RANGE_LIMITED;
+    private @ColorRange int colorRange = ColorRange.LIMITED;
 
 
     private int bitDepth = 8;

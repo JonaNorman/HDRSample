@@ -119,7 +119,7 @@ class GLYUV420Renderer extends GLRenderer {
     private int bitDepthUniform;
     private int bitMaskUniform;
 
-    private @ColorRange int colorRange = ColorRange.COLOR_RANGE_LIMITED;
+    private @ColorRange int colorRange = ColorRange.LIMITED;
 
     private int programId;
 

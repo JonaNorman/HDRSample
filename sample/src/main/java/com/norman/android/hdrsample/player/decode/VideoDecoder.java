@@ -19,18 +19,17 @@ public interface VideoDecoder extends Decoder {
      */
     String KEY_YUV420_TYPE = "yuv420-type";
 
-    /**
-     * buffer解码
-     */
-    int BUFFER_MODE = 1;
-    /**
-     * surface解码
-     */
-    int SURFACE_MODE = 2;
-
-    @IntDef({BUFFER_MODE, SURFACE_MODE})
+    @IntDef({OutputMode.BUFFER_MODE, OutputMode.SURFACE_MODE})
     @Retention(RetentionPolicy.SOURCE)
     @interface OutputMode {
+        /**
+         * buffer解码
+         */
+        int BUFFER_MODE = 1;
+        /**
+         * surface解码
+         */
+        int SURFACE_MODE = 2;
     }
 
     static VideoDecoder create() {

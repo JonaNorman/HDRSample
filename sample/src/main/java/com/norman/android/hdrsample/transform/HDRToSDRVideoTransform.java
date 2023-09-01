@@ -69,7 +69,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     @Override
     protected synchronized void onTransform() {
         int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.COLOR_SPACE_SDR) {
+        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
             return;
         }
         changeShader();
@@ -118,7 +118,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         GLESUtil.checkGLError();
-        success(VideoOutput.COLOR_SPACE_SDR);
+        success(VideoOutput.ColorSpace.VIDEO_SDR);
     }
 
 

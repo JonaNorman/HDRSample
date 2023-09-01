@@ -46,7 +46,7 @@ public interface GLEnvContextManager {
         return builder.build();
     }
 
-    static GLEnvContextManager create(@GLEnvContext.OpenGLESVersion int version) {
+    static GLEnvContextManager create(@GLEnvVersion int version) {
         GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder();
         builder.setClientVersion(version);
         return builder.build();
@@ -67,7 +67,7 @@ public interface GLEnvContextManager {
         return builder.build();
     }
 
-    static GLEnvContextManager create(@GLEnvContext.OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
+    static GLEnvContextManager create(@GLEnvVersion int version, GLEnvConfigChooser configChooser) {
         GLEnvContextManager.Builder builder = new GLEnvContextManager.Builder(configChooser);
         builder.setClientVersion(version);
         return builder.build();
@@ -111,7 +111,7 @@ public interface GLEnvContextManager {
          */
 
 
-        public void setClientVersion(@GLEnvContext.OpenGLESVersion int version) {
+        public void setClientVersion(@GLEnvVersion int version) {
             envContextBuilder.setClientVersion(version);
         }
 

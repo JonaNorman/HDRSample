@@ -64,7 +64,7 @@ public interface GLEnvThreadManager {
         return builder.build();
     }
 
-    static GLEnvThreadManager create(@GLEnvContext.OpenGLESVersion int version) {
+    static GLEnvThreadManager create(@GLEnvVersion int version) {
         GLEnvThreadManager.Builder builder = new GLEnvThreadManager.Builder();
         builder.setClientVersion(version);
         return builder.build();
@@ -75,7 +75,7 @@ public interface GLEnvThreadManager {
         return builder.build();
     }
 
-    static GLEnvThreadManager create(@GLEnvContext.OpenGLESVersion int version, GLEnvConfigChooser configChooser) {
+    static GLEnvThreadManager create(@GLEnvVersion int version, GLEnvConfigChooser configChooser) {
         GLEnvThreadManager.Builder builder = new GLEnvThreadManager.Builder(configChooser);
         builder.setClientVersion(version);
         return builder.build();
@@ -105,7 +105,7 @@ public interface GLEnvThreadManager {
         }
 
 
-        public void setClientVersion(@GLEnvContext.OpenGLESVersion int version) {
+        public void setClientVersion(@GLEnvVersion int version) {
             builder.setClientVersion(version);
         }
 

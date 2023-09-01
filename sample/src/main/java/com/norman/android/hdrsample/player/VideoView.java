@@ -24,12 +24,11 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class VideoView extends FrameLayout {
 
-    public static final int VIEW_TYPE_SURFACE_VIEW = 1;
-    public static final int VIEW_TYPE_TEXTURE_VIEW = 2;
-
-    @IntDef({VIEW_TYPE_SURFACE_VIEW, VIEW_TYPE_TEXTURE_VIEW})
+    @IntDef({ViewType.SURFACE_VIEW, ViewType.TEXTURE_VIEW})
     @Retention(RetentionPolicy.SOURCE)
     @interface ViewType {
+        int SURFACE_VIEW = 1;
+        int TEXTURE_VIEW = 2;
     }
 
     /**
@@ -37,7 +36,7 @@ public class VideoView extends FrameLayout {
      */
     private static final int DELAY_REMOVE_VIEW_TIME_MS = 250;
 
-    private static final int DEFAULT_VIEW_TYPE = VIEW_TYPE_SURFACE_VIEW;
+    private static final int DEFAULT_VIEW_TYPE = ViewType.SURFACE_VIEW;
     private View currentView;
 
     private volatile float aspectRatio;
@@ -92,7 +91,7 @@ public class VideoView extends FrameLayout {
         FrameLayout.LayoutParams layoutParams = new LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         layoutParams.gravity = Gravity.CENTER;
-        currentView = this.viewType == VIEW_TYPE_SURFACE_VIEW ?
+        currentView = this.viewType == ViewType.SURFACE_VIEW ?
                 new AspectRatioSurfaceView(getContext()) :
                 new AspectRatioTextureView(getContext());
         addView(currentView, layoutParams);

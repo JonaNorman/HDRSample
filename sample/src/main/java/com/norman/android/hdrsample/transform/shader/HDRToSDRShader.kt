@@ -1,7 +1,6 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.player.VideoOutput
 import com.norman.android.hdrsample.player.VideoOutput.ColorSpace
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_LINEAR
 import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection
@@ -42,9 +41,9 @@ class HDRToSDRShader(
         this.toneMap = toneMap
         this.colorSpace = colorSpace
         this.gammaOETF = gammaOETF;
-        this.gammaEOTF = if (colorSpace == VideoOutput.COLOR_SPACE_BT2020_PQ) {
+        this.gammaEOTF = if (colorSpace == ColorSpace.VIDEO_BT2020_PQ) {
             GammaEOTF.PQDisPlay
-        } else if (colorSpace == VideoOutput.COLOR_SPACE_BT2020_HLG) {
+        } else if (colorSpace == ColorSpace.VIDEO_BT2020_HLG) {
             GammaEOTF.HLGDisplay
         } else {
             GammaEOTF.NONE
