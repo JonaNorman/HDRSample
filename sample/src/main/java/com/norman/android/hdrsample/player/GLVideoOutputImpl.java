@@ -48,7 +48,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
      */
     private GLTextureSurface videoSurface;
 
-    private final PlayerSurface playerSurface = new PlayerSurface();//对最终渲染的Surface对应的GLWindowSurface的封装
+    private final OutputSurface outputSurface = new OutputSurface();//对最终渲染的Surface对应的GLWindowSurface的封装
 
     /**
      * OES纹理渲染
@@ -117,17 +117,16 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     private VideoView videoView;
 
-    @TextureSource
-    private final int textureSourceType;
 
-    @HdrDisplayBitDepth
-    private final int hdrDisplayBitDepth;
+    private final @TextureSource int textureSourceType;
+
+    private final @HdrDisplayBitDepth int hdrDisplayBitDepth;
 
     private final VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
         @Override
         public void onSurfaceAvailable(Surface surface, int width, int height) {
 
-            playerSurface.setOutputSurface(surface);
+            outputSurface.setSurface(surface);
 
         }
 
@@ -138,7 +137,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
         @Override
         public void onSurfaceDestroy() {
-            playerSurface.setOutputSurface(null);
+            outputSurface.setSurface(null);
         }
     };
 
@@ -164,7 +163,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     @Override
     protected void onOutputStop() {
-        playerSurface.release();
+        outputSurface.release();
         envContextManager.detach();
         if (videoSurface != null) {
             videoSurface.release();
@@ -174,7 +173,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     @Override
     public synchronized void setOutputSurface(Surface surface) {
         setOutputVideoView(null);//VideoView和Surface同时只能设置一个
-        this.playerSurface.setOutputSurface(surface);
+        this.outputSurface.setSurface(surface);
     }
 
 
@@ -201,11 +200,11 @@ class GLVideoOutputImpl extends GLVideoOutput {
         GLEnvDisplay glEnvDisplay = GLEnvDisplay.createDisplay();
 
         // 8位
-        GLEnvConfig config8Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+        GLEnvConfig configRGBA8Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .build());
 
         // 10位，注意alpha是2位，视频不需要alpha够用了，其他需要alpha的情况下就不够用了
-        GLEnvConfig config10Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+        GLEnvConfig configRGBA1010102Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .setRedSize(10)
                 .setGreenSize(10)
                 .setBlueSize(10)
@@ -213,24 +212,24 @@ class GLVideoOutputImpl extends GLVideoOutput {
                 .build());
 
         //  16位
-        GLEnvConfig config16Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
+        GLEnvConfig configRGBA16Bit = glEnvDisplay.chooseConfig(new GLEnvConfigSimpleChooser.Builder()
                 .setRedSize(16)
                 .setGreenSize(16)
                 .setBlueSize(16)
                 .setAlphaSize(16)
                 .build());
 
-        GLEnvConfig envConfig = config8Bit;
+        GLEnvConfig envConfig = configRGBA8Bit;
         if (profile10Bit) {
 
             if (hdrDisplayBitDepth == HdrDisplayBitDepth.BIT_DEPTH_16 ||
                     Build.MODEL.equals("MIX 2S")) {  //MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
-                envConfig = config16Bit;
+                envConfig = configRGBA16Bit;
             } else if (hdrDisplayBitDepth == HdrDisplayBitDepth.BIT_DEPTH_10) {
-                envConfig = config10Bit;
+                envConfig = configRGBA1010102Bit;
             }
             if (envConfig == null) {
-                envConfig = config8Bit;
+                envConfig = configRGBA8Bit;
             }
         }
         envContextManager = GLEnvContextManager.create(glEnvDisplay, envConfig);
@@ -326,7 +325,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     @Override
     protected synchronized boolean onOutputBufferRender(long presentationTimeUs) {
-        if (!playerSurface.isValid()) {
+        if (!outputSurface.isValid()) {
             return false;
         }
         GLTextureRenderer textureRenderer;
@@ -376,7 +375,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
             finalColorSpace = frontTarget.colorSpace;//
             screenRenderer = texture2DRenderer;
         }
-        GLEnvWindowSurface windowSurface = playerSurface.getWindowSurface(finalColorSpace);
+        GLEnvWindowSurface windowSurface = outputSurface.getWindowSurface(finalColorSpace);
         if (windowSurface == null) {
             return false;
         }
@@ -391,68 +390,76 @@ class GLVideoOutputImpl extends GLVideoOutput {
     }
 
 
-    class PlayerSurface {
+    class OutputSurface {
         private GLEnvWindowSurface windowSurface;
 
-        private Surface outputSurface;
+        private Surface surface;
 
         private int lastColorSpace;
 
 
-
-        public synchronized void setOutputSurface(Surface surface) {
-            outputSurface = surface;
-            if (surface == null || !surface.isValid()) {
-                release();
+        public  void setSurface(Surface surface) {
+            synchronized (GLVideoOutputImpl.this){
+                this.surface = surface;
+                if (surface == null || !surface.isValid()) {
+                    release();
+                }
             }
+
         }
 
 
-        public synchronized void release() {
-            if (windowSurface == null) {
-                return;
+        public void release() {
+            synchronized (GLVideoOutputImpl.this){
+                if (windowSurface == null) {
+                    return;
+                }
+                windowSurface.release();
+                windowSurface = null;
             }
-            windowSurface.release();
-            windowSurface = null;
         }
 
-        public synchronized boolean isValid() {
-            return outputSurface != null && outputSurface.isValid();
+        public  boolean isValid() {
+            synchronized (GLVideoOutputImpl.this){
+                return surface != null && surface.isValid();
+            }
         }
 
-        public synchronized GLEnvWindowSurface getWindowSurface(@ColorSpace int requestColorSpace) {
-            if (outputSurface == null) {
-                release();
-                return null;
-            }
-            if (windowSurface == null ||
-                    outputSurface != windowSurface.getSurface() ||
-                    this.lastColorSpace != requestColorSpace) {//surface不同或者色域不同就要重新创建WindowSurface
-                release();
-                GLEnvDisplay envDisplay = envContext.getEnvDisplay();
-                GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, outputSurface);
-                if (isSupportHDR(outputSurface)) {//判断Surface是否支持HDR
-                    if (requestColorSpace == ColorSpace.VIDEO_BT2020_PQ) {
-                        if (envDisplay.isSupportBT2020PQ()) {
-                            builder.setColorSpace(GLEnvColorSpace.BT2020_PQ);
-                        }
-                    } else if (requestColorSpace == ColorSpace.VIDEO_BT2020_HLG) {
-                        if (envDisplay.isSupportBT2020HLG()) {
-                            builder.setColorSpace(GLEnvColorSpace.BT2020_HLG);
-                        }
-                    }else if (requestColorSpace == ColorSpace.VIDEO_BT2020_LINEAR) {
-                        if (envDisplay.isSupportBT2020Linear()) {
-                            builder.setColorSpace(GLEnvColorSpace.BT2020_LINEAR);
+        public  GLEnvWindowSurface getWindowSurface(@ColorSpace int requestColorSpace) {
+            synchronized (GLVideoOutputImpl.this){
+                if (surface == null) {
+                    release();
+                    return null;
+                }
+                if (windowSurface == null ||
+                        surface != windowSurface.getSurface() ||
+                        this.lastColorSpace != requestColorSpace) {//surface不同或者色域不同就要重新创建WindowSurface
+                    release();
+                    GLEnvDisplay envDisplay = envContext.getEnvDisplay();
+                    GLEnvWindowSurface.Builder builder = new GLEnvWindowSurface.Builder(envContext, surface);
+                    if (isSupportHDR(surface)) {//判断Surface是否支持HDR
+                        if (requestColorSpace == ColorSpace.VIDEO_BT2020_PQ) {
+                            if (envDisplay.isSupportBT2020PQ()) {
+                                builder.setColorSpace(GLEnvColorSpace.BT2020_PQ);
+                            }
+                        } else if (requestColorSpace == ColorSpace.VIDEO_BT2020_HLG) {
+                            if (envDisplay.isSupportBT2020HLG()) {
+                                builder.setColorSpace(GLEnvColorSpace.BT2020_HLG);
+                            }
+                        } else if (requestColorSpace == ColorSpace.VIDEO_BT2020_LINEAR) {
+                            if (envDisplay.isSupportBT2020Linear()) {
+                                builder.setColorSpace(GLEnvColorSpace.BT2020_LINEAR);
+                            }
                         }
                     }
+                    windowSurface = builder.build();
+                    this.lastColorSpace = requestColorSpace;
                 }
-                windowSurface = builder.build();
-                this.lastColorSpace = requestColorSpace;
+                if (!windowSurface.isValid()) {
+                    release();
+                }
+                return windowSurface;
             }
-            if (!windowSurface.isValid()) {
-                release();
-            }
-            return windowSurface;
         }
 
         /**
