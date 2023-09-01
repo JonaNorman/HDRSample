@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.player.VideoOutput
+import com.norman.android.hdrsample.player.color.ColorSpace
 
 object MetaDataParams : GLShaderCode() {
     const val MIN_DISPLAY_LUMINANCE ="MIN_DISPLAY_LUMINANCE"// 最小屏幕亮度
@@ -23,9 +23,9 @@ object MetaDataParams : GLShaderCode() {
               uniform float $MAX_DISPLAY_LUMINANCE;// 最大屏幕亮度
               uniform float $CURRENT_DISPLAY_LUMINANCE;// 当前亮度
               uniform float $HDR_PEAK_LUMINANCE;// 最大亮度
-              #define $COLOR_SPACE_BT2020_PQ ${VideoOutput.ColorSpace.VIDEO_BT2020_PQ}
-              #define $COLOR_SPACE_BT2020_HLG ${VideoOutput.ColorSpace.VIDEO_BT2020_HLG}
-              #define $COLOR_SPACE_BT2020_LINEAR ${VideoOutput.ColorSpace.VIDEO_BT2020_LINEAR}
+              #define $COLOR_SPACE_BT2020_PQ ${ColorSpace.VIDEO_BT2020_PQ}
+              #define $COLOR_SPACE_BT2020_HLG ${ColorSpace.VIDEO_BT2020_HLG}
+              #define $COLOR_SPACE_BT2020_LINEAR ${ColorSpace.VIDEO_BT2020_LINEAR}
               #define $PI  3.1415926 //圆周率
               #define $EPSILON  1e-6 // 精度阙值
               #define $HDR_REFERENCE_WHITE 203.0  //HDR参考白亮度

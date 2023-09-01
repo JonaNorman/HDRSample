@@ -5,6 +5,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * YUV420类型，0表示未知
+ */
 @IntDef({YUV420Type.YV21, YUV420Type.YV12, YUV420Type.NV12, YUV420Type.NV21})
 @Retention(RetentionPolicy.SOURCE)
 public @interface YUV420Type {

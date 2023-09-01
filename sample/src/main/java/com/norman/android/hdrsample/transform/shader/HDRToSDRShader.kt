@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader
 
 import com.norman.android.hdrsample.opengl.GLShaderCode
-import com.norman.android.hdrsample.player.VideoOutput.ColorSpace
+import com.norman.android.hdrsample.player.color.ColorSpace
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.COLOR_SPACE_BT2020_LINEAR
 import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection
 import com.norman.android.hdrsample.transform.shader.gamma.GammaEOTF

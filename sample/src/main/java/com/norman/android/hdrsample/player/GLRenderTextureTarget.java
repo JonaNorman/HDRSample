@@ -12,6 +12,7 @@ package com.norman.android.hdrsample.player;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
+import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 
@@ -22,8 +23,8 @@ class GLRenderTextureTarget extends GLRenderTarget {
 
     int bitDepth = 8;
 
-    @VideoOutput.ColorSpace
-    int colorSpace = VideoOutput.ColorSpace.VIDEO_SDR;
+    @ColorSpace
+    int colorSpace = ColorSpace.VIDEO_SDR;
 
     int maxContentLuminance;
     int maxFrameAverageLuminance;
@@ -36,7 +37,7 @@ class GLRenderTextureTarget extends GLRenderTarget {
         }
     }
 
-    void setColorSpace(@VideoOutput.ColorSpace int colorSpace) {
+    void setColorSpace(@ColorSpace int colorSpace) {
         this.colorSpace = colorSpace;
     }
 

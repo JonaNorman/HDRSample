@@ -5,12 +5,24 @@ import android.media.MediaFormat;
 import android.text.TextUtils;
 
 import com.norman.android.hdrsample.player.color.ColorRange;
+import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.player.color.ColorStandard;
 import com.norman.android.hdrsample.player.color.ColorTransfer;
+import com.norman.android.hdrsample.player.color.YUV420Type;
 
 import java.nio.ByteBuffer;
 
 public class MediaFormatUtil {
+
+    /**
+     * 自定义{@link ColorSpace}会在解码的{@link com.norman.android.hdrsample.player.decode.VideoDecoder.CallBack#onOutputFormatChanged(MediaFormat)}回调中产生
+     */
+    public static final String KEY_COLOR_SPACE = "color-space";
+
+    /**
+     * 自定义{@link YUV420Type}会在解码的{@link com.norman.android.hdrsample.player.decode.VideoDecoder.CallBack#onOutputFormatChanged(MediaFormat)}回调中产生
+     */
+    public static final String KEY_YUV420_TYPE = "yuv420-type";
 
 
     public static int getInteger(MediaFormat mediaFormat, String name) {
@@ -171,5 +183,49 @@ public class MediaFormatUtil {
 
     public static void setColorTransfer(MediaFormat mediaFormat,@ColorTransfer int colorTransfer) {
         MediaFormatUtil.setInteger(mediaFormat, MediaFormat.KEY_COLOR_TRANSFER, colorTransfer);
+    }
+
+    /***
+     * 设置YUV420Type
+     * @param mediaFormat
+     * @return
+     */
+
+    public static void setYUV420Type(MediaFormat mediaFormat,@YUV420Type int yuv420Type) {
+        MediaFormatUtil.setInteger(mediaFormat, KEY_YUV420_TYPE, yuv420Type);
+    }
+
+    /***
+     * 获取YUV420Type
+     * @param mediaFormat
+     * @return
+     */
+
+    @YUV420Type
+    public static int getYUV420Type(MediaFormat mediaFormat) {
+       return MediaFormatUtil.getInteger(mediaFormat, KEY_YUV420_TYPE, 0);
+    }
+
+
+    /***
+     * 设置ColorSpace
+     * @param mediaFormat
+     * @return
+     */
+
+    public static void setColorSpace(MediaFormat mediaFormat,@ColorSpace int colorSpace) {
+        MediaFormatUtil.setInteger(mediaFormat, KEY_COLOR_SPACE, colorSpace);
+    }
+
+
+    /***
+     * 获取ColorSpace
+     * @param mediaFormat
+     * @return
+     */
+
+    @ColorSpace
+    public static int getColorSpace(MediaFormat mediaFormat) {
+        return MediaFormatUtil.getInteger(mediaFormat, KEY_COLOR_SPACE, ColorSpace.VIDEO_SDR);
     }
 }

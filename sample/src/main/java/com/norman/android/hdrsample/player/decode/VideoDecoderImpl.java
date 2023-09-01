@@ -6,6 +6,9 @@ import android.media.MediaFormat;
 import android.os.Build;
 import android.view.Surface;
 
+import com.norman.android.hdrsample.player.color.ColorSpace;
+import com.norman.android.hdrsample.player.color.ColorStandard;
+import com.norman.android.hdrsample.player.color.ColorTransfer;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.nio.ByteBuffer;
@@ -173,7 +176,18 @@ class VideoDecoderImpl extends DecoderImpl implements VideoDecoder {
         public void onOutputFormatChanged(MediaFormat format) {
             // 根据解码器名称和colorFormat查找视频是哪种YUV420，把YUV420格式写入到format方便后续读取
             int colorFormat = MediaFormatUtil.getInteger(format,MediaFormat.KEY_COLOR_FORMAT);
-            format.setInteger(KEY_YUV420_TYPE, ColorFormatHelper.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
+            MediaFormatUtil.setYUV420Type(format,ColorFormatHelper.getYUV420Type(mediaCodecAsyncAdapter.getCodecName(), colorFormat));
+            int colorStandard = MediaFormatUtil.getColorStandard(format);
+            int colorTransfer = MediaFormatUtil.getColorTransfer(format);
+            if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.HLG) {
+                MediaFormatUtil.setColorSpace(format,ColorSpace.VIDEO_BT2020_HLG);
+            } else if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.ST2084) {
+                MediaFormatUtil.setColorSpace(format,ColorSpace.VIDEO_BT2020_PQ);
+            }else if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.LINEAR) {
+                MediaFormatUtil.setColorSpace(format, ColorSpace.VIDEO_BT2020_LINEAR);
+            } else {
+                MediaFormatUtil.setColorSpace(format,ColorSpace.VIDEO_SDR);
+            }
             callBack.onOutputFormatChanged(format);
         }
 

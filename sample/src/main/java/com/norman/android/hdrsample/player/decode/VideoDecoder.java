@@ -4,8 +4,6 @@ import android.view.Surface;
 
 import androidx.annotation.IntDef;
 
-import com.norman.android.hdrsample.player.color.YUV420Type;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -13,11 +11,6 @@ import java.lang.annotation.RetentionPolicy;
  * 视频解码器
  */
 public interface VideoDecoder extends Decoder {
-
-    /**
-     * 解码时会在OutputFormat中增加这行属性，表示解码出来的视频是哪种YUV420 {@link YUV420Type}
-     */
-    String KEY_YUV420_TYPE = "yuv420-type";
 
     @IntDef({OutputMode.BUFFER_MODE, OutputMode.SURFACE_MODE})
     @Retention(RetentionPolicy.SOURCE)

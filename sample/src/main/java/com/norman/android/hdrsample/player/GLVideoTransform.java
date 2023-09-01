@@ -1,5 +1,7 @@
 package com.norman.android.hdrsample.player;
 
+import com.norman.android.hdrsample.player.color.ColorSpace;
+
 /**
  * 视频图像处理，如果需要输出到新的纹理需要调用success
  */
@@ -27,7 +29,7 @@ public abstract class GLVideoTransform extends GLRenderer {
     }
 
 
-    protected final @VideoOutput.ColorSpace int getInputColorSpace() {
+    protected final @ColorSpace int getInputColorSpace() {
         return inputTarget.colorSpace;
     }
 
@@ -84,9 +86,9 @@ public abstract class GLVideoTransform extends GLRenderer {
         throw new RuntimeException("not support renderToTarget(GLRenderTarget renderTarget)");
     }
 
-    protected final void setOutputColorSpace(@VideoOutput.ColorSpace int colorSpace) {
+    protected final void setOutputColorSpace(@ColorSpace int colorSpace) {
         outputTarget.setColorSpace(colorSpace);
-        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
+        if (colorSpace == ColorSpace.VIDEO_SDR) {
             outputTarget.setMaxContentLuminance(0);
             outputTarget.setMaxFrameAverageLuminance(0);
             outputTarget.setMaxMasteringLuminance(0);

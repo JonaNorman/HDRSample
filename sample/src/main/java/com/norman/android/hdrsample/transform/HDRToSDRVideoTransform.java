@@ -2,8 +2,8 @@ package com.norman.android.hdrsample.transform;
 
 import android.opengl.GLES20;
 
+import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.player.GLVideoTransform;
-import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
 import com.norman.android.hdrsample.transform.shader.MetaDataParams;
 import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection;
@@ -82,7 +82,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
             return false;
         }
         int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
+        if (colorSpace == ColorSpace.VIDEO_SDR) {
             return false;
         }
         if (shaderChange || (hdrToSDRShader != null &&
@@ -111,7 +111,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
 
     @Override
     protected synchronized void onTransform() {
-        setOutputColorSpace(VideoOutput.ColorSpace.VIDEO_SDR);
+        setOutputColorSpace(ColorSpace.VIDEO_SDR);
         clearColor();
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();

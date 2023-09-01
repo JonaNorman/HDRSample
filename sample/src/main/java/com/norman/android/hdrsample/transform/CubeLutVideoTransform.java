@@ -3,8 +3,8 @@ package com.norman.android.hdrsample.transform;
 import android.opengl.GLES20;
 import android.opengl.GLES30;
 
+import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.player.GLVideoTransform;
-import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.util.GLESUtil;
 
 import java.nio.ByteBuffer;
@@ -89,7 +89,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     @Override
     protected boolean onTransformStart() {
         int colorSpace = getInputColorSpace();
-        if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
+        if (colorSpace == ColorSpace.VIDEO_SDR) {
             return false;
         }
         if (cubeLut3D != currentCube) {
@@ -122,10 +122,11 @@ public class CubeLutVideoTransform extends GLVideoTransform {
 
     @Override
     protected void onTransform() {
-        setOutputColorSpace(VideoOutput.ColorSpace.VIDEO_SDR);
+        setOutputColorSpace(ColorSpace.VIDEO_SDR);
         clearColor();
         positionCoordinateBuffer.clear();
         textureCoordinateBuffer.clear();
+
         GLES20.glEnableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);

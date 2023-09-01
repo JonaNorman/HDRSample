@@ -4,17 +4,11 @@ import android.media.MediaFormat;
 import android.os.SystemClock;
 import android.view.Surface;
 
-import androidx.annotation.IntDef;
-
-import com.norman.android.hdrsample.player.color.ColorStandard;
-import com.norman.android.hdrsample.player.color.ColorTransfer;
 import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.player.extract.VideoExtractor;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,31 +20,6 @@ public abstract class VideoOutput {
 
     public static final float DEFAULT_WAIT_TIME_SECOND = 0.2f;
 
-
-    public static final String KEY_COLOR_SPACE = "color-space";
-
-
-    @IntDef({ColorSpace.VIDEO_SDR, ColorSpace.VIDEO_BT2020_PQ, ColorSpace.VIDEO_BT2020_HLG, ColorSpace.VIDEO_BT2020_LINEAR})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ColorSpace {
-        /**
-         * SDR视频 包含了BT709、BT601
-         */
-        int VIDEO_SDR = 0;
-        /**
-         * BT2020 PQ视频
-         */
-
-        int VIDEO_BT2020_PQ = 1;
-        /**
-         * BT2020 HLG视频
-         */
-        int VIDEO_BT2020_HLG = 2;
-        /**
-         * BT2020 线性视频
-         */
-        int VIDEO_BT2020_LINEAR = 3;
-    }
 
     private static final String KEY_CROP_LEFT = "crop-left";
     private static final String KEY_CROP_RIGHT = "crop-right";
@@ -234,17 +203,6 @@ public abstract class VideoOutput {
             height = cropBottom - cropTop;
         }
         setVideoSize(width, height);
-        int colorStandard = MediaFormatUtil.getColorStandard(outputFormat);
-        int colorTransfer = MediaFormatUtil.getColorTransfer(outputFormat);
-        if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.HLG) {
-            outputFormat.setInteger(KEY_COLOR_SPACE, ColorSpace.VIDEO_BT2020_HLG);
-        } else if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.ST2084) {
-            outputFormat.setInteger(KEY_COLOR_SPACE, ColorSpace.VIDEO_BT2020_PQ);
-        }else if (colorStandard == ColorStandard.BT2020 && colorTransfer == ColorTransfer.LINEAR) {
-            outputFormat.setInteger(KEY_COLOR_SPACE, ColorSpace.VIDEO_BT2020_LINEAR);
-        } else {
-            outputFormat.setInteger(KEY_COLOR_SPACE, ColorSpace.VIDEO_SDR);
-        }
         synchronized (syncLock) {
             this.outputFormat = outputFormat;
             onOutputFormatChanged(outputFormat);

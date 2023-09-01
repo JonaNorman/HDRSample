@@ -13,8 +13,9 @@ import com.norman.android.hdrsample.opengl.GLEnvContextManager;
 import com.norman.android.hdrsample.opengl.GLEnvDisplay;
 import com.norman.android.hdrsample.opengl.GLEnvWindowSurface;
 import com.norman.android.hdrsample.opengl.GLTextureSurface;
-import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.player.color.ColorRange;
+import com.norman.android.hdrsample.player.color.ColorSpace;
+import com.norman.android.hdrsample.player.decode.VideoDecoder;
 import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 import com.norman.android.hdrsample.util.TimeUtil;
@@ -267,7 +268,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
         super.onOutputFormatChanged(outputFormat);
         colorRange = MediaFormatUtil.getColorRange(outputFormat);
-        colorSpace = MediaFormatUtil.getInteger(outputFormat, KEY_COLOR_SPACE, ColorSpace.VIDEO_SDR);
+        colorSpace = MediaFormatUtil.getColorSpace(outputFormat);
         //MediaExtractor不兼容KEY_HDR10_PLUS_INFO，不论HDR10还是HDR10+出来的都是KEY_HDR_STATIC_INFO，后续看看怎么解决
         ByteBuffer hdrStaticInfo = MediaFormatUtil.getByteBuffer(outputFormat, MediaFormat.KEY_HDR_STATIC_INFO);
         if (hdrStaticInfo != null) {
@@ -296,7 +297,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
         if (bufferMode) {//用buffer转纹理
             int strideWidth = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_STRIDE);
             int sliceHeight = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_SLICE_HEIGHT);
-            int yuv420Type = MediaFormatUtil.getInteger(outputFormat, VideoDecoder.KEY_YUV420_TYPE);
+            int yuv420Type = MediaFormatUtil.getYUV420Type(outputFormat);
             int bitDepth = strideWidth / videoWidth == 2 ? 10 : 8;// strideWidth表示字节宽度，除以宽就是表示几个字节，10位其实是16位(2个字节)存储
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {//用扩展纹理转2D纹理
