@@ -67,7 +67,7 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     private int cubeLutSizeUniform;
 
 
-    private  CubeLut3D lut3DFuture;
+    private  CubeLut3D cubeLut3D;
 
 
     public CubeLutVideoTransform() {
@@ -92,8 +92,8 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         if (colorSpace == VideoOutput.ColorSpace.VIDEO_SDR) {
             return false;
         }
-        if (lut3DFuture != currentCube) {
-            currentCube = lut3DFuture;
+        if (cubeLut3D != currentCube) {
+            currentCube = cubeLut3D;
             GLESUtil.delTextureId(lutTextureId);
             lutTextureId = 0;
             lutSize = 0;
@@ -130,29 +130,30 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         GLES20.glVertexAttribPointer(positionCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, positionCoordinateBuffer);
         GLES20.glEnableVertexAttribArray(textureCoordinateAttribute);
         GLES20.glVertexAttribPointer(textureCoordinateAttribute, VERTEX_LENGTH, GLES20.GL_FLOAT, false, 0, textureCoordinateBuffer);
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, getInputTextureId());
         GLES20.glUniform1i(textureUnitUniform, 0);
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, lutTextureId);
         GLES20.glUniform1i(cubeLutTextureUniform, 1);
         GLES20.glUniform1f(cubeLutSizeUniform, lutSize);
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(positionCoordinateAttribute);
         GLES20.glDisableVertexAttribArray(textureCoordinateAttribute);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
         GLES20.glBindTexture(GLES30.GL_TEXTURE_3D, 0);
 
     }
 
 
-    public synchronized void setCubeLutForAsset(String asset) {
+    public synchronized void setCubeLut(String asset) {
         if (asset == null) {
-            lut3DFuture = null;
+            cubeLut3D = null;
             return;
         }
-        lut3DFuture = CubeLut3D.createForAsset(asset);
+        cubeLut3D = CubeLut3D.createForAsset(asset);
     }
 }

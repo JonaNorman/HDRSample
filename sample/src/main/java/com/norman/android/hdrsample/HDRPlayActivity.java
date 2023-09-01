@@ -117,7 +117,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
                     public void onClick(DialogInterface dialog, int which) {
                         selectLutPosition = which;
                         String strName = lutPathList.get(which);
-                        videoTransform.setCubeLutForAsset(strName);
+                        videoTransform.setCubeLut(strName);
                         dialog.dismiss();
                         cubeLutDialog = null;
                     }
