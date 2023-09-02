@@ -114,7 +114,7 @@ public class MessageThreadPool {
                     || threadCache.size() > poolCacheSize
                     || duration > TimeUnit.SECONDS.toMillis(maxCacheTime)) {
                 iterator.remove();
-                thread.quit();
+                thread.quitSafely();
             }
         }
         return threadCache.isEmpty();

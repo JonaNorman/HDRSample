@@ -16,7 +16,7 @@ public interface Player {
     void setSource(FileSource fileSource);
 
     /**
-     * 准备，新建线程配置解码器
+     * 准备，配置解码器
      */
     void prepare();
 
@@ -24,7 +24,7 @@ public interface Player {
      * 开始播放，没有prepare也会自动prepare后启动播放器，如果暂停会自动resume
      */
 
-    void play();
+    void start();
 
 
     /**

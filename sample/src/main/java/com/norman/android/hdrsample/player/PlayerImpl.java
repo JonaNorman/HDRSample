@@ -3,13 +3,7 @@ package com.norman.android.hdrsample.player;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.norman.android.hdrsample.handler.Future;
 import com.norman.android.hdrsample.handler.MessageHandler;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * 播放器的状态封装
@@ -23,17 +17,11 @@ abstract class PlayerImpl implements Player {
     private static final int PLAY_RESUME = 4;
     private static final int PLAY_STOP = 5;
     private static final int PLAY_RELEASE = 6;
-
-    private final List<Runnable> pendRunnableList = Collections.synchronizedList(new ArrayList<>());
-
     private final String threadName;
 
     private int state = PLAY_UNINITIALIZED;
 
-    private Future stopFuture;
-
     private MessageHandler messageHandler;
-
 
 
     public PlayerImpl(String threadName) {
@@ -47,35 +35,23 @@ abstract class PlayerImpl implements Player {
             return;
         }
         state = PLAY_PREPARE;
-        prepareHandler();
-        post(new Runnable() {
-            @Override
-            public void run() {
-                onPlayPrepare();
-                Iterator<Runnable> iterator = pendRunnableList.iterator();
-                while (iterator.hasNext()) {//把没有prepare之前post的方法启动，保证时序性
-                    Runnable runnable = iterator.next();
-                    iterator.remove();
-                    runnable.run();
-                }
-            }
-        });
+        post(this::onPlayPrepare);
     }
 
 
     @Override
-    public synchronized void play() {
+    public synchronized void start() {
         if (state == PLAY_UNINITIALIZED
                 || state == PLAY_STOP) {
             prepare();
             state = PLAY_START;
-            messageHandler.post(this::onPlayStart);
+            post(this::onPlayStart);
         } else if (state == PLAY_PREPARE) {
             state = PLAY_START;
-            messageHandler.post(this::onPlayStart);
+            post(this::onPlayStart);
         } else if (isPause()) {
             state = PLAY_RESUME;
-            messageHandler.post(this::onPlayResume);
+            post(this::onPlayResume);
         }
     }
 
@@ -86,7 +62,7 @@ abstract class PlayerImpl implements Player {
             return;
         }
         state = PLAY_PAUSE;
-        messageHandler.post(this::onPlayPause);
+        post(this::onPlayPause);
     }
 
     @Override
@@ -95,9 +71,7 @@ abstract class PlayerImpl implements Player {
             return;
         }
         state = PLAY_STOP;
-        stopFuture = messageHandler.submit(this::onPlayStop);
-        messageHandler = null;
-        pendRunnableList.clear();
+        post(this::onPlayStop);
     }
 
 
@@ -107,42 +81,31 @@ abstract class PlayerImpl implements Player {
             return;
         }
         state = PLAY_RELEASE;
-        if (messageHandler != null) {
+        if (messageHandler != null){
             messageHandler.finish();
-            messageHandler = null;
         }
-        stopFuture = null;
-        pendRunnableList.clear();
     }
 
 
-    public synchronized void post(Runnable runnable) {
+    synchronized void post(Runnable runnable) {
         if (isRelease()) return;
-        if (messageHandler == null) {
-            pendRunnableList.add(runnable);
-            return;
+        if (messageHandler == null){
+            messageHandler = MessageHandler.obtain(threadName,
+                    new MessageHandler.LifeCycleCallback() {
+
+                        @Override
+                        public void onHandlerFinish() {
+                            release();
+                            onPlayRelease();
+                        }
+
+                        @Override
+                        public void onHandlerError(Exception exception) {
+                            onPlayError(exception);
+                        }
+                    });
         }
         messageHandler.post(runnable);
-    }
-
-    private synchronized void prepareHandler() {
-        if (messageHandler != null) return;
-        if (stopFuture != null) {
-            stopFuture.get();//等待上一次播放停止，不等待的话，Surface被两个GLWindowSurface占有会崩溃
-            stopFuture = null;
-        }
-        messageHandler = MessageHandler.obtain(threadName, new MessageHandler.LifeCycleCallback() {
-            @Override
-            public void onHandlerFinish() {
-                release();
-                onPlayRelease();
-            }
-
-            @Override
-            public void onHandlerError(Exception exception) {
-                onPlayError(exception);
-            }
-        });
     }
 
 
@@ -218,7 +181,6 @@ abstract class PlayerImpl implements Player {
         public void callProcess(float timeSecond) {
             executeCallback(callback -> callback.onPlayProcess(timeSecond));
         }
-
 
 
         public void callEnd() {

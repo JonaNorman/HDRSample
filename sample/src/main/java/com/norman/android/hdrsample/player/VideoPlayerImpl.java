@@ -9,7 +9,7 @@ import com.norman.android.hdrsample.util.TimeUtil;
 
 import java.nio.ByteBuffer;
 
-class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> implements VideoPlayer {
+class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> implements VideoPlayer {
 
     private static final String VIDEO_PLAYER_NAME = "VideoPlayer";
 
@@ -24,11 +24,11 @@ class VideoPlayerImplImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor>
 
     private Long seekTimeUs;
 
-    public VideoPlayerImplImpl(VideoOutput videoOutput) {
+    public VideoPlayerImpl(VideoOutput videoOutput) {
         this(VIDEO_PLAYER_NAME, videoOutput);
     }
 
-    public VideoPlayerImplImpl(String threadName, VideoOutput videoOutput) {
+    public VideoPlayerImpl(String threadName, VideoOutput videoOutput) {
         super(VideoDecoder.create(), VideoExtractor.create(), threadName);
         this.videoOutput = videoOutput;
     }
