@@ -33,7 +33,7 @@ import java.util.List;
 public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener,HdrToSdrShaderDialog.OnShaderSelectListener {
     VideoPlayer videoPlayer;
     VideoView videoView;
-    CubeLutVideoTransform videoTransform;
+    CubeLutVideoTransform cubeLutVideoTransform;
 
     AlertDialog cubeLutDialog;
 
@@ -45,7 +45,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     List<String> lutNameList = new ArrayList<>();
 
     int selectLutPosition;
-    HDRToSDRVideoTransform hdrToSDRVideoTransform;
+    HDRToSDRVideoTransform hdrToSDRShaderTransform;
 
     HdrToSdrShaderDialog hdrToSdrShaderDialog;
 
@@ -81,10 +81,10 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
         videoPlayer.setSource(AssetFileSource.create(videoList.get(0)));
-        videoTransform = new CubeLutVideoTransform();
-        hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
-        glVideoOutput.addVideoTransform(videoTransform);
-        glVideoOutput.addVideoTransform(hdrToSDRVideoTransform);
+        cubeLutVideoTransform = new CubeLutVideoTransform();
+        hdrToSDRShaderTransform = new HDRToSDRVideoTransform();
+        glVideoOutput.addVideoTransform(cubeLutVideoTransform);
+        glVideoOutput.addVideoTransform(hdrToSDRShaderTransform);
         glVideoOutput.setOutputVideoView(videoView);
 
         showTransformLayout(transformModeId);
@@ -137,7 +137,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
                     public void onClick(DialogInterface dialog, int which) {
                         selectLutPosition = which;
                         String strName = lutPathList.get(which);
-                        videoTransform.setCubeLut(strName);
+                        cubeLutVideoTransform.setCubeLut(strName);
                         dialog.dismiss();
                         cubeLutDialog = null;
                     }
@@ -348,12 +348,18 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     void showTransformLayout(int transformModeId){
         if (transformModeId == R.id.transform_mode_node){
+            cubeLutVideoTransform.disable();
+            hdrToSDRShaderTransform.disable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
             findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
         }else if (transformModeId == R.id.transform_mode_cube_lut) {
+            cubeLutVideoTransform.enable();
+            hdrToSDRShaderTransform.disable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.VISIBLE);
             findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
         }else if (transformModeId == R.id.transform_mode_cube_shader) {
+            cubeLutVideoTransform.disable();
+            hdrToSDRShaderTransform.enable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
             findViewById(R.id.transformLayoutShader).setVisibility(View.VISIBLE);
         }
@@ -387,9 +393,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onShaderSelect(ChromaCorrection chromaCorrection, ToneMap toneMap, GamutMap gamutMap, GammaOETF gammaOETF) {
-        hdrToSDRVideoTransform.setChromaCorrection(chromaCorrection);
-        hdrToSDRVideoTransform.setToneMap(toneMap);
-        hdrToSDRVideoTransform.setGamutMap(gamutMap);
-        hdrToSDRVideoTransform.setGammaOETF(gammaOETF);
+        hdrToSDRShaderTransform.setChromaCorrection(chromaCorrection);
+        hdrToSDRShaderTransform.setToneMap(toneMap);
+        hdrToSDRShaderTransform.setGamutMap(gamutMap);
+        hdrToSDRShaderTransform.setGammaOETF(gammaOETF);
     }
 }

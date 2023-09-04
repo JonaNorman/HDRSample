@@ -10,6 +10,8 @@ public abstract class GLVideoTransform extends GLRenderer {
     GLRenderTextureTarget inputTarget;
     GLRenderTextureTarget outputTarget;
 
+    boolean enable;
+
 
     protected final int getInputWidth() {
         return inputTarget.width;
@@ -70,7 +72,10 @@ public abstract class GLVideoTransform extends GLRenderer {
     }
 
 
-    void renderToTarget(GLRenderTextureTarget inputTarget, GLRenderTextureTarget outputTarget) {
+    synchronized void renderToTarget(GLRenderTextureTarget inputTarget, GLRenderTextureTarget outputTarget) {
+        if (!enable){
+            return;
+        }
         this.inputTarget = inputTarget;
         this.outputTarget = outputTarget;
         outputTarget.setColorSpace(inputTarget.colorSpace);
@@ -93,6 +98,14 @@ public abstract class GLVideoTransform extends GLRenderer {
             outputTarget.setMaxFrameAverageLuminance(0);
             outputTarget.setMaxMasteringLuminance(0);
         }
+    }
+
+    public synchronized void enable(){
+        enable = true;
+    }
+
+    public synchronized void disable(){
+        enable = false;
     }
 
 
