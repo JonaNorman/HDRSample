@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/direct_video_output"
+        android:checkable="true"
+        android:title="直接输出到Surface"/>
+
+    <item
+        android:id="@+id/gl_video_output"
+        android:checkable="true"
+        android:title="经过OpenGL中转"/>
+</menu>

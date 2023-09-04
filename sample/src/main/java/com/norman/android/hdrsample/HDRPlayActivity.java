@@ -13,6 +13,7 @@ import androidx.appcompat.widget.PopupMenu;
 
 import com.norman.android.hdrsample.player.DirectVideoOutput;
 import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
@@ -90,6 +91,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonViewMode).setOnClickListener(this);
         findViewById(R.id.ButtonTextureSource).setOnClickListener(this);
         findViewById(R.id.ButtonBitDepth).setOnClickListener(this);
+        findViewById(R.id.ButtonVideoOutput).setOnClickListener(this);
 
 
     }
@@ -152,7 +154,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             hdrToSdrShaderDialog.show();
         }else if (id == R.id.ButtonVideoList){
             showVideListMenu(v);
-        }else if (id ==R.id.ButtonViewMode){
+        }else if(id == R.id.ButtonVideoOutput){
+            showVideoOutputMenu(v);
+        } else if (id ==R.id.ButtonViewMode){
            showViewModeMenu(v);
         }else if (id ==R.id.ButtonTextureSource){
             showTextureSourceMenu(v);
@@ -185,6 +189,37 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             public boolean onMenuItemClick(MenuItem item) {
                 videoPlayer.stop();
                 videoPlayer.setSource(AssetFileSource.create(videoList.get(item.getItemId())));
+                videoPlayer.start();
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showVideoOutputMenu(View v){
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.video_output_menu);
+        Menu menu = pum.getMenu();
+        VideoOutput currentVideOutput = videoPlayer.getVideoOutput();
+        if (currentVideOutput instanceof DirectVideoOutput){
+            menu.findItem(R.id.direct_video_output).setChecked(true);
+        }else if (currentVideOutput instanceof  GLVideoOutput){
+            menu.findItem(R.id.gl_video_output).setChecked(true);
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                VideoOutput selectOutput = null;
+                if (item.getItemId() == R.id.direct_video_output){
+                    selectOutput = directVideoOutput;
+                }else if (item.getItemId() == R.id.gl_video_output){
+                    selectOutput =glVideoOutput;
+                }
+                if (currentVideOutput == selectOutput){
+                    return true;
+                }
+                videoPlayer.stop();
+                videoPlayer.setVideoOutput(selectOutput);
                 videoPlayer.start();
                 return true;
             }
