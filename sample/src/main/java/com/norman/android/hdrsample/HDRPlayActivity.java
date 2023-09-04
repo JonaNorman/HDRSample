@@ -61,6 +61,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     int hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
 
     List<String> videoList = AssetUtil.list("video");
+
+    int transformModeId = R.id.transform_mode_cube_shader;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +87,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         glVideoOutput.addVideoTransform(hdrToSDRVideoTransform);
         glVideoOutput.setOutputVideoView(videoView);
 
+        showTransformLayout(transformModeId);
+        showHdrToSdrLayout(videoPlayer.getVideoOutput());
+
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
         findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
@@ -92,6 +97,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonTextureSource).setOnClickListener(this);
         findViewById(R.id.ButtonBitDepth).setOnClickListener(this);
         findViewById(R.id.ButtonVideoOutput).setOnClickListener(this);
+        findViewById(R.id.ButtonTransformMode).setOnClickListener(this);
 
 
     }
@@ -162,6 +168,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             showTextureSourceMenu(v);
         }else if (id ==R.id.ButtonBitDepth){
             showHdrBitDepthMenu(v);
+        }else if (id ==R.id.ButtonTransformMode){
+            showTransformModeMenu(v);
         }
     }
 
@@ -218,6 +226,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
                 if (currentVideOutput == selectOutput){
                     return true;
                 }
+                showHdrToSdrLayout(selectOutput);
                 videoPlayer.stop();
                 videoPlayer.setVideoOutput(selectOutput);
                 videoPlayer.start();
@@ -319,6 +328,39 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
         pum.show();
+    }
+
+    void showTransformModeMenu(View v){
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.transform_mode_menu);
+        Menu menu = pum.getMenu();
+        menu.findItem(transformModeId).setChecked(true);
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                transformModeId = item.getItemId();
+                showTransformLayout(transformModeId);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showTransformLayout(int transformModeId){
+        if (transformModeId == R.id.transform_mode_node){
+            findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
+            findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
+        }else if (transformModeId == R.id.transform_mode_cube_lut) {
+            findViewById(R.id.transformLayoutCubeLut).setVisibility(View.VISIBLE);
+            findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
+        }else if (transformModeId == R.id.transform_mode_cube_shader) {
+            findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
+            findViewById(R.id.transformLayoutShader).setVisibility(View.VISIBLE);
+        }
+    }
+
+    void showHdrToSdrLayout(VideoOutput videoOutput){
+        findViewById(R.id.HdrToSdrLayout).setVisibility(videoOutput instanceof GLVideoOutput?View.VISIBLE:View.GONE);
     }
 
     private void loadLutList() {

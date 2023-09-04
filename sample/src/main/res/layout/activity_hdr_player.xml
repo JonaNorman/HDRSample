@@ -21,6 +21,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
             android:orientation="vertical">
 
             <TextView
@@ -60,15 +61,16 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/HdrToSdrLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="GLOutput配置">
+                android:text="HDR转SDR配置">
 
             </TextView>
 
@@ -93,6 +95,22 @@
 
                 </Button>
 
+                <Button
+                    android:id="@+id/ButtonTransformMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="转换方式">
+
+                </Button>
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/transformLayoutCubeLut"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <Button
                     android:id="@+id/ButtonCubeLut"
@@ -102,6 +120,13 @@
 
                 </Button>
 
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/transformLayoutShader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
                 <Button
                     android:id="@+id/ButtonHdrToSdr"
                     android:layout_width="wrap_content"
@@ -109,7 +134,6 @@
                     android:text="Shader配置">
 
                 </Button>
-
             </LinearLayout>
 
         </LinearLayout>
