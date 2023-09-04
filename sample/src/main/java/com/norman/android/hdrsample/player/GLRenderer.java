@@ -32,16 +32,35 @@ abstract class GLRenderer {
     synchronized void renderToTarget(GLRenderTarget renderTarget) {
         this.renderTarget = renderTarget;
         renderTarget.startRender();
-        if (!create) {//没有创建会创建
-            create = true;
-            onCreate();
-        }
+        create();
         onRenderTarget();
         renderTarget.finishRender();
     }
 
 
+    synchronized void create(){
+        if (!create) {//没有创建会创建
+            create = true;
+            onCreate();
+        }
+    }
+
+
+    synchronized void destroy(){
+        if (create){
+            create = false;
+            renderSuccess = false;
+            GLESUtil.delProgramId(programId);
+            programId =0;
+            onDestroy();
+        }
+    }
+
     protected void onCreate() {
+
+    }
+
+    protected void onDestroy() {
 
     }
 
@@ -49,6 +68,11 @@ abstract class GLRenderer {
         if (!onRenderStart()) {
             renderSuccess = false;
             return;
+        }
+        if (programId == 0 &&
+                vertexShader != null
+                && frameShader != null){
+            requestProgram = true;
         }
         if (requestProgram) {
             requestProgram = false;

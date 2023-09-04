@@ -112,6 +112,13 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     }
 
     @Override
+    protected void onDestroy() {
+        currentCube = null;
+        GLESUtil.delTextureId(lutTextureId);
+        lutTextureId = 0;
+    }
+
+    @Override
     protected void onTransform() {
         setOutputColorSpace(ColorSpace.VIDEO_SDR);
         clearColor();

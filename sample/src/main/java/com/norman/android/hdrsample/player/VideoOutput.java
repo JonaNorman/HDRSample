@@ -12,6 +12,7 @@ import com.norman.android.hdrsample.util.TimeUtil;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 视频最终输出对象，VideoOutput又可以输出到Surface和VideoView
@@ -25,19 +26,23 @@ public abstract class VideoOutput {
     private static final String KEY_CROP_RIGHT = "crop-right";
     private static final String KEY_CROP_TOP = "crop-top";
     private static final String KEY_CROP_BOTTOM = "crop-bottom";
-    protected final Object syncLock = new Object();
     private final List<OutputFormatSubscriber> outputFormatSubscribers = new ArrayList<>();
 
     private final List<OutputSizeSubscriber> outputSizeSubscribers = new ArrayList<>();
 
 
-    private boolean frameSkipWait;
-    private int frameIndex;
+    private final AtomicBoolean skipFrameWait = new AtomicBoolean();
+    private final Object waitFrameLock = new Object();
+    private volatile int frameIndex;
     private VideoPlayer videoPlayer;
+
+    private MediaFormat outputFormat;
 
     protected VideoDecoder videoDecoder;
 
     protected VideoExtractor videoExtractor;
+
+    private boolean release;
 
 
     protected int videoWidth;
@@ -49,7 +54,7 @@ public abstract class VideoOutput {
     protected int cropTop;
     protected int cropBottom;
 
-    protected MediaFormat outputFormat;
+
 
 
     /**
@@ -83,48 +88,71 @@ public abstract class VideoOutput {
 
     /**
      * 设置最终渲染到Surface上，和setOutputVideoView互斥，只能设置一个
+     *
      * @param surface
      */
     public abstract void setOutputSurface(Surface surface);
 
     /**
      * 设置最终渲染到VideoView上，和setOutputSurface互斥，只能设置一个
+     *
      * @param view
      */
     public abstract void setOutputVideoView(VideoView view);
 
 
+    final synchronized void create(VideoPlayer videoPlayer) {
+        if (videoPlayer == this.videoPlayer) {
+            return;
+        }
+        if (this.videoPlayer != null) {
+            throw new IllegalStateException("VideoOutput and VidePlayer only one to one");
+        }
+        if (release){
+            throw new IllegalStateException("VideoOutput is released");
+        }
+        this.videoPlayer = videoPlayer;
+        onOutputCreate();
+    }
+
+
+    final synchronized void release() {
+        if (release) {
+            return;
+        }
+        release = true;
+        onOutputRelease();
+    }
+
+
     /**
      * 视频准备解码
      *
-     * @param videoPlayer
      * @param videoExtractor
      * @param videoDecoder
      * @param inputFormat
      */
-    final void onDecoderPrepare(VideoPlayer videoPlayer,
-                                VideoExtractor videoExtractor,
-                                VideoDecoder videoDecoder,
-                                MediaFormat inputFormat) {
-        synchronized (syncLock) {
-            this.videoPlayer = videoPlayer;
-            this.videoDecoder = videoDecoder;
-            this.videoExtractor = videoExtractor;
-        }
-        MediaFormatUtil.setColorStandard(inputFormat,videoExtractor.getColorStandard());
-        MediaFormatUtil.setColorRange(inputFormat,videoExtractor.getColorRange());
-        MediaFormatUtil.setColorTransfer(inputFormat,videoExtractor.getColorTransfer());
+    final synchronized void prepare(
+            VideoExtractor videoExtractor,
+            VideoDecoder videoDecoder,
+            MediaFormat inputFormat) {
+        this.videoDecoder = videoDecoder;
+        this.videoExtractor = videoExtractor;
+        MediaFormatUtil.setColorStandard(inputFormat, videoExtractor.getColorStandard());
+        MediaFormatUtil.setColorRange(inputFormat, videoExtractor.getColorRange());
+        MediaFormatUtil.setColorTransfer(inputFormat, videoExtractor.getColorTransfer());
         inputFormat.setInteger(MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
         inputFormat.setInteger(MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
         setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
         onOutputPrepare(inputFormat);
     }
 
+
     /**
      * 开始解码
      */
 
-    final void onDecodeStart() {
+    final synchronized void start() {
         onOutputStart();
     }
 
@@ -132,7 +160,7 @@ public abstract class VideoOutput {
      * 暂停
      */
 
-    final void onDecodePause() {
+    final synchronized void pause() {
         skipWaitFrame();//暂停时跳过等待着的线程，防止一直卡在那里
         onOutputPause();
     }
@@ -141,7 +169,7 @@ public abstract class VideoOutput {
     /**
      * 恢复
      */
-    final void onDecodeResume() {
+    final void resume() {
         onOutputResume();
     }
 
@@ -149,17 +177,15 @@ public abstract class VideoOutput {
      * 停止
      */
 
-    final void onDecodeStop() {
-        synchronized (syncLock) {//
-            videoDecoder = null;
-            videoExtractor = null;
-            videoPlayer = null;
-            frameIndex = 0;
-            videoWidth = 0;
-            videoHeight = 0;
-            outputFormat = null;
-            frameSkipWait = false;
-        }
+    final synchronized void stop() {
+        videoDecoder = null;
+        videoExtractor = null;
+        videoPlayer = null;
+        frameIndex = 0;
+        videoWidth = 0;
+        videoHeight = 0;
+        outputFormat = null;
+        skipFrameWait.set(false);
         skipWaitFrame();//停止防止一直等待
         onOutputStop();
     }
@@ -170,7 +196,7 @@ public abstract class VideoOutput {
      * @param outputBuffer
      * @param presentationTimeUs
      */
-    final void onDecodeBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
+    final synchronized void onDecodeBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
         onOutputBufferAvailable(outputBuffer, presentationTimeUs);
     }
 
@@ -180,7 +206,7 @@ public abstract class VideoOutput {
      * @param outputFormat
      */
 
-    final void onDecodeMediaFormatChanged(MediaFormat outputFormat) {
+    final synchronized void onDecodeMediaFormatChanged(MediaFormat outputFormat) {
         int width = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_WIDTH);
         int height = MediaFormatUtil.getInteger(outputFormat, MediaFormat.KEY_HEIGHT);
         //buffer模式的清空下使用，防止绿边，因为codec的宽高会根据解码器对齐4、8或16
@@ -203,12 +229,10 @@ public abstract class VideoOutput {
             height = cropBottom - cropTop;
         }
         setVideoSize(width, height);
-        synchronized (syncLock) {
-            this.outputFormat = outputFormat;
-            onOutputFormatChanged(outputFormat);
-            for (OutputFormatSubscriber outputFormatSubscriber : outputFormatSubscribers) {
-                outputFormatSubscriber.onOutputFormatChange(outputFormat);
-            }
+        this.outputFormat = outputFormat;
+        onOutputFormatChanged(outputFormat);
+        for (OutputFormatSubscriber outputFormatSubscriber : outputFormatSubscribers) {
+            outputFormatSubscriber.onOutputFormatChange(outputFormat);
         }
     }
 
@@ -220,15 +244,13 @@ public abstract class VideoOutput {
      */
 
     private void setVideoSize(int width, int height) {
-        synchronized (syncLock) {
-            if (videoWidth == width && videoHeight == height) {
-                return;
-            }
-            videoWidth = width;
-            videoHeight = height;
-            for (OutputSizeSubscriber outputSizeSubscriber : outputSizeSubscribers) {
-                outputSizeSubscriber.onOutputSizeChange(width, height);
-            }
+        if (videoWidth == width && videoHeight == height) {
+            return;
+        }
+        videoWidth = width;
+        videoHeight = height;
+        for (OutputSizeSubscriber outputSizeSubscriber : outputSizeSubscribers) {
+            outputSizeSubscriber.onOutputSizeChange(width, height);
         }
     }
 
@@ -237,11 +259,16 @@ public abstract class VideoOutput {
      *
      * @param presentationTimeUs
      */
-    final void onDecodeBufferRender(long presentationTimeUs) {
+    final synchronized void onDecodeBufferRender(long presentationTimeUs) {
         boolean render = onOutputBufferRender(presentationTimeUs);
         if (render) {
             notifyNextFrame();
         }
+    }
+
+
+    protected void onOutputCreate(){
+
     }
 
 
@@ -265,6 +292,10 @@ public abstract class VideoOutput {
 
     }
 
+    protected void onOutputRelease(){
+
+    }
+
     protected void onOutputBufferAvailable(ByteBuffer outputBuffer, long presentationTimeUs) {
 
     }
@@ -275,6 +306,7 @@ public abstract class VideoOutput {
 
     /**
      * 渲染完成回调
+     *
      * @param presentationTimeUs
      * @return
      */
@@ -291,14 +323,12 @@ public abstract class VideoOutput {
      */
 
 
-    public void subscribe(OutputFormatSubscriber outputFormatSubscriber) {
-        synchronized (syncLock) {
-            if (!outputFormatSubscribers.contains(outputFormatSubscriber)) {
-                if (outputFormat != null) {
-                    outputFormatSubscriber.onOutputFormatChange(outputFormat);
-                }
-                outputFormatSubscribers.add(outputFormatSubscriber);
+    public synchronized void subscribe(OutputFormatSubscriber outputFormatSubscriber) {
+        if (!outputFormatSubscribers.contains(outputFormatSubscriber)) {
+            if (outputFormat != null) {
+                outputFormatSubscriber.onOutputFormatChange(outputFormat);
             }
+            outputFormatSubscribers.add(outputFormatSubscriber);
         }
     }
 
@@ -308,10 +338,9 @@ public abstract class VideoOutput {
      * @param outputFormatSubscriber
      */
 
-    public void unsubscribe(OutputFormatSubscriber outputFormatSubscriber) {
-        synchronized (syncLock) {
-            outputFormatSubscribers.remove(outputFormatSubscriber);
-        }
+    public synchronized void unsubscribe(OutputFormatSubscriber outputFormatSubscriber) {
+        outputFormatSubscribers.remove(outputFormatSubscriber);
+
     }
 
     /**
@@ -320,14 +349,12 @@ public abstract class VideoOutput {
      * @param outputSizeSubscriber
      */
 
-    public void subscribe(OutputSizeSubscriber outputSizeSubscriber) {
-        synchronized (syncLock) {
-            if (!outputSizeSubscribers.contains(outputSizeSubscriber)) {
-                if (videoWidth > 0 && videoHeight > 0) {
-                    outputSizeSubscriber.onOutputSizeChange(videoWidth, videoHeight);
-                }
-                outputSizeSubscribers.add(outputSizeSubscriber);
+    public synchronized void subscribe(OutputSizeSubscriber outputSizeSubscriber) {
+        if (!outputSizeSubscribers.contains(outputSizeSubscriber)) {
+            if (videoWidth > 0 && videoHeight > 0) {
+                outputSizeSubscriber.onOutputSizeChange(videoWidth, videoHeight);
             }
+            outputSizeSubscribers.add(outputSizeSubscriber);
         }
     }
 
@@ -337,10 +364,9 @@ public abstract class VideoOutput {
      * @param outputSizeSubscriber
      */
 
-    public void unsubscribe(OutputSizeSubscriber outputSizeSubscriber) {
-        synchronized (syncLock) {
-            outputSizeSubscribers.remove(outputSizeSubscriber);
-        }
+    public synchronized void unsubscribe(OutputSizeSubscriber outputSizeSubscriber) {
+        outputSizeSubscribers.remove(outputSizeSubscriber);
+
     }
 
 
@@ -353,6 +379,7 @@ public abstract class VideoOutput {
 
     /**
      * 同步等待下一帧完成
+     *
      * @param waitSecond 秒
      */
     public void waitNextFrame(float waitSecond) {
@@ -360,19 +387,17 @@ public abstract class VideoOutput {
         long startTime = SystemClock.elapsedRealtime();
         int oldFrameIndex = frameIndex;
         while (true) {
-            synchronized (syncLock) {
-                VideoPlayer player = videoPlayer;
+            synchronized (waitFrameLock) {
                 long remainTime = waitTime - (SystemClock.elapsedRealtime() - startTime);
                 boolean needWait = remainTime > 0 && //超时不需要等待
-                        player != null && player.isPlaying() &&//没有播放不需要等待
-                        oldFrameIndex == frameIndex //下一帧没有渲染完成不需要等待
-                        && !frameSkipWait;//等待可以跳过
-                if (!needWait) {
-                    frameSkipWait = false;
+                        videoPlayer != null && videoPlayer.isPlaying() &&//没有播放不需要等待
+                        oldFrameIndex == frameIndex; //下一帧没有渲染完成不需要等待
+                if (!needWait || skipFrameWait.getAndSet(false)){
+                    skipFrameWait.getAndSet(false);
                     return;
                 }
                 try {
-                    syncLock.wait(remainTime);
+                    waitFrameLock.wait(remainTime);
                 } catch (InterruptedException ignored) {
 
                 }
@@ -384,10 +409,7 @@ public abstract class VideoOutput {
      * 忽略这一次的等待
      */
     void skipWaitFrame() {
-        synchronized (syncLock) {
-            frameSkipWait = true;
-            syncLock.notifyAll();
-        }
+        skipFrameWait.set(true);
     }
 
 
@@ -395,15 +417,13 @@ public abstract class VideoOutput {
      * 通知这一帧已经渲染完成
      */
     void notifyNextFrame() {
-        synchronized (syncLock) {
-            frameIndex = frameIndex + 1;
-            syncLock.notifyAll();
-        }
+        frameIndex = frameIndex + 1;
     }
 
     public interface OutputFormatSubscriber {
         /**
          * 视频格式变化回调
+         *
          * @param outputFormat
          */
         void onOutputFormatChange(MediaFormat outputFormat);
@@ -412,6 +432,7 @@ public abstract class VideoOutput {
     public interface OutputSizeSubscriber {
         /**
          * 视频大小回调
+         *
          * @param width
          * @param height
          */

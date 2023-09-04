@@ -2,49 +2,85 @@ package com.norman.android.hdrsample.player;
 
 abstract class GLRenderTarget {
 
-     int renderWidth;
-     int renderHeight;
+    int width;
+    int height;
+    private boolean created;
 
-     boolean rendering;
+    private boolean recreate;
+
+    private boolean rendering;
+
 
     void setRenderSize(int renderWidth, int renderHeight) {
-        if (renderWidth != this.renderWidth || this.renderHeight != renderHeight) {
-            this.renderWidth = renderWidth;
-            this.renderHeight = renderHeight;
-            onRenderSizeChange(renderWidth, renderHeight);
+        if (renderWidth != this.width
+                || this.height != renderHeight) {
+            this.width = renderWidth;
+            this.height = renderHeight;
+            requestRecreate();
         }
     }
 
     void startRender() {
+        if (recreate){
+            recreate = false;
+            destroy();
+        }
+        create();
         rendering = true;
-        onRenderStart();
+        onStart();
     }
 
     void finishRender() {
-        onRenderFinish();
+        onFinish();
         rendering = false;
+        if (recreate){
+            recreate =false;
+            destroy();
+            create();
+        }
     }
 
     boolean isRendering() {
         return rendering;
     }
 
-    void clearColor(){
-        if (isRendering()){//已经在渲染中了就不需要去start了
-            onRenderClearColor();
-        }else {
+    void clearColor() {
+        if (isRendering()) {//已经在渲染中了就不需要去start了
+            onClearColor();
+        } else {
             startRender();
-            onRenderClearColor();
+            onClearColor();
             finishRender();
         }
     }
 
+    void requestRecreate() {
+        recreate = true;
+    }
 
-    abstract void onRenderSizeChange(int renderWidth, int renderHeight);
+    private void create(){
+        if (!created) {
+            created = true;
+            onCreate();
+        }
+    }
 
-    abstract void onRenderStart();
+    void destroy(){
+        if (!created){
+            return;
+        }
+        created = false;
+        onDestroy();
+    }
 
-    abstract void onRenderFinish();
 
-    abstract void onRenderClearColor();
+    abstract void onCreate();
+
+    abstract void onDestroy();
+
+    abstract void onStart();
+
+    abstract void onFinish();
+
+    abstract void onClearColor();
 }

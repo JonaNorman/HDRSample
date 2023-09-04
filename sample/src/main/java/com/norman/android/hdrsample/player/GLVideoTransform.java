@@ -12,11 +12,11 @@ public abstract class GLVideoTransform extends GLRenderer {
 
 
     protected final int getInputWidth() {
-        return inputTarget.renderWidth;
+        return inputTarget.width;
     }
 
     protected final int getInputHeight() {
-        return inputTarget.renderHeight;
+        return inputTarget.height;
     }
 
     protected final int getInputBitDepth() {
@@ -57,11 +57,11 @@ public abstract class GLVideoTransform extends GLRenderer {
 
 
     protected final int getOutputWidth() {
-        return outputTarget.renderWidth;
+        return outputTarget.width;
     }
 
     protected final int getOutputHeight() {
-        return outputTarget.renderHeight;
+        return outputTarget.height;
     }
 
 

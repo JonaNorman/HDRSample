@@ -5,15 +5,10 @@ package com.norman.android.hdrsample.player;
  */
 public interface VideoPlayer extends Player {
 
-    static VideoPlayer create(VideoOutput videoOutput){
-        return new VideoPlayerImpl(videoOutput);
+    static VideoPlayer create(){
+        return new VideoPlayerImpl();
     }
 
-
-    /**
-     * 视频播放数据输出到的地方
-     * @return
-     */
-    VideoOutput getOutput();
+    void setVideoOutput(VideoOutput videoOutput);
 
 }

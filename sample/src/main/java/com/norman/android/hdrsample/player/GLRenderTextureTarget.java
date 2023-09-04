@@ -31,9 +31,9 @@ class GLRenderTextureTarget extends GLRenderTarget {
     int maxMasteringLuminance;
 
     void setBitDepth(int bitDepth) {
-        if (this.bitDepth != bitDepth && renderWidth >= 0 && renderHeight >= 0) {
+        if (this.bitDepth != bitDepth) {
             this.bitDepth = bitDepth;
-            createFrameBuffer(renderWidth, renderHeight, bitDepth);
+            requestRecreate();
         }
     }
 
@@ -54,38 +54,35 @@ class GLRenderTextureTarget extends GLRenderTarget {
         this.maxMasteringLuminance = maxMasteringLuminance;
     }
 
-    @Override
-    void onRenderSizeChange(int renderWidth, int renderHeight) {
-        createFrameBuffer(renderWidth, renderHeight, bitDepth);
-    }
-
     /**
      * 根据位数和宽高创建纹理并绑定到frameBuffer
-     * @param renderWidth
-     * @param renderHeight
-     * @param bitDepth
      */
-    void createFrameBuffer(int renderWidth, int renderHeight, int bitDepth) {
+    @Override
+    void onCreate() {
+        frameBufferId = GLESUtil.createFrameBufferId();
+        textureId = GLESUtil.createTextureId(width, height, bitDepth);
+        GLESUtil.attachTexture(frameBufferId, textureId);
+    }
+
+    @Override
+    void onDestroy() {
         GLESUtil.delTextureId(textureId);
         GLESUtil.deleteFrameBufferId(frameBufferId);
-        frameBufferId = GLESUtil.createFrameBufferId();
-        textureId = GLESUtil.createTextureId(renderWidth, renderHeight, bitDepth);
-        GLESUtil.attachTexture(frameBufferId,textureId);
     }
 
     @Override
-    void onRenderStart() {
+    void onStart() {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, frameBufferId);
-        GLES30.glViewport(0, 0, renderWidth, renderHeight);
+        GLES30.glViewport(0, 0, width, height);
     }
 
     @Override
-    void onRenderFinish() {
+    void onFinish() {
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
     }
 
     @Override
-    void onRenderClearColor() {
+    void onClearColor() {
         // 清空frameBuffer中的数据
         GLES30.glClearColor(0.0f, 0.f, 0.f, 0.0f);
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);

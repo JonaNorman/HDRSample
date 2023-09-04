@@ -21,6 +21,8 @@ abstract class PlayerImpl implements Player {
 
     private int state = PLAY_UNINITIALIZED;
 
+    private boolean started;
+
     private MessageHandler messageHandler;
 
 
@@ -45,10 +47,10 @@ abstract class PlayerImpl implements Player {
                 || state == PLAY_STOP) {
             prepare();
             state = PLAY_START;
-            post(this::onPlayStart);
+            post(this::onStart);
         } else if (state == PLAY_PREPARE) {
             state = PLAY_START;
-            post(this::onPlayStart);
+            post(this::onStart);
         } else if (isPause()) {
             state = PLAY_RESUME;
             post(this::onPlayResume);
@@ -71,7 +73,7 @@ abstract class PlayerImpl implements Player {
             return;
         }
         state = PLAY_STOP;
-        post(this::onPlayStop);
+        post(this::onStop);
     }
 
 
@@ -96,6 +98,7 @@ abstract class PlayerImpl implements Player {
                         @Override
                         public void onHandlerFinish() {
                             release();
+                            onStop();
                             onPlayRelease();
                         }
 
@@ -136,6 +139,23 @@ abstract class PlayerImpl implements Player {
     @Override
     public synchronized boolean isRelease() {
         return state == PLAY_RELEASE;
+    }
+
+
+    private void onStart(){
+        if (started){
+            return;
+        }
+        onPlayStart();
+        started = true;
+    }
+
+    private void onStop(){
+        if (!started){
+            return;
+        }
+        started = false;
+        onPlayStop();
     }
 
     protected abstract void onPlayPrepare();

@@ -18,19 +18,18 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
      */
     private static final int MAX_FRAME_JANK_MS = 50;
 
-    private final VideoOutput videoOutput;
+    private  VideoOutput videoOutput;
 
     private final TimeSyncer timeSyncer = new TimeSyncer();//视频音画同步
 
     private Long seekTimeUs;
 
-    public VideoPlayerImpl(VideoOutput videoOutput) {
-        this(VIDEO_PLAYER_NAME, videoOutput);
+    public VideoPlayerImpl() {
+        this(VIDEO_PLAYER_NAME);
     }
 
-    public VideoPlayerImpl(String threadName, VideoOutput videoOutput) {
+    public VideoPlayerImpl(String threadName) {
         super(VideoDecoder.create(), VideoExtractor.create(), threadName);
-        this.videoOutput = videoOutput;
     }
 
     @Override
@@ -43,20 +42,20 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
     @Override
     protected void onPlayStart() {
         super.onPlayStart();
-        videoOutput.onDecodeStart();
+        videoOutput.start();
     }
 
     @Override
     protected void onPlayPause() {
         super.onPlayPause();
         timeSyncer.flush();//
-        videoOutput.onDecodePause();
+        videoOutput.pause();
     }
 
     @Override
     protected void onPlayResume() {
         super.onPlayResume();
-        videoOutput.onDecodeResume();
+        videoOutput.resume();
     }
 
     @Override
@@ -64,13 +63,17 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
         super.onPlayStop();
         timeSyncer.reset();
         seekTimeUs = null;
-        videoOutput.onDecodeStop();
+        videoOutput.stop();
 
     }
 
     @Override
     protected void onInputFormatConfigure(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
-        videoOutput.onDecoderPrepare(this,extractor,decoder, inputFormat);
+        if (videoOutput == null){
+            throw new NullPointerException("videoOutput is null");
+        }
+        videoOutput.create(this);
+        videoOutput.prepare(extractor,decoder, inputFormat);
     }
 
     @Override
@@ -116,12 +119,16 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
     @Override
     protected void onPlayRelease() {
         super.onPlayRelease();
-        videoOutput.onDecodeStop();
+        videoOutput.release();
     }
 
+
     @Override
-    public VideoOutput getOutput() {
-        return videoOutput;
+    public synchronized void setVideoOutput(VideoOutput videoOutput) {
+        if (isPrepared()){
+            throw new IllegalStateException("setVideoOutput must before prepare or after stop");
+        }
+        this.videoOutput = videoOutput;
     }
 
     /**

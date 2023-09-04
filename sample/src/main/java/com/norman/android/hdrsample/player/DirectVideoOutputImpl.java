@@ -55,21 +55,19 @@ class DirectVideoOutputImpl extends DirectVideoOutput {
     }
 
     @Override
-    public  void setOutputVideoView(VideoView view) {
-        synchronized (syncLock){
-            if (videoView == view) {
-                return;
-            }
-            VideoView oldView = videoView;
-            if (oldView != null){//取消上一次绑定
-                oldView.unsubscribe(surfaceSubscriber);
-                unsubscribe(outputSizeSubscriber);
-            }
-            videoView = view;
-            if (videoView != null) {
-                subscribe(outputSizeSubscriber);
-                videoView.subscribe(surfaceSubscriber);
-            }
+    public  synchronized void setOutputVideoView(VideoView view) {
+        if (videoView == view) {
+            return;
+        }
+        VideoView oldView = videoView;
+        if (oldView != null){//取消上一次绑定
+            oldView.unsubscribe(surfaceSubscriber);
+            unsubscribe(outputSizeSubscriber);
+        }
+        videoView = view;
+        if (videoView != null) {
+            subscribe(outputSizeSubscriber);
+            videoView.subscribe(surfaceSubscriber);
         }
     }
 }

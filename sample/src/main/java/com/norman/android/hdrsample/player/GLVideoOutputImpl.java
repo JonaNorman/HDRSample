@@ -164,6 +164,17 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     @Override
     protected void onOutputStop() {
+        externalTextureRenderer.destroy();
+        y2yExtTextureRenderer.destroy();
+        texture2DRenderer.destroy();
+        bufferYUV420Renderer.destroy();
+        yuv420TextureTarget.destroy();
+        screenTarget.destroy();
+        frontTarget.destroy();
+        backTarget.destroy();
+        for (GLVideoTransform videoTransform : transformList) {
+            videoTransform.destroy();
+        }
         outputSurface.release();
         envContextManager.detach();
         if (videoSurface != null) {
@@ -197,6 +208,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     @Override
     protected void onOutputPrepare(MediaFormat inputFormat) {
+
         profile10Bit = MediaFormatUtil.is10BitProfile(inputFormat);
         GLEnvDisplay glEnvDisplay = GLEnvDisplay.createDisplay();
 
