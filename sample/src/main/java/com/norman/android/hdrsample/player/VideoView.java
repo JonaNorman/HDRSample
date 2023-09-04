@@ -26,7 +26,7 @@ public class VideoView extends FrameLayout {
 
     @IntDef({ViewType.SURFACE_VIEW, ViewType.TEXTURE_VIEW})
     @Retention(RetentionPolicy.SOURCE)
-    @interface ViewType {
+    public @interface ViewType {
         int SURFACE_VIEW = 1;
         int TEXTURE_VIEW = 2;
     }

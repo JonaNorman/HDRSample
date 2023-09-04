@@ -2,12 +2,16 @@ package com.norman.android.hdrsample;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 
+import com.norman.android.hdrsample.player.DirectVideoOutput;
 import com.norman.android.hdrsample.player.GLVideoOutput;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
@@ -51,6 +55,15 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     HdrToSdrShaderDialog hdrToSdrShaderDialog;
 
+    GLVideoOutput glVideoOutput;
+
+    DirectVideoOutput directVideoOutput;
+
+    @VideoView.ViewType int viewType  =VideoView.ViewType.TEXTURE_VIEW;
+
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,20 +72,22 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
         hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
-        GLVideoOutput videoOutput = VideoOutput.createGLOutput(GLVideoOutput.TextureSource.BUFFER);
+        videoView.setViewType(viewType);
+        directVideoOutput = VideoOutput.createDirectOutput();
+        glVideoOutput = VideoOutput.createGLOutput(GLVideoOutput.TextureSource.AUTO);
         videoPlayer = VideoPlayer.create();
-        videoPlayer.setVideoOutput(videoOutput);
+        videoPlayer.setVideoOutput(glVideoOutput);
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
         videoTransform = new CubeLutVideoTransform();
         hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
-        videoOutput.addVideoTransform(videoTransform);
-        videoOutput.addVideoTransform(hdrToSDRVideoTransform);
-        videoOutput.setOutputVideoView(videoView);
+        glVideoOutput.addVideoTransform(videoTransform);
+        glVideoOutput.addVideoTransform(hdrToSDRVideoTransform);
+        glVideoOutput.setOutputVideoView(videoView);
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
         findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
-
+        findViewById(R.id.ButtonViewMode).setOnClickListener(this);
 
 
     }
@@ -159,7 +174,33 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             hdrToSdrShaderDialog.show();
         }else if (id == R.id.ButtonVideoList){
             showVideoListDialog();
+        }else if (id ==R.id.ButtonViewMode){
+           showViewModeMenu(v);
         }
+    }
+
+    void showViewModeMenu(View v){
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.view_mode_menu);
+        Menu menu = pum.getMenu();
+        if (viewType == VideoView.ViewType.TEXTURE_VIEW){
+            menu.findItem(R.id.textureView).setChecked(true);
+        }else if (viewType == VideoView.ViewType.SURFACE_VIEW){
+            menu.findItem(R.id.surfaceView).setChecked(true);
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.surfaceView){
+                    viewType = VideoView.ViewType.SURFACE_VIEW;
+                }else if (item.getItemId() == R.id.textureView){
+                    viewType =VideoView.ViewType.TEXTURE_VIEW;
+                }
+                videoView.setViewType(viewType);
+                return true;
+            }
+        });
+        pum.show();
     }
 
 

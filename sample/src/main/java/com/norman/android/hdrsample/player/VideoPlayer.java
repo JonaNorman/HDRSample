@@ -11,4 +11,6 @@ public interface VideoPlayer extends Player {
 
     void setVideoOutput(VideoOutput videoOutput);
 
+    VideoOutput getVideoOutput();
+
 }

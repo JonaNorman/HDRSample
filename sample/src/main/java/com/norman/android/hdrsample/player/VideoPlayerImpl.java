@@ -131,6 +131,11 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
         this.videoOutput = videoOutput;
     }
 
+    @Override
+    public synchronized VideoOutput getVideoOutput() {
+        return videoOutput;
+    }
+
     /**
      * 保证时间同步
      */
