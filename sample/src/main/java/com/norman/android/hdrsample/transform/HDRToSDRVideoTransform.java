@@ -2,6 +2,8 @@ package com.norman.android.hdrsample.transform;
 
 import android.opengl.GLES20;
 
+import androidx.annotation.NonNull;
+
 import com.norman.android.hdrsample.player.color.ColorSpace;
 import com.norman.android.hdrsample.player.GLVideoTransform;
 import com.norman.android.hdrsample.transform.shader.HDRToSDRShader;
@@ -46,10 +48,10 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     private int currentDisplayLuminanceUniform;
     private int hdrPeakLuminanceUniform;
 
-    private ChromaCorrection chromaCorrection;
-    private ToneMap toneMap;
-    private GamutMap gamutMap;
-    private GammaOETF gammaOETF;
+    private ChromaCorrection chromaCorrection = ChromaCorrection.NONE;
+    private ToneMap toneMap = ToneMap.NONE;
+    private GamutMap gamutMap = GamutMap.NONE;
+    private GammaOETF gammaOETF = GammaOETF.NONE;
 
     private boolean shaderChange;
 
@@ -138,31 +140,47 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     }
 
 
-    public synchronized void setChromaCorrection(ChromaCorrection chromaCorrection) {
+    public synchronized void setChromaCorrection(@NonNull ChromaCorrection chromaCorrection) {
         if (this.chromaCorrection != chromaCorrection) {
             this.chromaCorrection = chromaCorrection;
             shaderChange = true;
         }
     }
 
-    public synchronized void setToneMap(ToneMap toneMap) {
+    public synchronized void setToneMap(@NonNull ToneMap toneMap) {
         if (this.toneMap != toneMap) {
             this.toneMap = toneMap;
             shaderChange = true;
         }
     }
 
-    public synchronized void setGamutMap(GamutMap gamutMap) {
+    public synchronized void setGamutMap(@NonNull GamutMap gamutMap) {
         if (this.gamutMap != gamutMap) {
             this.gamutMap = gamutMap;
             shaderChange = true;
         }
     }
 
-    public synchronized void setGammaOETF(GammaOETF gammaOETF) {
+    public synchronized void setGammaOETF(@NonNull GammaOETF gammaOETF) {
         if (this.gammaOETF != gammaOETF) {
             this.gammaOETF = gammaOETF;
             shaderChange = true;
         }
+    }
+
+    public synchronized ChromaCorrection getChromaCorrection() {
+        return chromaCorrection;
+    }
+
+    public synchronized ToneMap getToneMap() {
+        return toneMap;
+    }
+
+    public synchronized GamutMap getGamutMap() {
+        return gamutMap;
+    }
+
+    public synchronized GammaOETF getGammaOETF() {
+        return gammaOETF;
     }
 }

@@ -28,9 +28,39 @@ import com.norman.android.hdrsample.util.AssetUtil;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener,HdrToSdrShaderDialog.OnShaderSelectListener {
+public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener{
+
+
+    private static final List<Item<ChromaCorrection>> CHROMA_CORRECTION_MENU_LIST = Arrays.asList(new Item[]{
+            new Item("无", ChromaCorrection.NONE),
+            new Item("BT2446C", ChromaCorrection.BT2446C)
+    });
+    private static final List<Item<ToneMap>> TONE_MAP_MENU_LIST = Arrays.asList(new Item[]{
+            new Item("无", ToneMap.NONE),
+            new Item("Android8", ToneMap.ANDROID8),
+            new Item("Android13", ToneMap.ANDROID13),
+            new Item("BT2446A", ToneMap.BT2446A),
+            new Item("BT2446C", ToneMap.BT2446C),
+            new Item("Hable", ToneMap.HABLE)
+    });
+
+    private static final List<Item<GamutMap>> GAMUT_MAP_MENU_LIST = Arrays.asList(new Item[]{
+            new Item("无", GamutMap.NONE),
+            new Item("Clip", GamutMap.CLIP),
+            new Item("Compress", GamutMap.COMPRESS),
+            new Item("Adaptive_l0_cusp", GamutMap.ADAPTIVE_L0_CUSP)
+    });
+
+    private static final List<Item<GammaOETF>> GAMMA_OETF_MENU_LIST = Arrays.asList(new Item[]{
+            new Item("无", GammaOETF.NONE),
+            new Item("BT1886", GammaOETF.BT1886),
+            new Item("BT709", GammaOETF.BT709),
+            new Item("S170M", GammaOETF.S170M)
+    });
+
     VideoPlayer videoPlayer;
     VideoView videoView;
     CubeLutVideoTransform cubeLutVideoTransform;
@@ -47,15 +77,16 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     int selectLutPosition;
     HDRToSDRVideoTransform hdrToSDRShaderTransform;
 
-    HdrToSdrShaderDialog hdrToSdrShaderDialog;
 
     GLVideoOutput glVideoOutput;
 
     DirectVideoOutput directVideoOutput;
 
-    @VideoView.ViewType int viewType  =VideoView.ViewType.TEXTURE_VIEW;
+    @VideoView.ViewType
+    int viewType = VideoView.ViewType.TEXTURE_VIEW;
 
-    @GLVideoOutput.TextureSource int textureSource  =GLVideoOutput.TextureSource.AUTO;
+    @GLVideoOutput.TextureSource
+    int textureSource = GLVideoOutput.TextureSource.AUTO;
 
     @GLVideoOutput.HdrBitDepth
     int hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
@@ -63,14 +94,12 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     List<String> videoList = AssetUtil.list("video");
 
     int transformModeId = R.id.transform_mode_cube_shader;
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
-        hdrToSdrShaderDialog = new HdrToSdrShaderDialog(this);
-        hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
         videoView.setViewType(viewType);
         directVideoOutput = DirectVideoOutput.create();
@@ -91,13 +120,16 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         showHdrToSdrLayout(videoPlayer.getVideoOutput());
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
-        findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
         findViewById(R.id.ButtonViewMode).setOnClickListener(this);
         findViewById(R.id.ButtonTextureSource).setOnClickListener(this);
         findViewById(R.id.ButtonBitDepth).setOnClickListener(this);
         findViewById(R.id.ButtonVideoOutput).setOnClickListener(this);
         findViewById(R.id.ButtonTransformMode).setOnClickListener(this);
+        findViewById(R.id.ButtonGamutMap).setOnClickListener(this);
+        findViewById(R.id.ButtonToneMap).setOnClickListener(this);
+        findViewById(R.id.ButtonGammaEncode).setOnClickListener(this);
+        findViewById(R.id.ButtonChromaCorrection).setOnClickListener(this);
 
 
     }
@@ -148,28 +180,31 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-
-
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.ButtonCubeLut) {
             showCubeLutDialog();
-        }else if (id == R.id.ButtonHdrToSdr){
-            hdrToSdrShaderDialog.show();
-        }else if (id == R.id.ButtonVideoList){
+        }else if (id == R.id.ButtonVideoList) {
             showVideListMenu(v);
-        }else if(id == R.id.ButtonVideoOutput){
+        } else if (id == R.id.ButtonVideoOutput) {
             showVideoOutputMenu(v);
-        } else if (id ==R.id.ButtonViewMode){
-           showViewModeMenu(v);
-        }else if (id ==R.id.ButtonTextureSource){
+        } else if (id == R.id.ButtonViewMode) {
+            showViewModeMenu(v);
+        } else if (id == R.id.ButtonTextureSource) {
             showTextureSourceMenu(v);
-        }else if (id ==R.id.ButtonBitDepth){
+        } else if (id == R.id.ButtonBitDepth) {
             showHdrBitDepthMenu(v);
-        }else if (id ==R.id.ButtonTransformMode){
+        } else if (id == R.id.ButtonTransformMode) {
             showTransformModeMenu(v);
+        } else if (id == R.id.ButtonChromaCorrection) {
+            showChromaCorrectMenu(v);
+        } else if (id == R.id.ButtonToneMap) {
+            showToneMapMenu(v);
+        } else if (id == R.id.ButtonGamutMap) {
+            showGamutMapMenu(v);
+        } else if (id == R.id.ButtonGammaEncode) {
+            showGamutEncodeMenu(v);
         }
     }
 
@@ -184,7 +219,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             if (pos > 0) {
                 fileName = fileName.substring(0, pos);
             }
-            menu.add(0,i,0,fileName);
+            menu.add(0, i, 0, fileName);
         }
         for (int i = 0; i < menu.size(); i++) {
             menu.findItem(i).setCheckable(true);
@@ -204,26 +239,26 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         pum.show();
     }
 
-    void showVideoOutputMenu(View v){
+    void showVideoOutputMenu(View v) {
         PopupMenu pum = new PopupMenu(this, v);
         pum.inflate(R.menu.video_output_menu);
         Menu menu = pum.getMenu();
         VideoOutput currentVideOutput = videoPlayer.getVideoOutput();
-        if (currentVideOutput instanceof DirectVideoOutput){
+        if (currentVideOutput instanceof DirectVideoOutput) {
             menu.findItem(R.id.direct_video_output).setChecked(true);
-        }else if (currentVideOutput instanceof  GLVideoOutput){
+        } else if (currentVideOutput instanceof GLVideoOutput) {
             menu.findItem(R.id.gl_video_output).setChecked(true);
         }
         pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 VideoOutput selectOutput = null;
-                if (item.getItemId() == R.id.direct_video_output){
+                if (item.getItemId() == R.id.direct_video_output) {
                     selectOutput = directVideoOutput;
-                }else if (item.getItemId() == R.id.gl_video_output){
-                    selectOutput =glVideoOutput;
+                } else if (item.getItemId() == R.id.gl_video_output) {
+                    selectOutput = glVideoOutput;
                 }
-                if (currentVideOutput == selectOutput){
+                if (currentVideOutput == selectOutput) {
                     return true;
                 }
                 showHdrToSdrLayout(selectOutput);
@@ -236,22 +271,22 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         pum.show();
     }
 
-    void showViewModeMenu(View v){
+    void showViewModeMenu(View v) {
         PopupMenu pum = new PopupMenu(this, v);
         pum.inflate(R.menu.view_mode_menu);
         Menu menu = pum.getMenu();
-        if (viewType == VideoView.ViewType.TEXTURE_VIEW){
+        if (viewType == VideoView.ViewType.TEXTURE_VIEW) {
             menu.findItem(R.id.textureView).setChecked(true);
-        }else if (viewType == VideoView.ViewType.SURFACE_VIEW){
+        } else if (viewType == VideoView.ViewType.SURFACE_VIEW) {
             menu.findItem(R.id.surfaceView).setChecked(true);
         }
         pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.surfaceView){
+                if (item.getItemId() == R.id.surfaceView) {
                     viewType = VideoView.ViewType.SURFACE_VIEW;
-                }else if (item.getItemId() == R.id.textureView){
-                    viewType =VideoView.ViewType.TEXTURE_VIEW;
+                } else if (item.getItemId() == R.id.textureView) {
+                    viewType = VideoView.ViewType.TEXTURE_VIEW;
                 }
                 videoView.setViewType(viewType);
                 return true;
@@ -261,34 +296,34 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    void showTextureSourceMenu(View v){
+    void showTextureSourceMenu(View v) {
         PopupMenu pum = new PopupMenu(this, v);
         pum.inflate(R.menu.texture_source_menu);
         Menu menu = pum.getMenu();
-        if (textureSource == GLVideoOutput.TextureSource.AUTO){
+        if (textureSource == GLVideoOutput.TextureSource.AUTO) {
             menu.findItem(R.id.textureSourceAuto).setChecked(true);
-        }else if (textureSource == GLVideoOutput.TextureSource.BUFFER){
+        } else if (textureSource == GLVideoOutput.TextureSource.BUFFER) {
             menu.findItem(R.id.textureSourceBuffer).setChecked(true);
-        }else if (textureSource == GLVideoOutput.TextureSource.EXT){
+        } else if (textureSource == GLVideoOutput.TextureSource.EXT) {
             menu.findItem(R.id.textureSourceExt).setChecked(true);
-        } else if (textureSource == GLVideoOutput.TextureSource.Y2Y){
+        } else if (textureSource == GLVideoOutput.TextureSource.Y2Y) {
             menu.findItem(R.id.textureSourceY2Y).setChecked(true);
-        } else if (textureSource == GLVideoOutput.TextureSource.OES){
+        } else if (textureSource == GLVideoOutput.TextureSource.OES) {
             menu.findItem(R.id.textureSourceOES).setChecked(true);
         }
         pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.textureSourceAuto){
+                if (item.getItemId() == R.id.textureSourceAuto) {
                     textureSource = GLVideoOutput.TextureSource.AUTO;
-                }else if (item.getItemId() == R.id.textureSourceBuffer){
+                } else if (item.getItemId() == R.id.textureSourceBuffer) {
                     textureSource = GLVideoOutput.TextureSource.BUFFER;
-                }else if (item.getItemId() == R.id.textureSourceExt){
-                    textureSource =GLVideoOutput.TextureSource.EXT;
-                } else if (item.getItemId() == R.id.textureSourceY2Y){
-                    textureSource =GLVideoOutput.TextureSource.Y2Y;
-                } else if (item.getItemId() == R.id.textureSourceOES){
-                    textureSource =GLVideoOutput.TextureSource.OES;
+                } else if (item.getItemId() == R.id.textureSourceExt) {
+                    textureSource = GLVideoOutput.TextureSource.EXT;
+                } else if (item.getItemId() == R.id.textureSourceY2Y) {
+                    textureSource = GLVideoOutput.TextureSource.Y2Y;
+                } else if (item.getItemId() == R.id.textureSourceOES) {
+                    textureSource = GLVideoOutput.TextureSource.OES;
                 }
                 videoPlayer.stop();
                 glVideoOutput.setTextureSource(textureSource);
@@ -300,25 +335,25 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    void showHdrBitDepthMenu(View v){
+    void showHdrBitDepthMenu(View v) {
         PopupMenu pum = new PopupMenu(this, v);
         pum.inflate(R.menu.hdr_bit_depth_menu);
         Menu menu = pum.getMenu();
-        if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_8){
+        if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_8) {
             menu.findItem(R.id.hdr_bit_depth_8).setChecked(true);
-        }else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_10){
+        } else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_10) {
             menu.findItem(R.id.hdr_bit_depth_10).setChecked(true);
-        }else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_16){
+        } else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_16) {
             menu.findItem(R.id.hdr_bit_depth_16).setChecked(true);
         }
         pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.hdr_bit_depth_8){
+                if (item.getItemId() == R.id.hdr_bit_depth_8) {
                     hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_8;
-                }else if (item.getItemId() == R.id.hdr_bit_depth_10){
+                } else if (item.getItemId() == R.id.hdr_bit_depth_10) {
                     hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
-                }else if (item.getItemId() == R.id.hdr_bit_depth_16){
+                } else if (item.getItemId() == R.id.hdr_bit_depth_16) {
                     hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_16;
                 }
                 videoPlayer.stop();
@@ -330,7 +365,104 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         pum.show();
     }
 
-    void showTransformModeMenu(View v){
+
+    void showChromaCorrectMenu(View v) {
+        PopupMenu pum = new PopupMenu(this, v);
+        Menu menu = pum.getMenu();
+        List<Item<ChromaCorrection>> menuList = CHROMA_CORRECTION_MENU_LIST;
+        for (int i = 0; i < menuList.size(); i++) {
+            String name = new File(menuList.get(i).title).getName();
+            menu.add(0, i, 0, name);
+        }
+        for (int i = 0; i < menu.size(); i++) {
+            Item<ChromaCorrection> item = menuList.get(i);
+            MenuItem menuItem = menu.findItem(i);
+            menuItem.setCheckable(true);
+            menuItem.setChecked(item.value == hdrToSDRShaderTransform.getChromaCorrection());
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                hdrToSDRShaderTransform.setChromaCorrection(menuList.get(item.getItemId()).value);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showToneMapMenu(View v) {
+        PopupMenu pum = new PopupMenu(this, v);
+        Menu menu = pum.getMenu();
+        List<Item<ToneMap>> menuList = TONE_MAP_MENU_LIST;
+        for (int i = 0; i < menuList.size(); i++) {
+            String name = new File(menuList.get(i).title).getName();
+            menu.add(0, i, 0, name);
+        }
+        for (int i = 0; i < menu.size(); i++) {
+            Item<ToneMap> item = menuList.get(i);
+            MenuItem menuItem = menu.findItem(i);
+            menuItem.setCheckable(true);
+            menuItem.setChecked(item.value == hdrToSDRShaderTransform.getToneMap());
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                hdrToSDRShaderTransform.setToneMap(menuList.get(item.getItemId()).value);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showGamutMapMenu(View v) {
+        PopupMenu pum = new PopupMenu(this, v);
+        Menu menu = pum.getMenu();
+        List<Item<GamutMap>> menuList = GAMUT_MAP_MENU_LIST;
+        for (int i = 0; i < menuList.size(); i++) {
+            String name = new File(menuList.get(i).title).getName();
+            menu.add(0, i, 0, name);
+        }
+        for (int i = 0; i < menu.size(); i++) {
+            Item<GamutMap> item = menuList.get(i);
+            MenuItem menuItem = menu.findItem(i);
+            menuItem.setCheckable(true);
+            menuItem.setChecked(item.value == hdrToSDRShaderTransform.getGamutMap());
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                hdrToSDRShaderTransform.setGamutMap(menuList.get(item.getItemId()).value);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showGamutEncodeMenu(View v) {
+        PopupMenu pum = new PopupMenu(this, v);
+        Menu menu = pum.getMenu();
+        List<Item<GammaOETF>> menuList = GAMMA_OETF_MENU_LIST;
+        for (int i = 0; i < menuList.size(); i++) {
+            String name = new File(menuList.get(i).title).getName();
+            menu.add(0, i, 0, name);
+        }
+        for (int i = 0; i < menu.size(); i++) {
+            Item<GammaOETF> item = menuList.get(i);
+            MenuItem menuItem = menu.findItem(i);
+            menuItem.setChecked(true);
+            menuItem.setCheckable(item.value == hdrToSDRShaderTransform.getGammaOETF());
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                hdrToSDRShaderTransform.setGammaOETF(menuList.get(item.getItemId()).value);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showTransformModeMenu(View v) {
         PopupMenu pum = new PopupMenu(this, v);
         pum.inflate(R.menu.transform_mode_menu);
         Menu menu = pum.getMenu();
@@ -346,18 +478,18 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         pum.show();
     }
 
-    void showTransformLayout(int transformModeId){
-        if (transformModeId == R.id.transform_mode_node){
+    void showTransformLayout(int transformModeId) {
+        if (transformModeId == R.id.transform_mode_node) {
             cubeLutVideoTransform.disable();
             hdrToSDRShaderTransform.disable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
             findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
-        }else if (transformModeId == R.id.transform_mode_cube_lut) {
+        } else if (transformModeId == R.id.transform_mode_cube_lut) {
             cubeLutVideoTransform.enable();
             hdrToSDRShaderTransform.disable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.VISIBLE);
             findViewById(R.id.transformLayoutShader).setVisibility(View.GONE);
-        }else if (transformModeId == R.id.transform_mode_cube_shader) {
+        } else if (transformModeId == R.id.transform_mode_cube_shader) {
             cubeLutVideoTransform.disable();
             hdrToSDRShaderTransform.enable();
             findViewById(R.id.transformLayoutCubeLut).setVisibility(View.GONE);
@@ -365,9 +497,10 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    void showHdrToSdrLayout(VideoOutput videoOutput){
-        findViewById(R.id.HdrToSdrLayout).setVisibility(videoOutput instanceof GLVideoOutput?View.VISIBLE:View.GONE);
+    void showHdrToSdrLayout(VideoOutput videoOutput) {
+        findViewById(R.id.HdrToSdrLayout).setVisibility(videoOutput instanceof GLVideoOutput ? View.VISIBLE : View.GONE);
     }
+
 
     private void loadLutList() {
         if (loadLutSuccess) {
@@ -391,11 +524,13 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         lutPathList = fileList;
     }
 
-    @Override
-    public void onShaderSelect(ChromaCorrection chromaCorrection, ToneMap toneMap, GamutMap gamutMap, GammaOETF gammaOETF) {
-        hdrToSDRShaderTransform.setChromaCorrection(chromaCorrection);
-        hdrToSDRShaderTransform.setToneMap(toneMap);
-        hdrToSDRShaderTransform.setGamutMap(gamutMap);
-        hdrToSDRShaderTransform.setGammaOETF(gammaOETF);
+    static class Item<T> {
+        public Item(String title, T value) {
+            this.title = title;
+            this.value = value;
+        }
+
+        String title;
+        T value;
     }
 }

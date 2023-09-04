@@ -108,7 +108,7 @@
 
             <LinearLayout
                 android:id="@+id/transformLayoutCubeLut"
-
+                android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
@@ -116,9 +116,8 @@
                     android:id="@+id/ButtonCubeLut"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="LUT配置">
+                    android:text="LUT配置"/>
 
-                </Button>
 
             </LinearLayout>
 
@@ -126,12 +125,37 @@
                 android:id="@+id/transformLayoutShader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
                 <Button
-                    android:id="@+id/ButtonHdrToSdr"
+                    android:id="@+id/ButtonChromaCorrection"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Shader配置">
+                    android:text="色度矫正">
+
+                </Button>
+
+
+                <Button
+                    android:id="@+id/ButtonToneMap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="色度映射">
+
+                </Button>
+
+
+                <Button
+                    android:id="@+id/ButtonGamutMap"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="色度矫正">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/ButtonGammaEncode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gamma压缩">
 
                 </Button>
             </LinearLayout>
