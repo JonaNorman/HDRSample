@@ -49,6 +49,10 @@ abstract class DecodePlayerImpl<D extends Decoder,E extends Extractor> extends P
         this.fileSource = fileSource;
     }
 
+    @Override
+    public synchronized FileSource getSource() {
+        return fileSource;
+    }
 
     @Override
     public synchronized void seek(float timeSecond) {

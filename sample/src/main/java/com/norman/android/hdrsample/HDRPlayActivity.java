@@ -16,6 +16,7 @@ import com.norman.android.hdrsample.player.GLVideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
+import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
 import com.norman.android.hdrsample.transform.HDRToSDRVideoTransform;
 import com.norman.android.hdrsample.transform.shader.chromacorrect.ChromaCorrection;
@@ -35,19 +36,12 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     AlertDialog cubeLutDialog;
 
-    AlertDialog videoListDialog;
-
     boolean loadLutSuccess;
 
-    boolean loadVideoListSuccess;
 
     List<String> lutPathList = new ArrayList<>();
 
     List<String> lutNameList = new ArrayList<>();
-
-    List<String> videoPathList = new ArrayList<>();
-
-    List<String> videoNameList = new ArrayList<>();
 
     int selectLutPosition;
     HDRToSDRVideoTransform hdrToSDRVideoTransform;
@@ -65,9 +59,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     @GLVideoOutput.HdrBitDepth
     int hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
 
-
-
-
+    List<String> videoList = AssetUtil.list("video");
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +77,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
-        videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
+        videoPlayer.setSource(AssetFileSource.create(videoList.get(0)));
         videoTransform = new CubeLutVideoTransform();
         hdrToSDRVideoTransform = new HDRToSDRVideoTransform();
         glVideoOutput.addVideoTransform(videoTransform);
@@ -146,33 +139,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
-    private void showVideoListDialog() {
-        if (videoListDialog != null) {
-            if (!videoListDialog.isShowing()) {
-                videoListDialog.show();
-            }
-            return;
-        }
-        loadVideoList();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("视频列表")
-                //.setMessage("You can buy our products without registration too. Enjoy the shopping")
-                .setSingleChoiceItems(videoNameList.toArray(new String[0]), 0, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String path = videoPathList.get(which);
 
-                        videoPlayer.stop();
-                        videoPlayer.setSource(AssetFileSource.create(path));
-                        videoPlayer.start();
-
-                        dialog.dismiss();
-                    }
-                });
-        videoListDialog = builder.show();
-
-
-    }
 
 
 
@@ -184,7 +151,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         }else if (id == R.id.ButtonHdrToSdr){
             hdrToSdrShaderDialog.show();
         }else if (id == R.id.ButtonVideoList){
-            showVideoListDialog();
+            showVideListMenu(v);
         }else if (id ==R.id.ButtonViewMode){
            showViewModeMenu(v);
         }else if (id ==R.id.ButtonTextureSource){
@@ -192,6 +159,37 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         }else if (id ==R.id.ButtonBitDepth){
             showHdrBitDepthMenu(v);
         }
+    }
+
+
+    private void showVideListMenu(View v) {
+
+        PopupMenu pum = new PopupMenu(this, v);
+        Menu menu = pum.getMenu();
+        for (int i = 0; i < videoList.size(); i++) {
+            String fileName = new File(videoList.get(i)).getName();
+            int pos = fileName.lastIndexOf(".");
+            if (pos > 0) {
+                fileName = fileName.substring(0, pos);
+            }
+            menu.add(0,i,0,fileName);
+        }
+        for (int i = 0; i < menu.size(); i++) {
+            menu.findItem(i).setCheckable(true);
+        }
+        FileSource fileSource = videoPlayer.getSource();
+        int index = videoList.indexOf(fileSource.getPath());
+        menu.findItem(index).setChecked(true);
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                videoPlayer.stop();
+                videoPlayer.setSource(AssetFileSource.create(videoList.get(item.getItemId())));
+                videoPlayer.start();
+                return true;
+            }
+        });
+        pum.show();
     }
 
     void showViewModeMenu(View v){
@@ -287,27 +285,6 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         });
         pum.show();
     }
-
-    private void loadVideoList() {
-        if (loadVideoListSuccess) {
-            return;
-        }
-        loadVideoListSuccess = true;
-
-        List<String> fileList = AssetUtil.list("video");
-        List<String> nameList = new ArrayList<>();
-        for (String path : fileList) {
-            String fileName = new File(path).getName();
-            int pos = fileName.lastIndexOf(".");
-            if (pos > 0) {
-                fileName = fileName.substring(0, pos);
-            }
-            nameList.add(fileName);
-        }
-        videoNameList = nameList;
-        videoPathList = fileList;
-    }
-
 
     private void loadLutList() {
         if (loadLutSuccess) {

@@ -15,6 +15,9 @@ public interface Player {
      */
     void setSource(FileSource fileSource);
 
+
+    FileSource getSource();
+
     /**
      * 准备，配置解码器
      */
