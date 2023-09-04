@@ -13,7 +13,6 @@ import androidx.appcompat.widget.PopupMenu;
 
 import com.norman.android.hdrsample.player.DirectVideoOutput;
 import com.norman.android.hdrsample.player.GLVideoOutput;
-import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
@@ -61,6 +60,11 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     @VideoView.ViewType int viewType  =VideoView.ViewType.TEXTURE_VIEW;
 
+    @GLVideoOutput.TextureSource int textureSource  =GLVideoOutput.TextureSource.AUTO;
+
+    @GLVideoOutput.HdrBitDepth
+    int hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
+
 
 
 
@@ -73,8 +77,11 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSdrShaderDialog.setOnShaderSelectListener(this);
         videoView = findViewById(R.id.VideoPlayerView);
         videoView.setViewType(viewType);
-        directVideoOutput = VideoOutput.createDirectOutput();
-        glVideoOutput = VideoOutput.createGLOutput(GLVideoOutput.TextureSource.AUTO);
+        directVideoOutput = DirectVideoOutput.create();
+        glVideoOutput = GLVideoOutput.create();
+        glVideoOutput.setTextureSource(textureSource);
+        glVideoOutput.setHdrBitDepth(hdrBitDepth);
+
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
         videoPlayer.setSource(AssetFileSource.create("video/1.mp4"));
@@ -88,6 +95,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonHdrToSdr).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
         findViewById(R.id.ButtonViewMode).setOnClickListener(this);
+        findViewById(R.id.ButtonTextureSource).setOnClickListener(this);
+        findViewById(R.id.ButtonBitDepth).setOnClickListener(this);
 
 
     }
@@ -165,6 +174,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     }
 
+
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -176,6 +187,10 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             showVideoListDialog();
         }else if (id ==R.id.ButtonViewMode){
            showViewModeMenu(v);
+        }else if (id ==R.id.ButtonTextureSource){
+            showTextureSourceMenu(v);
+        }else if (id ==R.id.ButtonBitDepth){
+            showHdrBitDepthMenu(v);
         }
     }
 
@@ -203,6 +218,75 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         pum.show();
     }
 
+
+    void showTextureSourceMenu(View v){
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.texture_source_menu);
+        Menu menu = pum.getMenu();
+        if (textureSource == GLVideoOutput.TextureSource.AUTO){
+            menu.findItem(R.id.textureSourceAuto).setChecked(true);
+        }else if (textureSource == GLVideoOutput.TextureSource.BUFFER){
+            menu.findItem(R.id.textureSourceBuffer).setChecked(true);
+        }else if (textureSource == GLVideoOutput.TextureSource.EXT){
+            menu.findItem(R.id.textureSourceExt).setChecked(true);
+        } else if (textureSource == GLVideoOutput.TextureSource.Y2Y){
+            menu.findItem(R.id.textureSourceY2Y).setChecked(true);
+        } else if (textureSource == GLVideoOutput.TextureSource.OES){
+            menu.findItem(R.id.textureSourceOES).setChecked(true);
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.textureSourceAuto){
+                    textureSource = GLVideoOutput.TextureSource.AUTO;
+                }else if (item.getItemId() == R.id.textureSourceBuffer){
+                    textureSource = GLVideoOutput.TextureSource.BUFFER;
+                }else if (item.getItemId() == R.id.textureSourceExt){
+                    textureSource =GLVideoOutput.TextureSource.EXT;
+                } else if (item.getItemId() == R.id.textureSourceY2Y){
+                    textureSource =GLVideoOutput.TextureSource.Y2Y;
+                } else if (item.getItemId() == R.id.textureSourceOES){
+                    textureSource =GLVideoOutput.TextureSource.OES;
+                }
+                videoPlayer.stop();
+                glVideoOutput.setTextureSource(textureSource);
+                videoPlayer.start();
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+
+    void showHdrBitDepthMenu(View v){
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.hdr_bit_depth_menu);
+        Menu menu = pum.getMenu();
+        if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_8){
+            menu.findItem(R.id.hdr_bit_depth_8).setChecked(true);
+        }else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_10){
+            menu.findItem(R.id.hdr_bit_depth_10).setChecked(true);
+        }else if (hdrBitDepth == GLVideoOutput.HdrBitDepth.BIT_DEPTH_16){
+            menu.findItem(R.id.hdr_bit_depth_16).setChecked(true);
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.hdr_bit_depth_8){
+                    hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_8;
+                }else if (item.getItemId() == R.id.hdr_bit_depth_10){
+                    hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_10;
+                }else if (item.getItemId() == R.id.hdr_bit_depth_16){
+                    hdrBitDepth = GLVideoOutput.HdrBitDepth.BIT_DEPTH_16;
+                }
+                videoPlayer.stop();
+                glVideoOutput.setHdrBitDepth(hdrBitDepth);
+                videoPlayer.start();
+                return true;
+            }
+        });
+        pum.show();
+    }
 
     private void loadVideoList() {
         if (loadVideoListSuccess) {

@@ -42,21 +42,49 @@ public abstract class GLVideoOutput extends VideoOutput {
     }
 
 
-    @IntDef({HdrDisplayBitDepth.BIT_DEPTH_10, HdrDisplayBitDepth.BIT_DEPTH_16})
+    @IntDef({HdrBitDepth.BIT_DEPTH_8, HdrBitDepth.BIT_DEPTH_10, HdrBitDepth.BIT_DEPTH_16})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface HdrDisplayBitDepth {
+    public @interface HdrBitDepth {
         /**
-         * Surface支持HDR显示时用10位(如果不支持，会自动切成8位)，视频正常用10位就够了，但是alpha只有2位，如果希望加大alpha，可以选择HDR_DISPLAY_BIT_DEPTH_16
-         * 如果发现部分手机不支持SurfaceView直接加载HDR，也可以尝试改成HDR_DISPLAY_BIT_DEPTH_16
+         * HDR显示时用8位，8位导致HDR视频精度不够只适合在测试时使用
          */
 
-        int BIT_DEPTH_10 = 10;
+        int BIT_DEPTH_8 = 0;
+        /**
+         * Surface支持HDR显示时用10位(如果不支持，会自动切成8位)，视频正常用10位就够了，但是alpha只有2位，如果希望加大alpha，可以选择BIT_DEPTH_16
+         * 如果发现部分手机不支持SurfaceView直接加载HDR，也可以尝试改成BIT_DEPTH_16
+         */
+
+        int BIT_DEPTH_10 = 1;
         /**
          * 最终显示HDR纹理时用16位(如果不支持，会自动切成8位)
          */
-        int BIT_DEPTH_16 = 16;
+        int BIT_DEPTH_16 = 2;
     }
 
+    /**
+     * 经过OpenGL中转
+     *
+     * @return
+     */
+    public static GLVideoOutput create() {
+        return new GLVideoOutputImpl();
+    }
+
+
+
+    public abstract void setTextureSource(@TextureSource int textureSource);
+
+    public abstract @TextureSource int getTextureSource();
+
+
+    public abstract void setHdrBitDepth(@HdrBitDepth int hdrDisplayBitDepth);
+
+    public abstract @HdrBitDepth int getHdrDisplayBitDepth();
+
     public abstract void addVideoTransform(GLVideoTransform videoTransform);
+
+
+
 
 }

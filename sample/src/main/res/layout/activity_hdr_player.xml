@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <com.norman.android.hdrsample.player.VideoView
         android:id="@+id/VideoPlayerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
     </com.norman.android.hdrsample.player.VideoView>
 
+
     <LinearLayout
-        android:layout_gravity="bottom"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -21,53 +21,101 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/ButtonVideoList"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="视频列表"/>
+                android:text="播放器配置">
 
+            </TextView>
 
-            <Button
-                android:id="@+id/VideoOutputList"
-                android:layout_width="wrap_content"
+            <LinearLayout
+
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="输出模式"/>
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/ButtonViewMode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视图模式"/>
+                <Button
+                    android:id="@+id/ButtonVideoList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="视频列表" />
+
+
+                <Button
+                    android:id="@+id/VideoOutputList"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="输出模式" />
+
+                <Button
+                    android:id="@+id/ButtonViewMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="视图模式" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginTop="10dp"
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/ButtonCubeLut"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="LUT配置">
+                android:text="GLOutput配置">
 
-            </Button>
+            </TextView>
 
-            <Button
-                android:id="@+id/ButtonHdrToSdr"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Shader配置">
+                android:orientation="horizontal">
 
-            </Button>
+                <Button
+                    android:id="@+id/ButtonTextureSource"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="纹理来源">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/ButtonBitDepth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="纹理位数">
+
+                </Button>
+
+
+                <Button
+                    android:id="@+id/ButtonCubeLut"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LUT配置">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/ButtonHdrToSdr"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shader配置">
+
+                </Button>
+
+            </LinearLayout>
 
         </LinearLayout>
+
 
     </LinearLayout>
 
 
-</FrameLayout>
+</LinearLayout>

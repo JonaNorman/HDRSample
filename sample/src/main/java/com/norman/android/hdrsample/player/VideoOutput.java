@@ -57,33 +57,10 @@ public abstract class VideoOutput {
 
 
 
-    /**
-     * 经过OpenGL中转
-     *
-     * @return
-     */
-    public static GLVideoOutput createGLOutput() {
-        return new GLVideoOutputImpl();
-    }
-
-    /**
-     * 经过OpenGL中转
-     *
-     * @return
-     */
-    public static GLVideoOutput createGLOutput(@GLVideoOutput.TextureSource int textureSource) {
-        return new GLVideoOutputImpl(textureSource);
-    }
 
 
-    /**
-     * 直接用解码到Surface
-     *
-     * @return
-     */
-    public static DirectVideoOutput createDirectOutput() {
-        return new DirectVideoOutputImpl();
-    }
+
+
 
 
     /**
@@ -188,6 +165,10 @@ public abstract class VideoOutput {
         skipFrameWait.set(false);
         skipWaitFrame();//停止防止一直等待
         onOutputStop();
+    }
+
+    synchronized boolean isPlayerPrepared() {
+        return videoPlayer != null &&videoPlayer.isPrepared();
     }
 
     /**

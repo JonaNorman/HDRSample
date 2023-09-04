@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/textureSourceAuto"
+        android:checkable="true"
+        android:title="自动"/>
+
+    <item
+        android:id="@+id/textureSourceBuffer"
+        android:checkable="true"
+        android:title="Buffer"/>
+
+    <item
+        android:id="@+id/textureSourceExt"
+        android:checkable="true"
+        android:title="外部纹理"/>
+
+    <item
+        android:id="@+id/textureSourceY2Y"
+        android:checkable="true"
+        android:title="Y2Y纹理"/>
+
+    <item
+        android:id="@+id/textureSourceOES"
+        android:checkable="true"
+        android:title="OES纹理"/>
+</menu>

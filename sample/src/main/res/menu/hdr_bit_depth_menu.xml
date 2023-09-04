@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/hdr_bit_depth_8"
+        android:checkable="true"
+        android:title="8位"/>
+
+    <item
+        android:id="@+id/hdr_bit_depth_10"
+        android:checkable="true"
+        android:title="10位"/>
+    <item
+        android:id="@+id/hdr_bit_depth_16"
+        android:checkable="true"
+        android:title="16位"/>
+
+</menu>

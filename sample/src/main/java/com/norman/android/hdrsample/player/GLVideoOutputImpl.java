@@ -119,9 +119,9 @@ class GLVideoOutputImpl extends GLVideoOutput {
     private VideoView videoView;
 
 
-    private final @TextureSource int textureSourceType;
+    private  @TextureSource int textureSource = TextureSource.AUTO;
 
-    private final @HdrDisplayBitDepth int hdrDisplayBitDepth;
+    private  @HdrBitDepth int hdrDisplayBitDepth = HdrBitDepth.BIT_DEPTH_10;
 
     private final VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
         @Override
@@ -150,16 +150,7 @@ class GLVideoOutputImpl extends GLVideoOutput {
     };
 
     public GLVideoOutputImpl() {
-        this(TextureSource.AUTO);
-    }
 
-    public GLVideoOutputImpl(@TextureSource int textureSourceType) {
-        this(textureSourceType, HdrDisplayBitDepth.BIT_DEPTH_10);
-    }
-
-    public GLVideoOutputImpl(@TextureSource int textureSourceType, @HdrDisplayBitDepth int hdrDisplayBitDepth) {
-        this.textureSourceType = textureSourceType;
-        this.hdrDisplayBitDepth = hdrDisplayBitDepth;
     }
 
     @Override
@@ -234,11 +225,12 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
         GLEnvConfig envConfig = configRGBA8Bit;
         if (profile10Bit) {
-
-            if (hdrDisplayBitDepth == HdrDisplayBitDepth.BIT_DEPTH_16 ||
+            if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_8){
+                envConfig = configRGBA8Bit;
+            }else if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_16 ||
                     Build.MODEL.equals("MIX 2S")) {  //MIX 2S手机10位+PQ视频+SurfaceView没有HDR效果需要改成16位
                 envConfig = configRGBA16Bit;
-            } else if (hdrDisplayBitDepth == HdrDisplayBitDepth.BIT_DEPTH_10) {
+            } else if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_10) {
                 envConfig = configRGBA1010102Bit;
             }
             if (envConfig == null) {
@@ -248,14 +240,15 @@ class GLVideoOutputImpl extends GLVideoOutput {
         envContextManager = GLEnvContextManager.create(glEnvDisplay, envConfig);
         envContextManager.attach();
         envContext = envContextManager.getEnvContext();
-        if (textureSourceType == TextureSource.AUTO) {
+        if (textureSource == TextureSource.AUTO) {
             // 支持10位YUV420Buffer就用Buffer模式，不然就用外部纹理模式
             bufferMode = profile10Bit &&
                     videoDecoder.isSupport10BitYUV420BufferMode();
         } else {
-            bufferMode = textureSourceType == TextureSource.BUFFER;
+            bufferMode = textureSource == TextureSource.BUFFER;
         }
         if (bufferMode) {
+            videoDecoder.setOutputSurface(null);
             videoDecoder.setOutputMode(VideoDecoder.OutputMode.BUFFER_MODE);
         } else {
             videoDecoder.setOutputMode(VideoDecoder.OutputMode.SURFACE_MODE);
@@ -264,6 +257,33 @@ class GLVideoOutputImpl extends GLVideoOutput {
             externalTextureRenderer.setTextureId(videoSurface.getTextureId());
             y2yExtTextureRenderer.setTextureId(videoSurface.getTextureId());
         }
+    }
+
+    @Override
+    public synchronized void setTextureSource(@TextureSource int textureSource) {
+        if (isPlayerPrepared()){
+            throw new IllegalStateException("setTextureSource must before prepare");
+        }
+        this.textureSource = textureSource;
+    }
+
+
+    @Override
+    public synchronized @TextureSource int getTextureSource() {
+        return textureSource;
+    }
+
+    @Override
+    public synchronized void setHdrBitDepth(@HdrBitDepth int hdrDisplayBitDepth) {
+        if (isPlayerPrepared()){
+            throw new IllegalStateException("setHdrDisplayBitDepth must before prepare");
+        }
+        this.hdrDisplayBitDepth = hdrDisplayBitDepth;
+    }
+
+    @Override
+    public synchronized @HdrBitDepth int getHdrDisplayBitDepth() {
+        return hdrDisplayBitDepth;
     }
 
     /**
@@ -313,13 +333,13 @@ class GLVideoOutputImpl extends GLVideoOutput {
             int bitDepth = strideWidth / videoWidth == 2 ? 10 : 8;// strideWidth表示字节宽度，除以宽就是表示几个字节，10位其实是16位(2个字节)存储
             bufferYUV420Renderer.setBufferFormat(strideWidth, sliceHeight, bitDepth, new Rect(cropLeft, cropTop, cropRight, cropBottom), yuv420Type);
         } else {//用扩展纹理转2D纹理
-            if (textureSourceType == TextureSource.AUTO ||
-                    textureSourceType == TextureSource.EXT) {
+            if (textureSource == TextureSource.AUTO ||
+                    textureSource == TextureSource.EXT) {
                 // HDR且支持Y2Y才有必要用Y2Y处理
                 textureY2YMode = colorSpace != ColorSpace.VIDEO_SDR &&
                         GLTextureY2YRenderer.isSupportY2YEXT();
             } else {
-                textureY2YMode = textureSourceType == TextureSource.Y2Y;
+                textureY2YMode = textureSource == TextureSource.Y2Y;
             }
             if (textureY2YMode) {
                 y2yExtTextureRenderer.setBitDepth(profile10Bit ? 10 : 8);
@@ -361,7 +381,16 @@ class GLVideoOutputImpl extends GLVideoOutput {
             screenRenderer = textureRenderer;
         } else {
             // 前面得到的纹理输出到frontTarget上
-            int targetBitDepth = profile10Bit ? (hdrDisplayBitDepth == HdrDisplayBitDepth.BIT_DEPTH_16 ? 16 : 10) : 8;
+            int targetBitDepth = 8;
+            if (profile10Bit){
+                if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_8){
+                    targetBitDepth =  8;
+                }else if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_10){
+                    targetBitDepth =  10;
+                }else if (hdrDisplayBitDepth == HdrBitDepth.BIT_DEPTH_16){
+                    targetBitDepth =  16;
+                }
+            }
             frontTarget.setBitDepth(targetBitDepth);
             backTarget.setBitDepth(targetBitDepth);
             frontTarget.setRenderSize(videoWidth, videoHeight);
