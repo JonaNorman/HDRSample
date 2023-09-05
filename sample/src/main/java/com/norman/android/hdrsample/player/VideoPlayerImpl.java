@@ -18,7 +18,9 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
      */
     private static final int MAX_FRAME_JANK_MS = 50;
 
-    private  VideoOutput videoOutput;
+    private  VideoOutput currentVideoOutput;
+
+    private  VideoOutput requestVideoOutput;
 
     private final TimeSyncer timeSyncer = new TimeSyncer();//视频音画同步
 
@@ -42,20 +44,20 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
     @Override
     protected void onPlayStart() {
         super.onPlayStart();
-        videoOutput.start();
+        currentVideoOutput.start();
     }
 
     @Override
     protected void onPlayPause() {
         super.onPlayPause();
         timeSyncer.flush();//
-        videoOutput.pause();
+        currentVideoOutput.pause();
     }
 
     @Override
     protected void onPlayResume() {
         super.onPlayResume();
-        videoOutput.resume();
+        currentVideoOutput.resume();
     }
 
     @Override
@@ -63,22 +65,23 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
         super.onPlayStop();
         timeSyncer.reset();
         seekTimeUs = null;
-        videoOutput.stop();
+        currentVideoOutput.stop();
 
     }
 
     @Override
     protected void onInputFormatConfigure(VideoExtractor extractor, VideoDecoder decoder, MediaFormat inputFormat) {
-        if (videoOutput == null){
+        currentVideoOutput = requestVideoOutput;
+        if (currentVideoOutput == null){
             throw new NullPointerException("videoOutput is null");
         }
-        videoOutput.create(this);
-        videoOutput.prepare(extractor,decoder, inputFormat);
+        currentVideoOutput.create(this);
+        currentVideoOutput.prepare(extractor,decoder, inputFormat);
     }
 
     @Override
     protected void onOutputFormatChanged(MediaFormat outputFormat) {
-        videoOutput.onDecodeMediaFormatChanged(outputFormat);
+        currentVideoOutput.onDecodeMediaFormatChanged(outputFormat);
     }
 
     @Override
@@ -95,7 +98,7 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
         if (sleepTime <= -MAX_FRAME_JANK_MS) {//掉帧不需要渲染
             return false;
         }
-        videoOutput.onDecodeBufferAvailable(outputBuffer,presentationTimeUs);
+        currentVideoOutput.onDecodeBufferAvailable(outputBuffer,presentationTimeUs);
         return true;
     }
 
@@ -113,13 +116,13 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
             } catch (InterruptedException ignored) {
             }
         }
-        videoOutput.onDecodeBufferRender(presentationTimeUs);
+        currentVideoOutput.onDecodeBufferRender(presentationTimeUs);
     }
 
     @Override
     protected void onPlayRelease() {
         super.onPlayRelease();
-        videoOutput.release();
+        currentVideoOutput.release();
     }
 
 
@@ -128,12 +131,12 @@ class VideoPlayerImpl extends DecodePlayerImpl<VideoDecoder, VideoExtractor> imp
         if (isPrepared()){
             throw new IllegalStateException("setVideoOutput must before prepare or after stop");
         }
-        this.videoOutput = videoOutput;
+        this.requestVideoOutput = videoOutput;
     }
 
     @Override
     public synchronized VideoOutput getVideoOutput() {
-        return videoOutput;
+        return requestVideoOutput;
     }
 
     /**

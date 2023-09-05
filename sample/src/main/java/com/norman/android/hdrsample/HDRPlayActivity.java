@@ -103,9 +103,11 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         videoView = findViewById(R.id.VideoPlayerView);
         videoView.setViewType(viewType);
         directVideoOutput = DirectVideoOutput.create();
+        directVideoOutput.setOutputVideoView(videoView);
         glVideoOutput = GLVideoOutput.create();
         glVideoOutput.setTextureSource(textureSource);
         glVideoOutput.setHdrBitDepth(hdrBitDepth);
+        glVideoOutput.setOutputVideoView(videoView);
 
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
@@ -114,7 +116,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         hdrToSDRShaderTransform = new HDRToSDRVideoTransform();
         glVideoOutput.addVideoTransform(cubeLutVideoTransform);
         glVideoOutput.addVideoTransform(hdrToSDRShaderTransform);
-        glVideoOutput.setOutputVideoView(videoView);
+
 
         showTransformLayout(transformModeId);
         showHdrToSdrLayout(videoPlayer.getVideoOutput());

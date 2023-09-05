@@ -116,38 +116,12 @@ class GLVideoOutputImpl extends GLVideoOutput {
 
     private @ColorRange int colorRange;
 
-    private VideoView videoView;
 
 
     private  @TextureSource int textureSource = TextureSource.AUTO;
 
     private  @HdrBitDepth int hdrDisplayBitDepth = HdrBitDepth.BIT_DEPTH_10;
 
-    private final VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
-        @Override
-        public void onSurfaceAvailable(Surface surface, int width, int height) {
-
-            outputSurface.setSurface(surface);
-
-        }
-
-        @Override
-        public void onSurfaceRedraw() {
-            waitNextFrame(DEFAULT_WAIT_TIME_SECOND);//等待下一帧数据准备好，防止第一次黑屏
-        }
-
-        @Override
-        public void onSurfaceDestroy() {
-            outputSurface.setSurface(null);
-        }
-    };
-
-    private final OutputSizeSubscriber outputSizeSubscriber = new OutputSizeSubscriber() {
-        @Override
-        public void onOutputSizeChange(int width, int height) {
-            videoView.setAspectRatio(width * 1.0f / height);//修改View比例和视频一样
-        }
-    };
 
     public GLVideoOutputImpl() {
 
@@ -174,27 +148,8 @@ class GLVideoOutputImpl extends GLVideoOutput {
     }
 
     @Override
-    public synchronized void setOutputSurface(Surface surface) {
-        setOutputVideoView(null);//VideoView和Surface同时只能设置一个
-        this.outputSurface.setSurface(surface);
-    }
-
-
-    @Override
-    public synchronized void setOutputVideoView(VideoView view) {
-        if (videoView == view) {
-            return;
-        }
-        VideoView oldView = videoView;
-        if (oldView != null) {
-            oldView.unsubscribe(surfaceSubscriber);
-            unsubscribe(outputSizeSubscriber);
-        }
-        videoView = view;
-        if (videoView != null) {
-            subscribe(outputSizeSubscriber);
-            videoView.subscribe(surfaceSubscriber);
-        }
+    protected void onOutputSurfaceChange(Surface surface) {
+        outputSurface.setSurface(surface);
     }
 
     @Override

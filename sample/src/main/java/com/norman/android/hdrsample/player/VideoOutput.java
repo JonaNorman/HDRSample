@@ -54,13 +54,40 @@ public abstract class VideoOutput {
     protected int cropTop;
     protected int cropBottom;
 
+    private VideoView currentVideoView;
+
+    private VideoView requestVideoView;
 
 
+    private Surface outputSurface;
 
+    private final VideoView.SurfaceSubscriber surfaceSubscriber = new VideoView.SurfaceSubscriber() {
+        @Override
+        public void onSurfaceAvailable(Surface surface, int width, int height) {
+            setInternalOutputSurface(surface);
+        }
 
+        @Override
+        public void onSurfaceRedraw() {
+            waitNextFrame(DEFAULT_WAIT_TIME_SECOND);
+        }
 
+        @Override
+        public void onSurfaceDestroy() {
+            setInternalOutputSurface(null);
+        }
+    };
 
-
+    private final OutputSizeSubscriber outputSizeSubscriber = new OutputSizeSubscriber() {
+        @Override
+        public void onOutputSizeChange(int width, int height) {
+            synchronized (VideoOutput.this){
+                if (currentVideoView != null){
+                    currentVideoView.setAspectRatio(width*1.0f/height);//保证视频比例和Surface比例一样
+                }
+            }
+        }
+    };
 
 
     /**
@@ -68,14 +95,22 @@ public abstract class VideoOutput {
      *
      * @param surface
      */
-    public abstract void setOutputSurface(Surface surface);
+    public final synchronized void setOutputSurface(Surface surface) {
+        setOutputVideoView(null);// videoView和Surface只能同时设置一个
+        setInternalOutputSurface(surface);
+    }
 
     /**
      * 设置最终渲染到VideoView上，和setOutputSurface互斥，只能设置一个
      *
      * @param view
      */
-    public abstract void setOutputVideoView(VideoView view);
+    public final  synchronized void setOutputVideoView(VideoView view) {
+        requestVideoView = view;
+        if (isPlayerPrepared()){
+            attachVideoView();
+        }
+    }
 
 
     final synchronized void create(VideoPlayer videoPlayer) {
@@ -121,6 +156,7 @@ public abstract class VideoOutput {
         inputFormat.setInteger(MediaFormat.KEY_WIDTH, videoExtractor.getWidth());
         inputFormat.setInteger(MediaFormat.KEY_HEIGHT, videoExtractor.getHeight());
         setVideoSize(videoExtractor.getWidth(), videoExtractor.getHeight());
+        attachVideoView();
         onOutputPrepare(inputFormat);
     }
 
@@ -155,6 +191,7 @@ public abstract class VideoOutput {
      */
 
     final synchronized void stop() {
+        detachVideoView();
         videoDecoder = null;
         videoExtractor = null;
         videoPlayer = null;
@@ -165,6 +202,28 @@ public abstract class VideoOutput {
         skipFrameWait.set(false);
         skipWaitFrame();//停止防止一直等待
         onOutputStop();
+    }
+
+
+    synchronized void attachVideoView(){
+        if (currentVideoView == requestVideoView) {
+            return;
+        }
+        detachVideoView();
+        currentVideoView  = requestVideoView;
+        if (currentVideoView != null){
+            subscribe(outputSizeSubscriber);
+            currentVideoView.subscribe(surfaceSubscriber);
+        }
+    }
+
+   synchronized void detachVideoView(){
+       VideoView oldView = currentVideoView;
+       if (oldView != null){//取消上一次绑定
+           oldView.unsubscribe(surfaceSubscriber);
+           unsubscribe(outputSizeSubscriber);
+       }
+       currentVideoView = null;
     }
 
     synchronized boolean isPlayerPrepared() {
@@ -248,6 +307,15 @@ public abstract class VideoOutput {
     }
 
 
+    synchronized void setInternalOutputSurface(Surface surface){
+        if (outputSurface != surface){
+            outputSurface = surface;
+            onOutputSurfaceChange(outputSurface);
+        }
+    }
+
+
+
     protected void onOutputCreate(){
 
     }
@@ -295,6 +363,9 @@ public abstract class VideoOutput {
     protected boolean onOutputBufferRender(long presentationTimeUs) {
         return true;
     }
+
+
+    protected abstract void onOutputSurfaceChange(Surface surface);
 
 
     /**
