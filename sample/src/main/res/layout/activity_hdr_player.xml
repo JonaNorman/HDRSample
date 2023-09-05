@@ -41,6 +41,7 @@
                     android:id="@+id/ButtonVideoList"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="视频列表" />
 
 
@@ -48,12 +49,14 @@
                     android:id="@+id/ButtonVideoOutput"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="输出模式" />
 
                 <Button
                     android:id="@+id/ButtonViewMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="视图模式" />
 
             </LinearLayout>
@@ -64,7 +67,6 @@
             android:id="@+id/HdrToSdrLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
             android:orientation="vertical">
 
             <TextView
@@ -83,6 +85,7 @@
                     android:id="@+id/ButtonTextureSource"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="纹理来源">
 
                 </Button>
@@ -91,6 +94,7 @@
                     android:id="@+id/ButtonBitDepth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="纹理位数">
 
                 </Button>
@@ -99,6 +103,7 @@
                     android:id="@+id/ButtonTransformMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="转换方式">
 
                 </Button>
@@ -108,15 +113,16 @@
 
             <LinearLayout
                 android:id="@+id/transformLayoutCubeLut"
-                android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/ButtonCubeLut"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="LUT配置"/>
+                    android:minWidth="0dp"
+                    android:text="LUT配置" />
 
 
             </LinearLayout>
@@ -125,10 +131,12 @@
                 android:id="@+id/transformLayoutShader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <Button
                     android:id="@+id/ButtonChromaCorrection"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="色度矫正">
 
                 </Button>
@@ -138,7 +146,8 @@
                     android:id="@+id/ButtonToneMap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="色度映射">
+                    android:minWidth="0dp"
+                    android:text="色调映射">
 
                 </Button>
 
@@ -147,7 +156,8 @@
                     android:id="@+id/ButtonGamutMap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="色度矫正">
+                    android:minWidth="0dp"
+                    android:text="色域映射">
 
                 </Button>
 
@@ -155,6 +165,7 @@
                     android:id="@+id/ButtonGammaEncode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="0dp"
                     android:text="Gamma压缩">
 
                 </Button>

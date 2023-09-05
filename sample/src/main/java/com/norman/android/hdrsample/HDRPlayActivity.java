@@ -476,8 +476,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         for (int i = 0; i < menu.size(); i++) {
             Item<GammaOETF> item = menuList.get(i);
             MenuItem menuItem = menu.findItem(i);
-            menuItem.setChecked(true);
-            menuItem.setCheckable(item.value == hdrToSDRShaderTransform.getGammaOETF());
+            menuItem.setCheckable(true);
+            menuItem.setChecked(item.value == hdrToSDRShaderTransform.getGammaOETF());
         }
         pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
