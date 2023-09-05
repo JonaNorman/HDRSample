@@ -55,7 +55,6 @@ public class CubeLutVideoTransform extends GLVideoTransform {
     private int lutTextureId;
     private int lutSize;
 
-    private boolean lutEnable;
 
     private CubeLutBuffer currentCube;
 
@@ -101,14 +100,12 @@ public class CubeLutVideoTransform extends GLVideoTransform {
             GLESUtil.delTextureId(lutTextureId);
             lutTextureId = 0;
             lutSize = 0;
-            lutEnable = false;
             if (currentCube != null) {
                 lutTextureId = currentCube.createTextureId();
                 lutSize = currentCube.size;
-                lutEnable = true;
             }
         }
-        return lutEnable;
+        return lutTextureId >0;
     }
 
     @Override
@@ -157,4 +154,6 @@ public class CubeLutVideoTransform extends GLVideoTransform {
         }
         cubeLutBuffer = CubeLutBuffer.loadAsset(asset);
     }
+
+
 }
