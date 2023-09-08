@@ -10,6 +10,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 颜色范围
+ */
 @IntDef({
         LIMITED,
         FULL,

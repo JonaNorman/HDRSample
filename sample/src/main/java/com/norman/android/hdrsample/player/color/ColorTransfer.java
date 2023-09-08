@@ -12,6 +12,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 传递函数
+ */
 @IntDef({
         LINEAR,
         SDR_VIDEO,

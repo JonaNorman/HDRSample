@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +17,10 @@ import com.norman.android.hdrsample.player.GLVideoOutput;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
+import com.norman.android.hdrsample.player.color.ColorRange;
 import com.norman.android.hdrsample.player.color.ColorSpace;
+import com.norman.android.hdrsample.player.color.ColorStandard;
+import com.norman.android.hdrsample.player.color.ColorTransfer;
 import com.norman.android.hdrsample.player.source.AssetFileSource;
 import com.norman.android.hdrsample.player.source.FileSource;
 import com.norman.android.hdrsample.transform.CubeLutVideoTransform;
@@ -26,13 +30,14 @@ import com.norman.android.hdrsample.transform.shader.gamma.GammaOETF;
 import com.norman.android.hdrsample.transform.shader.gamutmap.GamutMap;
 import com.norman.android.hdrsample.transform.shader.tonemap.ToneMap;
 import com.norman.android.hdrsample.util.AssetUtil;
+import com.norman.android.hdrsample.util.DisplayUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener{
+public class HDRPlayActivity extends AppCompatActivity implements View.OnClickListener {
 
 
     private static final List<Item<ChromaCorrection>> CHROMA_CORRECTION_MENU_LIST = Arrays.asList(new Item[]{
@@ -90,20 +95,25 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     String cubeLutAsset;
 
-    int colorSpace =  -1;
+    int colorSpace = -1;
 
     int transformModeId = R.id.transform_mode_cube_shader;
+
+    TextView textViewVideoInfo;
+
+    TextView textViewScreenInfo;
 
 
     VideoOutput.OutputFormatSubscriber outputFormatSubscriber = new VideoOutput.OutputFormatSubscriber() {
         @Override
         public void onOutputFormatChange(MediaFormat outputFormat) {
-           int   space = MediaFormatUtil.getColorSpace(outputFormat);
-           if (space != colorSpace){
-               colorSpace = space;
-               cubeLutAsset = null;
-               cubeLutVideoTransform.setCubeLut(null);
-           }
+            int space = MediaFormatUtil.getColorSpace(outputFormat);
+            if (space != colorSpace) {
+                colorSpace = space;
+                cubeLutAsset = null;
+                cubeLutVideoTransform.setCubeLut(null);
+            }
+            showVideoInfo(outputFormat);
         }
     };
 
@@ -112,6 +122,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_hdr_player);
+        textViewVideoInfo = findViewById(R.id.TextViewVideoInfo);
+        textViewScreenInfo = findViewById(R.id.TextViewScreenInfo);
         videoView = findViewById(R.id.VideoPlayerView);
         videoView.setViewType(viewType);
         directVideoOutput = DirectVideoOutput.create();
@@ -135,6 +147,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
         showTransformLayout(transformModeId);
         showHdrToSdrLayout(videoPlayer.getVideoOutput());
+        showScreenInfo();
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
@@ -169,13 +182,12 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.ButtonCubeLut) {
             showCubeLutMenu(v);
-        }else if (id == R.id.ButtonVideoList) {
+        } else if (id == R.id.ButtonVideoList) {
             showVideListMenu(v);
         } else if (id == R.id.ButtonVideoOutput) {
             showVideoOutputMenu(v);
@@ -198,20 +210,81 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
+    private void showScreenInfo(){
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("HDR10:");
+        stringBuffer.append(DisplayUtil.isSupportHdr10()?"✓":"×");
+        stringBuffer.append(" ");
+        stringBuffer.append("HLG:");
+        stringBuffer.append(DisplayUtil.isSupportHlg()?"✓":"×");
+        stringBuffer.append(" ");
+        stringBuffer.append("HDR10+:");
+        stringBuffer.append(DisplayUtil.isSupportHdr10Plus()?"✓":"×");
+        stringBuffer.append(" ");
+        stringBuffer.append("DolbyVision:");
+        stringBuffer.append(DisplayUtil.isSupportDolbyVision()?"✓":"×");
+        textViewScreenInfo.setText(stringBuffer);
+    }
+
+    private void showVideoInfo(MediaFormat outputFormat) {
+        int colorStandard = MediaFormatUtil.getColorStandard(outputFormat);
+        int colorTransfer = MediaFormatUtil.getColorTransfer(outputFormat);
+        int colorRange = MediaFormatUtil.getColorRange(outputFormat);
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("色域:");
+        if (colorStandard == ColorStandard.BT709) {
+            stringBuffer.append("BT709");
+        } else if (colorStandard == ColorStandard.BT601_NTSC) {
+            stringBuffer.append("BT601_NTSC");
+        } else if (colorStandard == ColorStandard.BT601_PAL) {
+            stringBuffer.append("BT601_PAL");
+        } else if (colorStandard == ColorStandard.BT2020) {
+            stringBuffer.append("BT2020");
+        }else {
+            stringBuffer.append("未知");
+        }
+        stringBuffer.append(" ");
+        stringBuffer.append("传递函数:");
+        if (colorTransfer == ColorTransfer.SDR_VIDEO) {
+            stringBuffer.append("BT709");
+        } else if (colorTransfer == ColorTransfer.HLG) {
+            stringBuffer.append("HLG");
+        } else if (colorTransfer == ColorTransfer.ST2084) {
+            stringBuffer.append("ST2084");
+        } else if (colorTransfer == ColorTransfer.LINEAR) {
+            stringBuffer.append("LINEAR");
+        }else {
+            stringBuffer.append("未知");
+        }
+        stringBuffer.append(" ");
+        stringBuffer.append("范围:");
+        if (colorRange == ColorRange.LIMITED) {
+            stringBuffer.append("limited");
+        } else if (colorRange == ColorRange.FULL) {
+            stringBuffer.append("full");
+        }
+        textViewVideoInfo.post(new Runnable() {
+            @Override
+            public void run() {
+                textViewVideoInfo.setText(stringBuffer.toString());
+            }
+        });
+    }
+
     private void showCubeLutMenu(View v) {
-        if (colorSpace == -1){
-            Toast.makeText(this,"正在加载中，请稍后再点击",Toast.LENGTH_SHORT).show();
+        if (colorSpace == -1) {
+            Toast.makeText(this, "正在加载中，请稍后再点击", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (colorSpace ==ColorSpace.VIDEO_SDR){
-            Toast.makeText(this,"不是HDR视频，不能加载HDR转SDR的LUT",Toast.LENGTH_SHORT).show();
+        if (colorSpace == ColorSpace.VIDEO_SDR) {
+            Toast.makeText(this, "不是HDR视频，不能加载HDR转SDR的LUT", Toast.LENGTH_SHORT).show();
             return;
         }
 
         PopupMenu pum = new PopupMenu(this, v);
         Menu menu = pum.getMenu();
-        menu.add(0,-1,0,"无");
-        List<String> assetList = colorSpace == ColorSpace.VIDEO_BT2020_PQ?pq2sdrCubeList:hlg2sdrCubeList;
+        menu.add(0, -1, 0, "无");
+        List<String> assetList = colorSpace == ColorSpace.VIDEO_BT2020_PQ ? pq2sdrCubeList : hlg2sdrCubeList;
 
         for (int i = 0; i < assetList.size(); i++) {
             String fileName = new File(assetList.get(i)).getName();
@@ -229,13 +302,14 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 int id = item.getItemId();
-                cubeLutAsset = id<0?null:assetList.get(id);
+                cubeLutAsset = id < 0 ? null : assetList.get(id);
                 cubeLutVideoTransform.setCubeLut(cubeLutAsset);
                 return true;
             }
         });
         pum.show();
     }
+
     private void showVideListMenu(View v) {
 
         PopupMenu pum = new PopupMenu(this, v);

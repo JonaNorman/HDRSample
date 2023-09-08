@@ -89,7 +89,7 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         }
         if (shaderChange || (hdrToSDRShader != null &&
                 hdrToSDRShader.colorSpace != colorSpace)) {
-            hdrToSDRShader = new HDRToSDRShader(getInputColorSpace(),
+            hdrToSDRShader = new HDRToSDRShader(colorSpace,
                     chromaCorrection,
                     toneMap,
                     gamutMap,

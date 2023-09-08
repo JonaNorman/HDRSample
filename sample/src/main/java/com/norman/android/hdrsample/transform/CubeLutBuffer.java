@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
  *  title就是从Cube文件读取像TITLE "BT2020_HLG_BT601_PAL"中的BT2020_HLG_BT601_PAL
  *  size就是从Cube文件读取像LUT_3D_SIZE 33中的33
  *  RGB数据就是从Cube文件读取像0.50289002 0.59033508 0.77007249读取数字转换成RGB Buffer
+ * 如果还像加速速度，可以把cube文件内容读取到rgbBuffer后直接保存到文件中，读取的时候就不需要处理，速度会快很多
  */
 public class CubeLutBuffer {
 

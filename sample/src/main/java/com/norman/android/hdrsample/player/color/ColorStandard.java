@@ -12,6 +12,9 @@ import androidx.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * 颜色标准
+ */
 @IntDef({
         BT709,
         BT601_PAL,

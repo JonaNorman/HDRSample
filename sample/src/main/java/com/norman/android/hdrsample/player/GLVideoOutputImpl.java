@@ -202,10 +202,10 @@ class GLVideoOutputImpl extends GLVideoOutput {
         } else {
             bufferMode = textureSource == TextureSource.BUFFER;
         }
-        if (bufferMode) {
+        if (bufferMode) {//buffer解码
             videoDecoder.setOutputSurface(null);
             videoDecoder.setOutputMode(VideoDecoder.OutputMode.BUFFER_MODE);
-        } else {
+        } else {//解码到Surface
             videoDecoder.setOutputMode(VideoDecoder.OutputMode.SURFACE_MODE);
             videoSurface = new GLTextureSurface(GLESUtil.createExternalTextureId());
             videoDecoder.setOutputSurface(videoSurface);// 视频解码到videoSurface的纹理上
@@ -350,13 +350,14 @@ class GLVideoOutputImpl extends GLVideoOutput {
             backTarget.setBitDepth(targetBitDepth);
             frontTarget.setRenderSize(videoWidth, videoHeight);
             backTarget.setRenderSize(videoWidth, videoHeight);
-            textureRenderer.renderToTarget(frontTarget);
 
             // 标记frontTarget的属性，方便后续处理
             frontTarget.setColorSpace(colorSpace);
             frontTarget.setMaxContentLuminance(maxContentLuminance);
             frontTarget.setMaxFrameAverageLuminance(maxFrameAverageLuminance);
             frontTarget.setMaxMasteringLuminance(maxMasteringLuminance);
+            //把前面的数据渲染到新的纹理上面
+            textureRenderer.renderToTarget(frontTarget);
 
             //用frontTarget和backTarget做中转做Transform的处理
             for (GLVideoTransform videoTransform : transformList) {
