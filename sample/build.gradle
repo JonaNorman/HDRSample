@@ -17,7 +17,7 @@ android {
     }
 
     aaptOptions {
-        noCompress "cube"
+        noCompress "cube","mov"
     }
 
     buildTypes {
