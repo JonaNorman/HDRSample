@@ -98,7 +98,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     int colorSpace = -1;
 
-    int transformModeId = R.id.transform_mode_cube_shader;
+    int transformModeId = R.id.transform_mode_node;
 
     TextView textViewVideoInfo;
 
@@ -148,7 +148,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         glVideoOutput.addVideoTransform(cubeLutVideoTransform);
         glVideoOutput.addVideoTransform(hdrToSDRShaderTransform);
 
-
+        initHDRToSDRShaderTransform();
         showTransformLayout(transformModeId);
         showHdrToSdrLayout(videoPlayer.getVideoOutput());
         showScreenInfo();
@@ -165,6 +165,13 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonToneMap).setOnClickListener(this);
         findViewById(R.id.ButtonGammaEncode).setOnClickListener(this);
         findViewById(R.id.ButtonChromaCorrection).setOnClickListener(this);
+    }
+
+    private void initHDRToSDRShaderTransform() {
+        hdrToSDRShaderTransform.setGammaOETF(GammaOETF.BT1886);
+        hdrToSDRShaderTransform.setGamutMap(GamutMap.CLIP);
+        hdrToSDRShaderTransform.setToneMap(ToneMap.ANDROID13);
+        hdrToSDRShaderTransform.setChromaCorrection(ChromaCorrection.BT2446C);
     }
 
 
