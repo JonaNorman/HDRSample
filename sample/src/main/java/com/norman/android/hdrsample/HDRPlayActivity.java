@@ -31,6 +31,7 @@ import com.norman.android.hdrsample.transform.shader.gamutmap.GamutMap;
 import com.norman.android.hdrsample.transform.shader.tonemap.ToneMap;
 import com.norman.android.hdrsample.util.AssetUtil;
 import com.norman.android.hdrsample.util.DisplayUtil;
+import com.norman.android.hdrsample.util.GLESUtil;
 import com.norman.android.hdrsample.util.MediaFormatUtil;
 
 import java.io.File;
@@ -103,6 +104,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     TextView textViewScreenInfo;
 
+    TextView textViewOpenGLSupportInfo;
+
 
     VideoOutput.OutputFormatSubscriber outputFormatSubscriber = new VideoOutput.OutputFormatSubscriber() {
         @Override
@@ -124,6 +127,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_hdr_player);
         textViewVideoInfo = findViewById(R.id.TextViewVideoInfo);
         textViewScreenInfo = findViewById(R.id.TextViewScreenInfo);
+        textViewOpenGLSupportInfo = findViewById(R.id.TextViewOpenGLSupportInfo);
         videoView = findViewById(R.id.VideoPlayerView);
         videoView.setViewType(viewType);
         directVideoOutput = DirectVideoOutput.create();
@@ -148,6 +152,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         showTransformLayout(transformModeId);
         showHdrToSdrLayout(videoPlayer.getVideoOutput());
         showScreenInfo();
+        showOpenGLSupportInfo();
 
         findViewById(R.id.ButtonCubeLut).setOnClickListener(this);
         findViewById(R.id.ButtonVideoList).setOnClickListener(this);
@@ -224,6 +229,20 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         stringBuffer.append("DolbyVision:");
         stringBuffer.append(DisplayUtil.isSupportDolbyVision()?"✓":"×");
         textViewScreenInfo.setText(stringBuffer);
+    }
+
+
+    private void showOpenGLSupportInfo(){
+        StringBuffer stringBuffer = new StringBuffer();
+        stringBuffer.append("PQ:");
+        stringBuffer.append(GLESUtil.isSupportBT2020PQ()?"✓":"×");
+        stringBuffer.append(" ");
+        stringBuffer.append("HLG:");
+        stringBuffer.append(GLESUtil.isSupportBT2020HLG()?"✓":"×");
+        stringBuffer.append(" ");
+        stringBuffer.append("Linear:");
+        stringBuffer.append(GLESUtil.isSupportBT2020Linear()?"✓":"×");
+        textViewOpenGLSupportInfo.setText(stringBuffer);
     }
 
     private void showVideoInfo(MediaFormat outputFormat) {
