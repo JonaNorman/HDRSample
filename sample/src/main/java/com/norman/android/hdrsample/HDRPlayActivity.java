@@ -64,8 +64,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
     private static final List<Item<GammaOETF>> GAMMA_OETF_MENU_LIST = Arrays.asList(new Item[]{
             new Item("无", GammaOETF.NONE),
             new Item("BT1886", GammaOETF.BT1886),
-            new Item("BT709", GammaOETF.BT709),
-            new Item("S170M", GammaOETF.S170M)
+            new Item("BT709", GammaOETF.BT709)
     });
 
     VideoPlayer videoPlayer;
