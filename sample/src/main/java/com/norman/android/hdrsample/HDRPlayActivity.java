@@ -141,7 +141,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
-        videoPlayer.setSource(AssetFileSource.create(videoList.get(0)));
+
+
+        videoPlayer.setSource(AssetFileSource.create("video/hdr-pq-model.mp4"));
         cubeLutVideoTransform = new CubeLutVideoTransform();
         hdrToSDRShaderTransform = new HDRToSDRVideoTransform();
         glVideoOutput.addVideoTransform(cubeLutVideoTransform);
