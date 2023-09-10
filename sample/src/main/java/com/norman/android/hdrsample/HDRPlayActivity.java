@@ -14,6 +14,7 @@ import androidx.appcompat.widget.PopupMenu;
 
 import com.norman.android.hdrsample.player.DirectVideoOutput;
 import com.norman.android.hdrsample.player.GLVideoOutput;
+import com.norman.android.hdrsample.player.Player;
 import com.norman.android.hdrsample.player.VideoOutput;
 import com.norman.android.hdrsample.player.VideoPlayer;
 import com.norman.android.hdrsample.player.VideoView;
@@ -141,6 +142,25 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
         videoPlayer = VideoPlayer.create();
         videoPlayer.setVideoOutput(glVideoOutput);
+        videoPlayer.setCallback(new Player.Callback() {
+            @Override
+            public void onPlayProcess(float timeSecond) {
+
+            }
+
+            @Override
+            public void onPlayEnd() {
+
+            }
+
+            @Override
+            public void onPlayError(Exception exception) {
+                Toast.makeText(getApplicationContext(),
+                        exception.getMessage(),
+                        Toast.LENGTH_LONG).show();
+
+            }
+        });
 
 
         videoPlayer.setSource(AssetFileSource.create("video/hdr-pq-model.mp4"));
