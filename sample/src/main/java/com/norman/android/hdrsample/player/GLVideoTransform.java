@@ -74,6 +74,7 @@ public abstract class GLVideoTransform extends GLRenderer {
 
     synchronized void renderToTarget(GLRenderTextureTarget inputTarget, GLRenderTextureTarget outputTarget) {
         if (!enable){
+            renderSuccess = false;
             return;
         }
         this.inputTarget = inputTarget;

@@ -113,8 +113,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             int space = MediaFormatUtil.getColorSpace(outputFormat);
             if (space != colorSpace) {
                 colorSpace = space;
-                cubeLutAsset = null;
-                cubeLutVideoTransform.setCubeLut(null);
+                List<String> assetList = colorSpace == ColorSpace.VIDEO_BT2020_PQ ? pq2sdrCubeList : hlg2sdrCubeList;
+                cubeLutAsset = assetList.get(0);
+                cubeLutVideoTransform.setCubeLut(cubeLutAsset);
             }
             showVideoInfo(outputFormat);
         }
@@ -169,7 +170,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         glVideoOutput.addVideoTransform(cubeLutVideoTransform);
         glVideoOutput.addVideoTransform(hdrToSDRShaderTransform);
 
-        initHDRToSDRShaderTransform();
+        initTransform();
         showTransformLayout(transformModeId);
         showHdrToSdrLayout(videoPlayer.getVideoOutput());
         showScreenInfo();
@@ -188,7 +189,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonChromaCorrection).setOnClickListener(this);
     }
 
-    private void initHDRToSDRShaderTransform() {
+    private void initTransform() {
+        cubeLutVideoTransform.setCubeLut(null);
         hdrToSDRShaderTransform.setGammaOETF(GammaOETF.BT1886);
         hdrToSDRShaderTransform.setGamutMap(GamutMap.CLIP);
         hdrToSDRShaderTransform.setToneMap(ToneMap.ANDROID13);
