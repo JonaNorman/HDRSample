@@ -31,6 +31,9 @@ abstract class ToneMap: GLShaderCode() {
         val  BT2446A = ToneMapBT2446A()
 
         @JvmField
+        val  BT2446A1 = ToneMapBT2446A1()
+
+        @JvmField
         val  BT2446C = ToneMapBT2446C()
 
 

@@ -51,6 +51,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             new Item("Android8", ToneMap.ANDROID8),
             new Item("Android13", ToneMap.ANDROID13),
             new Item("BT2446A", ToneMap.BT2446A),
+            new Item("BT2446A1", ToneMap.BT2446A1),
             new Item("BT2446C", ToneMap.BT2446C),
             new Item("Hable", ToneMap.HABLE)
     });

@@ -12,7 +12,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenc
  * 4. 转换回伽玛域
  * 5. YCBCR转换回RGB
  * https://www.itu.int/pub/R-REP-BT.2446
- * 参考代码： https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr.glsl
+ * 参考代码： https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/tone-mapping/bt2446a.glsl
  *
  * //
  */
@@ -52,7 +52,7 @@ class ToneMapBT2446A : ToneMap() {
             float f(float Y) {
                 Y = pow(Y, 1.0 / 2.4);
 
-                 float pHDR = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE} / 10000.0, 1.0 / 2.4);
+                 float pHDR = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE} , 1.0 / 2.4);
                  float pSDR = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
 
                  float Yp = log(1.0 + (pHDR - 1.0) * Y) / log(pHDR);
