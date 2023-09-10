@@ -98,7 +98,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     int colorSpace = -1;
 
-    int transformModeId = R.id.transform_mode_node;
+    int transformModeId = R.id.transform_mode_cube_shader;
 
     TextView textViewVideoInfo;
 
