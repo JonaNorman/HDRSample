@@ -1,8 +1,8 @@
 # HDRSample
-这个库用OpenGL实现了HDR和SDR转换，如果你觉得有所收获，给这个库点个赞吧，你的鼓励是我前进最大的动力。
+这个库用MediaCode和OpenGL实现了HDR和SDR转换，如果你觉得有所收获，给这个库点个赞吧，你的鼓励是我前进最大的动力。
 ![image](https://user-images.githubusercontent.com/4536178/222448632-f8dbfb59-11bc-4c5e-a0eb-e34f1dc72431.png)
 
-现有功能实现如下，供大家参考学习一起上进
+现有功能实现如下，供大家一起学习一起上进
 1. **输出模式**(直接输出到Surface、经过OpenGL中转)
 2. **视图模式**(无缝切换SurfaceView和TextureView)
 3. **多种纹理来源配置**(Auto、YUV420Buffer、外部纹理OES、Y2Y)、纹理位深配置(8位、10位、16位)
@@ -25,6 +25,9 @@
 ![HDR转SDR](preview/preview.gif)
 
 # 关键代码
+
+代码已经都加上注释了，如果有疑惑，欢迎加入HDR视频开发讨论群
+![HDR视频开发讨论群](/preview/chat.jpg)
 
 1. [Shader](sample/src/main/java/com/norman/android/hdrsample/transform/shader)目录下实现了色度矫正、色调参考、色调映射、色域转换、Gamma压缩
 2. [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt)和[GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java) 纯Shader实现四种YUV420的Buffer转换成纹理
