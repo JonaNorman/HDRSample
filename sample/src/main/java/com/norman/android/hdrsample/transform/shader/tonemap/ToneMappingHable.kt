@@ -4,10 +4,12 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_REFERENC
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.HDR_PEAK_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenceWhiteToOne
 
-//参考代码:https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c
-// https://blog.csdn.net/a360940265a/article/details/124671992
-// Filmic curve by John Hable, Also known as the "Uncharted 2 curve".
-// http://filmicworlds.com/blog/filmic-tonemapping-operators/
+/**
+ *   https://blog.csdn.net/a360940265a/article/details/124671992
+ *  Filmic curve by John Hable, Also known as the "Uncharted 2 curve".
+ *  http://filmicworlds.com/blog/filmic-tonemapping-operators/
+ *  参考代码:https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c
+ */
 class ToneMappingHable : ToneMap() {
     override val code: String
         get() = """

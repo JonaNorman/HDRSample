@@ -9,7 +9,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale
 /**
  * Android8的实现，
  * 个人理解和Android13其实思路是一样，按几个点插值形成的曲线进行调整
- * (x0,y0) x0=10,y0=17,其实就是暗部这部分线性插值
+ * (x0,y0) x0=10,y0=17,其实就是暗部线性插值
  * (x1,y1) x1=y1等于屏幕最大亮度的0.75,也是线性插值
  * (x2,y2) x2在x1和输入最大亮度的中间，y2在y1和屏幕最大亮度的中间，然后用Hermitian曲线进行插值
  * Hermitian在BT2309中也有使用到

@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale.methodScaleReferenc
 
 /**
  * 该实现是BT2446中介绍的a方法
- * 个人理解，流程大约明白了，具体里面的参数为什么这么设还没不清楚
+ * 个人理解
  * 1. RGB转换YCBCR
  * 2. Y亮度转换为感知线性空间
  * 3. 在感知域中对Y应用拐点函数

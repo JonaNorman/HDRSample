@@ -15,12 +15,12 @@ import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayOETF
  * Android13的实现
  * 个人理解
  * HLG是直接按屏幕最大亮度进行缩放
- * PQ是把输入的值按照给定几个点插值形成的曲线进行调整，插值按PQEOTF进行拟合
+ * PQ是把输入的值按照给定几个点插值形成的曲线进行调整，插值按PQOETF进行拟合
  * (x1,y1) x1=y1等于屏幕最大亮度的0.65
  * (x2,y2) x2表示x1和x3之间的4.0/17.0  y2表示屏幕亮度最大亮度的0.9
  * (x3,y3) x3等于调整前的最大亮度，y3等于调整后的最大亮度即屏幕最大亮度
+ * 参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
  */
-//参考地址：https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp
 
 class ToneMapAndroid13 : ToneMap() {
 
