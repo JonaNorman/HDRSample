@@ -4,6 +4,7 @@
 
 
 # 效果预览
+[安装包地址](preview/sample-release.apk)
 
 ![HDR转SDR](preview/preview.gif)
 

@@ -20,14 +20,25 @@ android {
         noCompress "cube","mov"
     }
 
+    signingConfigs {
+        config {
+            storeFile file("hdrsample.keystore")
+            storePassword "hdr123456"
+            keyAlias "hdrsample"
+            keyPassword "hdr123456"
+        }
+    }
+
     buildTypes {
         debug {
             debuggable true
             minifyEnabled false
+            signingConfig signingConfigs.config
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
     android {
@@ -39,6 +50,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+
 }
 
 
