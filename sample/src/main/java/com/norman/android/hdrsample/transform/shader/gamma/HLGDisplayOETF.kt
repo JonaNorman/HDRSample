@@ -8,7 +8,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_
  * HLG的显示场景参考OETF
  * 参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
  */
-class HLGDisplayOETF : GammaEOTF() {
+class HLGDisplayOETF : GammaOETF() {
     val methodSceneOETF = "${prefix}SCENE_OETF"
     val methodHLGGamma = "${prefix}GAMMA"
     val methodInverseOOTF = "${prefix}INVERSE_OOTF"

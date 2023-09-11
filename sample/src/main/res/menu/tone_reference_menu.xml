@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tone_reference_display"
+        android:checkable="true"
+        android:title="显示参考"/>
+
+    <item
+        android:id="@+id/tone_reference_scene"
+        android:checkable="true"
+        android:title="场景参考"/>
+
+</menu>

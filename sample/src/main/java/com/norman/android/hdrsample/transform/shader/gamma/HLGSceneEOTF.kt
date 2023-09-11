@@ -1,11 +1,7 @@
 package com.norman.android.hdrsample.transform.shader.gamma
 
-/**
- * HLG的场景参考OETF
- * 参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
- */
-
-class HLGSceneEOTF : GammaOETF() {
+// HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
+class HLGSceneEOTF : GammaEOTF() {
 
     val a = "${prefix}A"
     val b = "${prefix}B"

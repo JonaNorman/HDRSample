@@ -78,7 +78,6 @@
         </LinearLayout>
 
 
-
     </LinearLayout>
 
     <com.norman.android.hdrsample.player.VideoView
@@ -208,45 +207,73 @@
             <LinearLayout
                 android:id="@+id/transformLayoutShader"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/ButtonChromaCorrection"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    android:text="色度矫正">
+                    android:orientation="horizontal">
 
-                </Button>
+                    <Button
+                        android:id="@+id/ButtonChromaCorrection"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:text="色度矫正">
+
+                    </Button>
+
+                    <Button
+                        android:id="@+id/ButtonToneReference"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:text="色调参考">
+
+                    </Button>
 
 
-                <Button
-                    android:id="@+id/ButtonToneMap"
-                    android:layout_width="wrap_content"
+                    <Button
+                        android:id="@+id/ButtonToneMap"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:text="色调映射">
+
+                    </Button>
+
+                    <Button
+                        android:id="@+id/ButtonGamutMap"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:text="色域转换">
+
+                    </Button>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    android:text="色调映射">
-
-                </Button>
+                    android:orientation="horizontal">
 
 
-                <Button
-                    android:id="@+id/ButtonGamutMap"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    android:text="色域映射">
 
-                </Button>
+                    <Button
+                        android:id="@+id/ButtonGammaEncode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:text="Gamma压缩">
 
-                <Button
-                    android:id="@+id/ButtonGammaEncode"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    android:text="Gamma压缩">
+                    </Button>
 
-                </Button>
+                </LinearLayout>
+
+
             </LinearLayout>
 
         </LinearLayout>

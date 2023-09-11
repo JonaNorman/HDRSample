@@ -19,6 +19,10 @@ import java.nio.FloatBuffer;
 
 public class HDRToSDRVideoTransform extends GLVideoTransform {
 
+    public static final int TONE_DISPLAY_REFERENCE = 1;
+
+    public static final int TONE_SCENE_REFERENCE = 2;
+
     private static final int VERTEX_LENGTH = 2;
 
     private static final String VERTEX_SHADER = "precision mediump float;\n" +
@@ -54,6 +58,8 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     private GammaOETF gammaOETF = GammaOETF.NONE;
 
     private boolean shaderChange;
+
+    private int toneReference = TONE_DISPLAY_REFERENCE;
 
 
     public HDRToSDRVideoTransform() {
@@ -93,7 +99,9 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
                     chromaCorrection,
                     toneMap,
                     gamutMap,
-                    gammaOETF
+                    gammaOETF,
+                    toneReference == TONE_DISPLAY_REFERENCE
+
             );
             setFrameShader(hdrToSDRShader);
             shaderChange  =false;
@@ -168,6 +176,13 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
         }
     }
 
+    public synchronized void setToneReference(int type){
+        if (this.toneReference != type){
+            this.toneReference = type;
+            shaderChange = true;
+        }
+    }
+
     public synchronized ChromaCorrection getChromaCorrection() {
         return chromaCorrection;
     }
@@ -182,5 +197,9 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
 
     public synchronized GammaOETF getGammaOETF() {
         return gammaOETF;
+    }
+
+    public int getToneReference() {
+        return toneReference;
     }
 }

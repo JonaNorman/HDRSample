@@ -188,6 +188,7 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
         findViewById(R.id.ButtonToneMap).setOnClickListener(this);
         findViewById(R.id.ButtonGammaEncode).setOnClickListener(this);
         findViewById(R.id.ButtonChromaCorrection).setOnClickListener(this);
+        findViewById(R.id.ButtonToneReference).setOnClickListener(this);
     }
 
     private void initTransform() {
@@ -239,6 +240,8 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             showChromaCorrectMenu(v);
         } else if (id == R.id.ButtonToneMap) {
             showToneMapMenu(v);
+        }else if (id == R.id.ButtonToneReference) {
+            showToneReferenceMenu(v);
         } else if (id == R.id.ButtonGamutMap) {
             showGamutMapMenu(v);
         } else if (id == R.id.ButtonGammaEncode) {
@@ -559,6 +562,30 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 hdrToSDRShaderTransform.setToneMap(menuList.get(item.getItemId()).value);
+                return true;
+            }
+        });
+        pum.show();
+    }
+
+    void showToneReferenceMenu(View v) {
+        PopupMenu pum = new PopupMenu(this, v);
+        pum.inflate(R.menu.tone_reference_menu);
+        Menu menu = pum.getMenu();
+        int toneReference = hdrToSDRShaderTransform.getToneReference();;
+        if (toneReference == HDRToSDRVideoTransform.TONE_DISPLAY_REFERENCE) {
+            menu.findItem(R.id.tone_reference_display).setChecked(true);
+        } else if (toneReference  ==HDRToSDRVideoTransform.TONE_SCENE_REFERENCE) {
+            menu.findItem(R.id.tone_reference_scene).setChecked(true);
+        }
+        pum.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.tone_reference_display) {
+                   hdrToSDRShaderTransform.setToneReference(HDRToSDRVideoTransform.TONE_DISPLAY_REFERENCE);
+                } else if (item.getItemId() == R.id.tone_reference_scene) {
+                    hdrToSDRShaderTransform.setToneReference(HDRToSDRVideoTransform.TONE_SCENE_REFERENCE);
+                }
                 return true;
             }
         });
