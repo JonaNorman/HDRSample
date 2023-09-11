@@ -3,19 +3,21 @@
 ![image](https://user-images.githubusercontent.com/4536178/222448632-f8dbfb59-11bc-4c5e-a0eb-e34f1dc72431.png)
 
 现有功能实现如下，供大家参考学习一起上进
-1. 输出模式(直接输出到Surface、经过OpenGL中转)
-2. 视图模式(无缝切换SurfaceView和TextureView)
-3. 多种纹理来源配置(Auto、YUV420Buffer、外部纹理OES、Y2Y)、纹理位深配置(8位、10位、16位)
-4. HDR转SDR CubeLut配置，PQ转SDR12种、HLG转SDR4种
-5. HDR转SDR Shader配置，该Shader支持对PQ视频和HLG视频进行色度矫正、色调参考、色调映射、色域转换、Gamma压缩
-6. 色调映射已支持Android8的Tonemap、Android13的Tonemap、BT2446A、BT2446C、Hable
-7. 色域转换已支持BT2020转BT709Clip、Compress、adpative_l0_cusp
+1. **输出模式**(直接输出到Surface、经过OpenGL中转)
+2. **视图模式**(无缝切换SurfaceView和TextureView)
+3. **多种纹理来源配置**(Auto、YUV420Buffer、外部纹理OES、Y2Y)、纹理位深配置(8位、10位、16位)
+4. **HDR转SDR CubeLut配置**，PQ转SDR12种、HLG转SDR4种
+5. **HDR转SDR Shader配置**，该Shader支持对PQ视频和HLG视频进行色度矫正、色调参考、色调映射、色域转换、Gamma压缩
+6. 色调映射已支持**Android8的Tonemap、Android13的Tonemap、BT2446A、BT2446C、Hable**
+7. 色域转换已支持**BT2020转BT709Clip、Compress、adpative_l0_cusp**
 8. 10个测试视频无缝切换
 
 **待开发功能** 
 
 [ ] SDR转HDR逆色调映射
+
 [ ] 对接Exoplayer
+
 [ ] 识别HDR10+的动态元信息
 
 
@@ -27,12 +29,12 @@
 # 关键代码
 
 1. [Shader](sample/src/main/java/com/norman/android/hdrsample/transform/shader)目录下实现了色度矫正、色调参考、色调映射、色域转换、Gamma压缩
-2. 纯Shader实现四种YUV420的Buffer转换成纹理 [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt)和[GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java)
+2. [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt)和[GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java) 纯Shader实现四种YUV420的Buffer转换成纹理
 3. [Java代码读取CubeLut文件，从3s左右优化成70ms](sample/src/main/java/com/norman/android/hdrsample/transform/CubeLutBuffer.java)
 4. [直接使用3D纹理加载CubeLut数据](sample/src/main/java/com/norman/android/hdrsample/transform/CubeLutVideoTransform.java)
 5. [2D纹理、OES纹理、Y2Y纹理渲染](sample/src/main/java/com/norman/android/hdrsample/player/shader/TextureFragmentShader.kt)
 6. [判断MediaCodec是否支持10位解码](sample/src/main/java/com/norman/android/hdrsample/player/decode/ColorFormatHelper.java)
-7. [不同位深的纹理创建](sample/src/main/java/com/norman/android/hdrsample/util/GLESUtil.java)createTextureId方法
+7. [不同位深的纹理创建](sample/src/main/java/com/norman/android/hdrsample/util/GLESUtil.java)
 8. [GLVideoOutputImpl](sample/src/main/java/com/norman/android/hdrsample/player/GLVideoOutputImpl.java)
 9. [MediaCodec异步解码](sample/src/main/java/com/norman/android/hdrsample/player/decode/MediaCodecAsyncAdapter.java)
 10. [OpenGL运行环境封装](sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
