@@ -14,11 +14,9 @@
 
 **待开发功能** 
 
-[ ] SDR转HDR逆色调映射
-
-[ ] 对接Exoplayer
-
-[ ] 识别HDR10+的动态元信息
+- [ ] SDR转HDR逆色调映射 
+- [ ] 对接Exoplayer
+- [ ] 识别HDR10+的动态元信息
 
 
 # 效果预览
@@ -39,9 +37,6 @@
 9. [MediaCodec异步解码](sample/src/main/java/com/norman/android/hdrsample/player/decode/MediaCodecAsyncAdapter.java)
 10. [OpenGL运行环境封装](sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
 
-
-# 代码进度
-- [x] 整理中
 
 # 实践总结
 
