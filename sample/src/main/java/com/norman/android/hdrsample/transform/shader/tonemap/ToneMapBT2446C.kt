@@ -35,8 +35,9 @@ class ToneMapBT2446C : ToneMap() {
                   log((Y / ip) - k3) * k2 + k4;
           }
 
-          float curve(float x) {//  hdr-toys中还乘以over_white =1019.0 / 940.0，这里决定不乘，因为前面处理过已经是全范围了
-              return f(x, k1, k3, ip);
+          float curve(float x) {
+              float over_white = 1019.0 / 940.0;    // 109% range (super-whites)
+              return f(x, k1, k3, ip)/ over_white;
           }
 
           vec3 $methodToneMap(vec3 color) {
