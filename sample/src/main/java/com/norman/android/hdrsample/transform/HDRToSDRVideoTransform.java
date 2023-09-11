@@ -75,6 +75,11 @@ public class HDRToSDRVideoTransform extends GLVideoTransform {
     }
 
     @Override
+    protected void onDestroy() {
+        screenBrightnessObserver.unListen();
+    }
+
+    @Override
     protected boolean onTransformStart() {
         if (chromaCorrection == null ||
                 toneMap == null ||

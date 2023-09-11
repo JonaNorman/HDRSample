@@ -1,12 +1,13 @@
 package com.norman.android.hdrsample.transform.shader.tonemap
 
 import com.norman.android.hdrsample.transform.shader.MetaDataParams
+import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMINANCE
 import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayEOTF
 import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayOETF
 
 /**
- * 该实现是BT2446中介绍的a方法
- * 个人理解，流程大约明白了，具体里面的参数为什么这么设还没不清楚
+ * 该实现是BT2446中介绍的a方法，和ToneMapBT2446A类其实是一样的，只是实现方式不一样
+ * 个人理解
  * 1. RGB转换YCBCR
  * 2. Y亮度转换为感知线性空间
  * 3. 在感知域中对Y应用拐点函数
@@ -15,7 +16,7 @@ import com.norman.android.hdrsample.transform.shader.gamma.PQDisplayOETF
  * https://www.itu.int/pub/R-REP-BT.2446
  * 参考代码： https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr.glsl
  *
- * //
+ *
  */
 class ToneMapBT2446A1 : ToneMap() {
 
@@ -27,7 +28,7 @@ class ToneMapBT2446A1 : ToneMap() {
             |${pqDisplayEOTF.code} 
             | 
             |${pqDisplayOETF.code}  
-            |#define ngli_sat(x) clamp(x, 0.0, 1.0)
+            |#define ngli_sat(x) (clamp(x, 0.0, 1.0))
             |#define ngli_linear(a, b, x) (((x) - (a)) / ((b) - (a)))
             |
             |/*
@@ -45,15 +46,16 @@ class ToneMapBT2446A1 : ToneMap() {
             |
             |float pq_eotf(float x)
             |{
-            |    return ${pqDisplayEOTF.methodGamma}(x)*10000.0;
+            |    return ${pqDisplayEOTF.methodGamma}(x)*${PQ_MAX_LUMINANCE};
             |}
             |
             |
             |float pq_oetf(float x)
             |{
             |  
-            |    return ${pqDisplayOETF.methodGamma}(x/10000.0);
+            |    return ${pqDisplayOETF.methodGamma}(x/${PQ_MAX_LUMINANCE});
             |}
+            |
             |
             |/* EETF (non-linear PQ signal → non-linear PQ signal), ITU-R BT.2408-5 annex 5 */
             |float pq_eetf(float x)
@@ -123,9 +125,12 @@ class ToneMapBT2446A1 : ToneMap() {
             |/* BT.2446-1-2021 method A */
             |vec3 $methodToneMap(vec3 color)
             |{   
-            |    color = pq1000(color);
-            |    float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
-            |    float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${MetaDataParams.PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+            |
+            |    if(${MetaDataParams.VIDEO_COLOR_SPACE} == ${MetaDataParams.COLOR_SPACE_BT2020_PQ}){
+            |     color = pq1000(color);
+            |    }
+            |    float p_hdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_PEAK_LUMINANCE}/ ${PQ_MAX_LUMINANCE}, 1.0 / 2.4);
+            |    float p_sdr = 1.0 + 32.0 * pow(${MetaDataParams.HDR_REFERENCE_WHITE} / ${PQ_MAX_LUMINANCE}, 1.0 / 2.4);
             |    vec3 xp = pow(color, vec3(1.0 / 2.4));
             |    float y_hdr = dot(luma_coeff, xp);
             |
@@ -138,19 +143,19 @@ class ToneMapBT2446A1 : ToneMap() {
             |    mix((-1.1510 * yp + 2.7811) * yp - 0.6302, 0.5 * yp + 0.5, yp > 0.9909 ? 1.0:0.0),
             |    yp > 0.7399? 1.0:0.0);
             |
-            |    /* Step 3: convert back to gamma domain */
-            |    float y_sdr = (pow(p_sdr, yc) - 1.0) / (p_sdr - 1.0);
+            |   /* Step 3: convert back to gamma domain */
+            |   float y_sdr = (pow(p_sdr, yc) - 1.0) / (p_sdr - 1.0);
             |
-            |    /* Colour correction */
-            |    float scale = y_sdr / (1.1 * y_hdr);
-            |    float cb_tmo = scale * (xp.b - y_hdr);
-            |    float cr_tmo = scale * (xp.r - y_hdr);
-            |    float y_tmo = y_sdr - max(0.1 * cr_tmo, 0.0);
-            |
-            |    /* Convert from Y'Cb'Cr' to R'G'B' (still in BT.2020) */
-            |    float cg_tmo = -(gcr * cr_tmo + gcb * cb_tmo);
-            |    color = y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo);
-            |    return color;
+            |   /* Colour correction */
+            |   float scale = y_sdr / (1.1 * y_hdr);
+            |   float cb_tmo = scale * (xp.b - y_hdr);
+            |   float cr_tmo = scale * (xp.r - y_hdr);
+            |   float y_tmo = y_sdr - max(0.1 * cr_tmo, 0.0);
+
+            |   /* Convert from Y'Cb'Cr' to R'G'B' (still in BT.2020) */
+            |   float cg_tmo = -(gcr * cr_tmo + gcb * cb_tmo);
+            |   vec3 rgb =  y_tmo + vec3(cr_tmo, cg_tmo, cb_tmo);
+            |   return pow(rgb, vec3(2.4));//gopro-lib-node.gl没这么处理，我们这需要处理一下，因为后续还会有OETF
             |}
             """.trimMargin()
 }
