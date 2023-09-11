@@ -58,9 +58,9 @@ public class HDRPlayActivity extends AppCompatActivity implements View.OnClickLi
 
     private static final List<Item<GamutMap>> GAMUT_MAP_MENU_LIST = Arrays.asList(new Item[]{
             new Item("无", GamutMap.NONE),
-            new Item("Clip", GamutMap.CLIP),
-            new Item("Compress", GamutMap.COMPRESS),
-            new Item("Adaptive_l0_cusp", GamutMap.ADAPTIVE_L0_CUSP)
+            new Item("BT709Clip", GamutMap.CLIP),
+            new Item("BT709Compress", GamutMap.COMPRESS),
+            new Item("BT709Adaptive_l0_cusp", GamutMap.ADAPTIVE_L0_CUSP)
     });
 
     private static final List<Item<GammaOETF>> GAMMA_OETF_MENU_LIST = Arrays.asList(new Item[]{

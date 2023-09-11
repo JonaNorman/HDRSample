@@ -4,7 +4,10 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.MAX_DISPLAY_
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.MIN_DISPLAY_LUMINANCE
 
 
-// HLG公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
+/**
+ * HLG的显示场景参考OETF
+ * 参数详解见 https://juejin.cn/post/7231369710024310821#heading-8
+ */
 class HLGDisplayOETF : GammaEOTF() {
     val methodSceneOETF = "${prefix}SCENE_OETF"
     val methodHLGGamma = "${prefix}GAMMA"
@@ -39,7 +42,7 @@ class HLGDisplayOETF : GammaEOTF() {
             return 1.2+0.42*log(lw/$maxNits)/log(10.0);
         }
 
-        vec3 $methodInverseOOTF(vec3 x)
+        vec3 $methodInverseOOTF(vec3 x)//HLG是相对亮度，需要根据屏幕亮度做对应调整，公式在BT2100文档中有
         {
             float gamma = $methodHLGGamma($MAX_DISPLAY_LUMINANCE);
             float Y = dot(vec3(0.262700, 0.677998, 0.059302), x);

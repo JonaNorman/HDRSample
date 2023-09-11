@@ -5,7 +5,7 @@ import com.norman.android.hdrsample.transform.shader.ColorConversion.methodBt202
 /**
  * 色域映射的压缩处理方式
  * BT2020色域到BT709时会产生超过边界的值，有两个色域三角形，一个是BT709颜色三角形，一个BT2020颜色三角形
- * 两个三角形之间就是通过矩阵转换后不正常的颜色，对高光颜色进行消色处理(可以理解成降低饱和度)
+ * 两个三角形之间的颜色是通过矩阵转换后不正常的颜色，对高光颜色进行消色处理(可以理解成降低饱和度)
  * 消色处理是通过对消色轴的距离进行Parabolic数学公式缩放进行的
  * 参考至
  * https://github.com/natural-harmonia-gropius/hdr-toys/blob/master/gamut-mapping/jedypod.glsl

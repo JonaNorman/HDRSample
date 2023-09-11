@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader.gamma
 
 /**
- *  S170M和BT709很像
+ *  S170M和BT709基本一样，只是参数精度不一样
  *  https://www.itu.int/rec/R-REC-BT.1700-0-200502-I/en
  */
 class S170MEOTF : GammaEOTF() {

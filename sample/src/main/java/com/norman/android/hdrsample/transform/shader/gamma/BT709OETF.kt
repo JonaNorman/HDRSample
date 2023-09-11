@@ -1,6 +1,7 @@
 package com.norman.android.hdrsample.transform.shader.gamma
 
-// BT709的Gamma公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-5
+// BT709 OETF公式
+// 详解见 https://juejin.cn/post/7231369710024310821#heading-5
 class BT709OETF : GammaOETF() {
     private val alpha = "${prefix}ALPHA"
     private val beta = "${prefix}BETA"

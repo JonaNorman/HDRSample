@@ -10,7 +10,7 @@ import com.norman.android.hdrsample.transform.shader.ReScale
 
 /**
  * 色度矫正，该方法是BT2446C方法介绍，对超过HDR参考白的高光去饱和避免压缩高光导致的色调偏移
- * 步骤1: crosstalk矩阵解决后续高光去饱和计算色度的干扰问题，个人觉得是经验值，alpha从0-0.5
+ * 步骤1: crosstalk矩阵解决后续高光去饱和计算色度的干扰问题，个人觉得是经验值，alpha从0-0.33
  * 步骤2: RGB转换成LAB(L亮度、A绿色到红色分量、B蓝色到黄色分量)，LAB再转换LCH(L亮度、C色度、H色调)
  * 步骤3: 对HDR参考白以上颜色LCH的C通道(色度)进行降色处理，规则是亮度越高色度越低
  * 步骤4: 还原成RGB颜色
@@ -52,7 +52,7 @@ class ChromaCorrectionBT2446C : ChromaCorrection() {
            return x * M;
         }
 
-        // 注意输入的颜色不是0～1，而0～MAX_CONTENT_LUMINANCE，大于HDR_REFERENCE_WHITE是高光颜色
+        // 注意输入的颜色是0～1，而该方法需要转换成绝对亮度0～MAX_CONTENT_LUMINANCE再处理，也就是说要先用methodScaleToMaster后在用归一化回来
         vec3 ${methodChromaCorrect}(vec3 color) {
            color = ${ReScale.methodScaleToMaster}(color);
            float L_ref = $methodBt2020ToLab(vec3($HDR_REFERENCE_WHITE)).x;

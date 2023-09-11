@@ -1,7 +1,7 @@
 package com.norman.android.hdrsample.transform.shader.gamma
 
 /**
- * 基于显示参考的PQ EOTF
+ * 基于显示参考的PQ EOTF，显示参考和场景参考都是参考线性光，只是一个是屏幕的光，一个是采集场景内容的光
  * PQ公式参数详解见 https://juejin.cn/post/7231369710024310821#heading-13
  */
 class PQDisplayEOTF : GammaEOTF() {

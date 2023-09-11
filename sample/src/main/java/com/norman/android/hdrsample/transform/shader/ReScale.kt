@@ -10,7 +10,7 @@ import com.norman.android.hdrsample.transform.shader.MetaDataParams.PQ_MAX_LUMIN
 import com.norman.android.hdrsample.transform.shader.MetaDataParams.VIDEO_COLOR_SPACE
 
 /**
- * Gamma矫正后的颜色是归一化的，需要缩放成亮度绝对值，方便后续ToneMap后归一化
+ * Gamma矫正后的颜色是归一化的，而不同的ToneMap要求的颜色有些是绝对亮度，有些是相对参考白电平的值，所以需要先放大做ToneMap，做完ToneMap再缩放回来
  * 参考https://cs.android.com/android/platform/superproject/+/master:frameworks/native/libs/renderengine/gl/ProgramCache.cpp?q=NormalizeLuminance
  */
 object ReScale : GLShaderCode() {
