@@ -27,7 +27,9 @@
 # 关键代码
 
 代码已经都加上注释了，如果有疑惑，欢迎加入HDR视频开发讨论群
-![HDR视频开发讨论群](/preview/chat.jpg)
+
+<img src="/preview/chat.jpg" width="300px">
+
 
 1. [Shader](sample/src/main/java/com/norman/android/hdrsample/transform/shader)目录下实现了色度矫正、色调参考、色调映射、色域转换、Gamma压缩
 2. [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt)和[GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java) 纯Shader实现四种YUV420的Buffer转换成纹理
