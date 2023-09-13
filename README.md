@@ -1,5 +1,9 @@
 # HDRSample
 这个库用MediaCode和OpenGL实现了HDR和SDR转换，如果你觉得有所收获，给这个库点个赞吧，你的鼓励是我前进最大的动力。
+HDR和SDR转换是为了解决以下问题
+1. 播放流程，不是所有手机都支持HDR屏幕会导致视频变灰，需要转换成SDR视频
+2. 编辑流程，HDR和SDR混合编辑时，要不HDR转SDR，要不SDR转HDR，不然会出现色差
+
 ![image](https://user-images.githubusercontent.com/4536178/222448632-f8dbfb59-11bc-4c5e-a0eb-e34f1dc72431.png)
 
 现有功能实现如下，供大家一起学习一起上进
@@ -52,6 +56,6 @@
 - [x] [HDR转SDR实践之旅(五)色域转换BT2020转BT709](https://juejin.cn/post/7208367266533949498) 
 - [x] [HDR转SDR实践之旅(六)传递函数与色差矫正](https://juejin.cn/post/7208817601850277949)
 - [x] [HDR转SDR实践之旅(七)Gamma、HLG、PQ公式详解](https://juejin.cn/post/7231369710024310821) 
-- [ ] HDR转SDR实践之旅(八)色调映射 
+- [x] [HDR转SDR实践之旅(八)色调映射](https://juejin.cn/post/7277875323165147190) 
 - [ ] HDR转SDR实践之旅(九)HDR开发资源汇总
 - [ ] HDR转SDR实践之旅(十)SDR转HDR逆色调映射探索
