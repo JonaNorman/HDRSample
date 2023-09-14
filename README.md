@@ -4,6 +4,8 @@ HDR和SDR转换是为了解决以下问题
 1. 播放流程，不是所有手机都支持HDR屏幕会导致视频变灰，需要转换成SDR视频
 2. 编辑流程，HDR和SDR混合编辑时，要不HDR转SDR，要不SDR转HDR，不然会出现色差
 
+我搜集了和[HDR相关的资料](articles.md)，总结了[HDR转SDR实践之旅](https://juejin.cn/column/7206577654933471292)，开发了这个库希望能帮到大家
+
 ![image](https://user-images.githubusercontent.com/4536178/222448632-f8dbfb59-11bc-4c5e-a0eb-e34f1dc72431.png)
 
 现有功能实现如下，供大家一起学习一起上进
