@@ -49,6 +49,11 @@ HDR和SDR转换是为了解决以下问题
 10. [OpenGL运行环境封装](sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
 
 
+## ⭐ star历史
+
+![Star History Chart](https://api.star-history.com/svg?repos=JonaNorman/HDRSample&type=Date)
+
+
 # 实践总结
 
 - [x] [HDR转SDR实践之旅(一)流程总结](https://juejin.cn/post/7205908717886865469)
