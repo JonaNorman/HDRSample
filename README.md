@@ -1,4 +1,5 @@
 # HDRSample
+[EN](README-EN.md)
 这个库用MediaCode和OpenGL实现了HDR和SDR转换，如果你觉得有所收获，给这个库点个赞吧，你的鼓励是我前进最大的动力。
 HDR和SDR转换是为了解决以下问题
 1. 播放流程，不是所有手机都支持HDR屏幕会导致视频变灰，需要转换成SDR视频
