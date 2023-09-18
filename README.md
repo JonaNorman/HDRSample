@@ -49,10 +49,6 @@ HDR和SDR转换是为了解决以下问题
 10. [OpenGL运行环境封装](sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
 
 
-## ⭐ star历史
-
-![Star History Chart](https://api.star-history.com/svg?repos=JonaNorman/HDRSample&type=Date)
-
 
 # 实践总结
 
@@ -66,3 +62,14 @@ HDR和SDR转换是为了解决以下问题
 - [x] [HDR转SDR实践之旅(八)色调映射](https://juejin.cn/post/7277875323165147190) 
 - [x] [HDR转SDR实践之旅(九)HDR开发资源汇总](https://juejin.cn/post/7278247059517227027)
 - [ ] HDR转SDR实践之旅(十)SDR转HDR逆色调映射探索
+
+# ⭐ star历史
+
+![Star History Chart](https://api.star-history.com/svg?repos=JonaNorman/HDRSample&type=Date)
+
+
+# 特别感谢
+
+| Stargazers                                                                                                 | Forkers                                                                                                                 |
+|---------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| [![Stargazers repo roster for @JonaNorman/HDRSample](https://reporoster.com/stars/JonaNorman/HDRSample)](https://github.com/JonaNorman/HDRSample/stargazers)                                          | [![Forkers repo roster for @JonaNorman/HDRSample](https://reporoster.com/forks/JonaNorman/HDRSample)](https://github.com/JonaNorman/HDRSample/network/members)                            |
