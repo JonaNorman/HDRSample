@@ -41,12 +41,12 @@ All codes are annotated. If you have any questions, feel free to join the HDR vi
 2. [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt) and [GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java) implement the conversion of four types of YUV420 buffers to textures using pure Shader.
 3. [Java code reads CubeLut file, optimized from about 3 seconds to 70 milliseconds](sample/src/main/java/com/norman/android/hdrsample/transform/CubeLutBuffer.java)
 4. [Directly load CubeLut data with 3D textures](sample/src/main/java/com/norman/android/hdrsample/transform/CubeLutVideoTransform.java)
-5. Rendering of 2D textures, OES textures, Y2Y textures (sample/src/main/java/com/norman/android/hdrsample/player/shader/TextureFragmentShader.kt)
-6. Determine if MediaCodec supports 10-bit decoding (sample/src/main/java/com/norman/android/hdrsample/player/decode/ColorFormatHelper.java)
-7. Creating textures with different bit depths (sample/src/main/java/com/norman/android/hdrsample/util/GLESUtil.java)
+5. [Rendering of 2D textures, OES textures, Y2Y textures](sample/src/main/java/com/norman/android/hdrsample/player/shader/TextureFragmentShader.kt)
+6. [Determine if MediaCodec supports 10-bit decoding](sample/src/main/java/com/norman/android/hdrsample/player/decode/ColorFormatHelper.java)
+7. [Creating textures with different bit depths](sample/src/main/java/com/norman/android/hdrsample/util/GLESUtil.java)
 8. [GLVideoOutputImpl](sample/src/main/java/com/norman/android/hdrsample/player/GLVideoOutputImpl.java)
 9. [Asynchronous decoding with MediaCodec](sample/src/main/java/com/norman/android/hdrsample/player/decode/MediaCodecAsyncAdapter.java)
-10. OpenGL runtime environment encapsulation (sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
+10. [OpenGL runtime environment encapsulation](sample/src/main/java/com/norman/android/hdrsample/opengl/GLEnvThreadManager.java)
 
 # Practical Summary
 
