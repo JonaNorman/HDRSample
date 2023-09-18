@@ -64,5 +64,5 @@ HDR和SDR转换是为了解决以下问题
 - [x] [HDR转SDR实践之旅(六)传递函数与色差矫正](https://juejin.cn/post/7208817601850277949)
 - [x] [HDR转SDR实践之旅(七)Gamma、HLG、PQ公式详解](https://juejin.cn/post/7231369710024310821) 
 - [x] [HDR转SDR实践之旅(八)色调映射](https://juejin.cn/post/7277875323165147190) 
-- [ ] HDR转SDR实践之旅(九)HDR开发资源汇总
+- [x] [HDR转SDR实践之旅(九)HDR开发资源汇总](https://juejin.cn/post/7278247059517227027)
 - [ ] HDR转SDR实践之旅(十)SDR转HDR逆色调映射探索
