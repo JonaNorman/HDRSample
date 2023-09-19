@@ -18,17 +18,18 @@ If you find this information helpful, please give a thumbs up to the [HDR to SDR
 
 ## Open Source Code
 
-| Name | Notes |
-| --- | --- |
+| Name | Notes                                                                                                            |
+| --- |------------------------------------------------------------------------------------------------------------------|
 | [HDRSample🔥](https://github.com/JonaNorman/HDRSample) | Open source code for the [Journey of HDR to SDR Conversion](https://juejin.cn/column/7206577654933471292) series. |
-| [hdrtoys](https://github.com/natural-harmonia-gropius/hdr-toys)⭐ | HDR to SDR plugin for the mpv player. |
-| [android](https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp)⭐ | Tonemap in Android. |
-| [libplacebo tonemap](https://code.videolan.org/videolan/libplacebo/-/blob/master/src/tone_mapping.c)⭐ | Tonemap for the mpv player. |
-| [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c) | Tonemap in ffmpeg. |
-| [gopro](https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr_pq2sdr.frag) | Implementation of BT2446a tone mapping. |
-| [glsl-tone-map](https://github.com/dmnsgn/glsl-tone-map) | Common tone mapping curves. |
-| [HDRTVNET](https://github.com/chxy95/HDRTVNet) | SDR to HDR conversion using deep learning. |
-| [OpenCV TMO](https://github.com/opencv/opencv/blob/17234f82d025e3bbfbf611089637e5aa2038e7b8/modules/photo/src/tonemap.cpp) | OpenCV's tone mapping. |
+| [hdrtoys](https://github.com/natural-harmonia-gropius/hdr-toys)⭐ | HDR to SDR plugin for the mpv player.                                                                            |
+| [android](https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp)⭐ | Tonemap in Android.                                                                                              |
+| [libplacebo tonemap](https://code.videolan.org/videolan/libplacebo/-/blob/master/src/tone_mapping.c)⭐ | Tonemap for the mpv player.                                                                                      |
+| [ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c) | Tonemap in ffmpeg.                                                                                               |
+|[kodi](https://github.com/xbmc/xbmc/blob/1e499e091f7950c70366d64ab2d8c4f3a18cfbfa/system/shaders/GL/1.5/gl_tonemap.glsl#L4)| Tonemap in kodi.                                                                                                 |
+| [gopro](https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr_pq2sdr.frag) | Implementation of BT2446a tone mapping.                                                                          |
+| [glsl-tone-map](https://github.com/dmnsgn/glsl-tone-map) | Common tone mapping curves.                                                                                      |
+| [HDRTVNET](https://github.com/chxy95/HDRTVNet) | SDR to HDR conversion using deep learning.                                                                       |
+| [OpenCV TMO](https://github.com/opencv/opencv/blob/17234f82d025e3bbfbf611089637e5aa2038e7b8/modules/photo/src/tonemap.cpp) | OpenCV's tone mapping.                                                                                           |
 
 ## Theoretical Sharing
 

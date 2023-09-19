@@ -22,6 +22,7 @@
 |[android](https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/tonemap/tonemap.cpp)⭐|android中的tonemap|
 |[libplacebo tonemap](https://code.videolan.org/videolan/libplacebo/-/blob/master/src/tone_mapping.c)⭐|mpv播放器的tonemap|
 |[ffmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/libavfilter/vf_tonemap.c)|ffmpeg中的tonemap|
+|[kodi](https://github.com/xbmc/xbmc/blob/1e499e091f7950c70366d64ab2d8c4f3a18cfbfa/system/shaders/GL/1.5/gl_tonemap.glsl#L4)|kodi中的色调映射|
 |[gopro](https://github.com/gopro/gopro-lib-node.gl/blob/main/libnodegl/src/glsl/hdr_pq2sdr.frag)|bt2446a的色调映射实现|
 |[glsl-tone-map](https://github.com/dmnsgn/glsl-tone-map)|常见的色调映射曲线|
 |[HDRTVNET](https://github.com/chxy95/HDRTVNet)|通过深度学习实现SDR转HDR|
