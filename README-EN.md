@@ -27,7 +27,7 @@ The current implemented features are as follows, for everyone to learn and progr
 
 # Preview
 
-[APK Download Link](preview/release.apk)
+[APK Download Link](https://github.com/JonaNorman/HDRSample/releases)
 
 ![HDR to SDR](preview/preview.gif)
 

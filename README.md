@@ -28,7 +28,7 @@ HDR和SDR转换是为了解决以下问题
 
 
 # 效果预览
-[安装包地址](preview/release.apk)
+[安装包地址](https://github.com/JonaNorman/HDRSample/releases)
 
 ![HDR转SDR](preview/preview.gif)
 
