@@ -34,9 +34,9 @@ HDR和SDR转换是为了解决以下问题
 
 # 关键代码
 
-代码已经都加上注释了，如果有疑惑，欢迎加入HDR视频开发讨论群
+代码已经都加上注释了，如果有疑惑，可以添加我的个人微信(请备注HDR视频开发)，拉你进入HDR视频开发讨论群，
 
-<img src="/preview/chat.jpg" width="300px">
+<img src="/preview/wechat.jpg" width="300px">
 
 
 1. [Shader](sample/src/main/java/com/norman/android/hdrsample/transform/shader)目录下实现了色度矫正、色调参考、色调映射、色域转换、Gamma压缩

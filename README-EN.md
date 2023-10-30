@@ -33,9 +33,8 @@ The current implemented features are as follows, for everyone to learn and progr
 
 # Key Code
 
-All codes are annotated. If you have any questions, feel free to join the HDR video development discussion group.
+All codes are annotated. 
 
-<img src="/preview/chat.jpg" width="300px">
 
 1. [Shader](sample/src/main/java/com/norman/android/hdrsample/transform/shader) directory implements chromatic correction, hue reference, hue mapping, color space conversion, and gamma compression.
 2. [YUV420FragmentShader](sample/src/main/java/com/norman/android/hdrsample/player/shader/YUV420FragmentShader.kt) and [GLYUV420Renderer](sample/src/main/java/com/norman/android/hdrsample/player/GLYUV420Renderer.java) implement the conversion of four types of YUV420 buffers to textures using pure Shader.
