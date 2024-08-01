@@ -32,6 +32,10 @@ HDR和SDR转换是为了解决以下问题
 
 ![HDR转SDR](preview/preview.gif)
 
+# HDR设备兼容性
+不同手机的对应HDR的兼容性不一样，建立一个兼容性的记录很有必要
+[HDR设备兼容性](README-EN.md)
+
 # 关键代码
 
 代码已经都加上注释了，有疑惑可以扫码加HDR视频开发讨论群，如果二维码显示过期了，可以搜索微信号JonaNorman加我个人微信拉你进群(请备注HDR视频开发)
@@ -64,6 +68,7 @@ HDR和SDR转换是为了解决以下问题
 - [x] [HDR转SDR实践之旅(八)色调映射](https://juejin.cn/post/7277875323165147190) 
 - [x] [HDR转SDR实践之旅(九)HDR开发资源汇总](https://juejin.cn/post/7278247059517227027)
 - [ ] HDR转SDR实践之旅(十)SDR转HDR逆色调映射探索
+
 
 # ⭐ star历史
 
